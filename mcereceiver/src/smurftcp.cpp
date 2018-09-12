@@ -1,6 +1,6 @@
 // SMuRF TCP client
 
-#include "smurftcp.h"  // class definitions
+#include <smurftcp.h>  // class definitions
 
 void error(const char *msg){perror(msg);};    // modify later to deal with errors
 

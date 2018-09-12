@@ -1,6 +1,6 @@
 // SMuRF TCP test server
 
-#include "smurf2mce.h"
+#include "../../common/smurf2mce.h"
 
 void error(const char *msg){ perror(msg);};          // modify later to deal with errors
 
