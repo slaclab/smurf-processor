@@ -49,6 +49,7 @@ find_package(Rogue REQUIRED)
 include_directories(${ROGUE_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/../common/)
 
 # Create rogue python library
 add_library(MceTransmit SHARED src/MceTransmit.cpp)

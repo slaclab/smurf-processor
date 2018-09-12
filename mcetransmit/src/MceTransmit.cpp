@@ -22,7 +22,7 @@
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include <boost/python.hpp>
 #include <boost/python/module.hpp>
-#include "../../smurf_mce_link/smurftcp.h"   // NEED TO FIX THIS, just for now ugly
+#include <smurftcp.h>
 
 void error(const char *msg){perror(msg);};    // modify later to deal with errors
 
