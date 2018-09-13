@@ -14,9 +14,15 @@
 
 // do we really need all these includes? 
 
-const uint smurf_raw_samples = 1024; // samples before masking. 
+//const uint smurf_raw_samples = 1024; // samples before masking. 
+const uint smurf_raw_samples = 4096; // samples before masking. 
 const uint smurfsamples = 528;  // number of SMuRF samples in a   frame was 528
-const uint smurfheaderlength = 128; // number of bytes in smurf header
+
+
+//const uint smurfheaderlength = 128; // number of bytes in smurf header
+const uint smurfheaderlength =16; // number of bytes in smurf header
+
+
 typedef int16_t smurf_t;  // raw smurf data type. treat as uint
 const uint smurfdatalength = smurf_raw_samples * sizeof(smurf_t) + smurfheaderlength; //  legnth of expected data from  pyrogue
 

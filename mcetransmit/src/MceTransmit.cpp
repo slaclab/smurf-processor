@@ -11,7 +11,7 @@
  *    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
  * No part of the rogue_example software, including this file, may be
  * copied, modified, propagated, or distributed except according to the terms
- * contained in the LICENSE.txt file.
+ * contained in the LICENSE.txt  file.
  *-----------------------------------------------------------------------------
 */
 

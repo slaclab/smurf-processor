@@ -1,4 +1,4 @@
-#include <time.h> // used for the test sleep function. Just for the t est prgram. 
+#include <time.h> // used for the test  sleep function. Just for the t est prgram. 
 #include "smurf2mce.h"  // defines all the SMURF stuff
 
 void error(const char *msg); // error handler
