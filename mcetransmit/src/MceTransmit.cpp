@@ -9,19 +9,20 @@
  * the license terms in the LICENSE.txt file found in the top-level directory
  * of this distribution and at:
  *    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
- * No part of the rogue_example software, including this file, may be
+ * No part of the rogue_example software, inclu ding this file, may be
  * copied, modified, propagated, or distributed except according to the terms
  * contained in the LICENSE.txt  file.
  *-----------------------------------------------------------------------------
 */
 
-// Frisch, starting to modify
+
 
 #include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include <boost/python.hpp>
 #include <boost/python/module.hpp>
+#include <smurf2mce.h>
 #include <smurftcp.h>
 
 void error(const char *msg){perror(msg);};    // modify later to deal with errors
@@ -414,12 +415,12 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
     iter += size;
     tmpsize = size; // ugly, fix later
     }
- 
+  for(j = 0; j < 16; j ++) printf(" %x ", *(buffer+j));
+  printf("\n");
+			      
+  
 
-  //buffer = b[bufn]; // buffer swap 
-  //bufn = bufn ? 0 : 1; // swap buffer reference
-  //buffer_last = b[bufn]; // now that we've swapped them
-  //memcpy(buffer, buff, tmpsize);  // just simple for now, but one more memcpy than we need. 
+ 
   process_frame();
 
 }

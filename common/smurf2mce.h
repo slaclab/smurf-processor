@@ -12,6 +12,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifndef __SMURF2MCE_H__
+#define __SMURF2MCE_H__
+
+
 // do we really need all these includes? 
 
 //const uint smurf_raw_samples = 1024; // samples before masking. 
@@ -68,3 +72,6 @@ const char server_port_number[] = "5433";  // default unless overridden
 //const char server_ip_addr[] = "127.0.0.1"; //default
 const char server_ip_addr[] = "134.79.216.240"; //default
 const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
+
+
+#endif

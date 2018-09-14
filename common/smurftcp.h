@@ -1,5 +1,8 @@
 #include <time.h> // used for the test  sleep function. Just for the t est prgram. 
-#include "smurf2mce.h"  // defines all the SMURF stuff
+//#include "smurf2mce.h"  // defines all the SMURF stuff
+
+#ifndef __SMURFTCP_H__
+#define __SMURFTCP_H__
 
 void error(const char *msg); // error handler
 
@@ -42,36 +45,9 @@ public:
   void set_average_bit(int n);
   void clear_average_bit(int n);
   int get_average_bit(int n); 
+
 };
 
 
-#if 0
-class Smurf2MCE // Translates from SMuRF data to MCE data, also unwraps
-{
-public:
-  bool initialized;
-  char *buffer; // holds raw input from PyRogute
-  char *buffer_last; // holds last data
-  char *b[2]; // dual buffers to allow last pulse subtraction
-  int bufn;  // which buffer we are on.
-  wrap_t *wrap_counter; // byte to track phase wraps. 
-  char *mask; // masks which resonators we will use. 
-  //char *header; // holds smurf header data .
-  avgdata_t *average_samples; // holds the averaged sample data
-  uint average_counter; // runnign counter of averages
-  const char *port;  // character string that holds the port number
-  const char *ip;  // character string that holds the ip addres or name
-  Smurftcp *S; // tcp interface, use defaults for now.
-  MCEHeader *M; // mce header class
-  SmurfHeader *H; // Smurf header class
-
-  Smurf2MCE(const char *port_number, const char *ip_string);
-  void acceptframe_test(char* data, size_t size); // test version for local use, just a wrapper
-  void process_frame(void); // does average, separates header
-  uint process_header(void); // converts SMuRF header to MCE header. Return is number of averages
-  void set_mask(char *new_mask, uint num); // set array mask .
-  void clear_wrap(void){memset(wrap_counter, wrap_start, smurfsamples);}; // clears wrap counter
-  ~Smurf2MCE(); // destructor
-};
 
 #endif
