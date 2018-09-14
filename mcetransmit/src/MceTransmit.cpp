@@ -27,6 +27,8 @@
 
 void error(const char *msg){perror(msg);};    // modify later to deal with errors
 
+uint64_t pull_bit_field(char *ptr, uint offset, uint width); 
+
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
 
@@ -287,7 +289,7 @@ uint32_t Smurf2MCE::process_header(void)
 {
   uint tot_averages;
   return(1); /////////////////// kludge until we have a real header
-  if (H->get_average_bit(0))
+  if (H->get_average_bit())
     {
       tot_averages = average_counter;
       average_counter = 1; 
@@ -336,28 +338,17 @@ SmurfHeader::SmurfHeader()
   memset(header, 0, smurfheaderlength);  // clear initial falues
 }
 
-void SmurfHeader::set_average_bit(int n)
-{ 
-  if( n < 8) header[h_averaging_bits_offset] |= 1 << n; 
-  else if (n < 16) header[h_averaging_bits_offset+1] |= 1 << (n-8);
-  else ; // too big  
-}
-
-void SmurfHeader::clear_average_bit(int n)
-{ 
-  if( n < 8) header[h_averaging_bits_offset] &= ~(1 << n); 
-  else if (n < 16) header[h_averaging_bits_offset+1] &= ~(1 << (n-8));
-  else ; // too big  
-}
 
 
-
-
-int SmurfHeader::get_average_bit(int n)
+uint SmurfHeader::get_version(void)
 {
-  if( n < 8) return(header[h_averaging_bits_offset] & (1 << n)); 
-  else if (n < 16) return(header[h_averaging_bits_offset+1] & 1 << (n-8));
-  else return(0); 
+  return(pull_bit_field(header, h_version_offset, h_version_width));
+}
+
+
+uint SmurfHeader::get_frame_counter(void)
+{
+  return(pull_bit_field(header, h_frame_counter_offset, h_frame_counter_width));
 }
 
 
@@ -415,8 +406,7 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
     iter += size;
     tmpsize = size; // ugly, fix later
     }
-  for(j = 0; j < 16; j ++) printf(" %x ", *(buffer+j));
-  printf("\n");
+  printf("framce counter = %u\n", H->get_frame_counter()); // TESTING
 			      
   
 
@@ -424,6 +414,18 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
   process_frame();
 
 }
+
+
+uint64_t pull_bit_field(char *ptr, uint offset, uint width)
+{
+  uint64_t x;  // will hold version number
+  if(width > sizeof(uint64_t)) error("field width too big"); 
+  memcpy(&x, ptr+offset, width); // move the bytes over
+  uint64_t r = (1 << (width*8)) -1; 
+  return(r & (uint64_t)x);
+}
+
+
 
 
 BOOST_PYTHON_MODULE(MceTransmit) {

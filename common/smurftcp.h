@@ -42,9 +42,9 @@ class SmurfHeader //generates and decodes SMURF data header
 public:
   char header[smurfheaderlength]; // full header bytes
   SmurfHeader(void); // creates header with num samples
-  void set_average_bit(int n);
-  void clear_average_bit(int n);
-  int get_average_bit(int n); 
+  uint get_version(void); 
+  uint get_frame_counter(void);
+  uint get_average_bit() { return(0);}; // place holder 
 
 };
 

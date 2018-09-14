@@ -56,9 +56,10 @@ const size_t pyrogue_buffer_length = 0x8000; // not sure what the maximum size c
 
 
 // smurf header byte offsets
-const int h_averaging_bits_offset = 12*8; // 12, 64 bit words.  Lowest order bits.  (little endian I think). 
-const int h_sync_word_offset = 13*8; // position of real time clock in header
-
+const int h_version_offset = 0; // offset of version word
+const int h_version_width = 1; // bytes of version word
+const int h_frame_counter_offset = 2;  // raw frame counter. 
+const int h_frame_counter_width = 6; 
 
 
 
