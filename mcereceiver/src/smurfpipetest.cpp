@@ -35,12 +35,13 @@ int main()
   printf("fifo_fd = %d\n", fifo_fd); 
   for(j = 0; (j < num_frames) || runforever; j++)
     {
-      if(-1 == (num = read(fifo_fd, &data, sizeof(MCE_t) * MCE_frame_length)))
+      if(-1 == (num = read(fifo_fd, data, sizeof(MCE_t) * MCE_frame_length)))
 	{ 
 	  error("read error"); 
 	  break;
 	}
       if(!num) {j--; continue; };
+      check_data(data); // check taht daata is OK
       if(!(j % report_ratio)) printf("frame = %d \n", j); 
     }
   close(fifo_fd);
@@ -50,5 +51,6 @@ int main()
 
 int check_data(MCE_t *data)
 {
+  printf("count = %u \n", data[MCEheader_CC_counter_offset]);
   return(0);
 }
