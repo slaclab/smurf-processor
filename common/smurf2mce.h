@@ -45,7 +45,8 @@ const wrap_t wrap_start = 0x80;  //starting wrap value
 
 const uint32_t average_sample_offset= 0; // used to offset average data to avoid wrap, may not be neeeded. 
 
-const uint MCEheaderlength = 43; // words in MCE header
+const uint MCEheaderlength = 43; // words in MCE header note words are 32 bit
+const uint MCEheader_CC_counter_offset = 1; 
 typedef uint32_t MCE_t;
 const uint MCE_frame_length = MCEheaderlength + smurfsamples; // number of words in MCE data. 
 
@@ -71,7 +72,8 @@ const uint tcpreclen = tcplen * 0x10000;  // allow for multiple  reads in one fr
 const char server_port_number[] = "5433";  // default unless overridden
 
 //const char server_ip_addr[] = "127.0.0.1"; //default
-const char server_ip_addr[] = "134.79.216.240"; //default
+//const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
+const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
 const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
 
 

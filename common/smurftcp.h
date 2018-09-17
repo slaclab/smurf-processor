@@ -32,8 +32,12 @@ public:
 class MCEHeader // generates the MCE header data
 {
 public:
+  MCE_t CC_frame_counter; // counts for each MCE frame
   MCE_t mce_header[MCEheaderlength]; // header.
-  MCEHeader(void); // creates header  
+
+  MCEHeader(void);  // creates header
+  void make_header(void); // creates new header, icrements counters etc.
+ 
 };
 
 
@@ -41,10 +45,19 @@ class SmurfHeader //generates and decodes SMURF data header
 {
 public:
   char header[smurfheaderlength]; // full header bytes
+  uint last_frame_count; 
+  bool first_cycle; 
+  bool data_ok; // set to indicate taht data has passed internal checks.
+  bool average_ok;  // set for a bad header somewhere in average
+  uint average_counter; 
+
   SmurfHeader(void); // creates header with num samples
+  void copy_header(uint8_t *buffer); 
   uint get_version(void); 
   uint get_frame_counter(void);
+  bool check_increment(); // checks that the frame counter incremented by 1;
   uint get_average_bit() { return(0);}; // place holder 
+  uint average_control(); 
 
 };
 

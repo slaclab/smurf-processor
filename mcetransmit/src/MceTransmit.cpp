@@ -63,7 +63,6 @@ public:
 
   //void acceptframe_test(char* data, size_t size); // test version for local use, just a wrapper
   void process_frame(void); // does average, separates header
-  uint process_header(void); // converts SMuRF header to MCE header. Return is number of averages
   void set_mask(char *new_mask, uint num); // set array mask .
   void clear_wrap(void){memset(wrap_counter, wrap_start, smurfsamples);}; // clears wrap counter
    ~Smurf2MCE(); // destructor
@@ -256,7 +255,8 @@ void Smurf2MCE::process_frame(void)
   char *tcpbuf; 
   uint32_t cnt; 
   int tmp;
-  memcpy(H->header, buffer, smurfheaderlength);
+  H->copy_header(buffer); 
+  if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
   astop = average_samples + smurfsamples;
@@ -275,9 +275,10 @@ void Smurf2MCE::process_frame(void)
               // add counter wrap to data  
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
-  if (!(cnt=process_header())) return;  // just average, otherwise send frame
+  if (!(cnt=H->average_control())) return;  // just average, otherwise send frame
+  M->make_header(); // increments counters, readies counter
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
-    average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset);
+    average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data
@@ -285,19 +286,7 @@ void Smurf2MCE::process_frame(void)
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t));
 }
 
-uint32_t Smurf2MCE::process_header(void)
-{
-  uint tot_averages;
-  return(1); /////////////////// kludge until we have a real header
-  if (H->get_average_bit())
-    {
-      tot_averages = average_counter;
-      average_counter = 1; 
-      return(tot_averages);  
-    }
-  average_counter++;
-    return(0);
-}
+
 
 
 
@@ -336,8 +325,18 @@ Smurf2MCE::~Smurf2MCE() // destructor
 SmurfHeader::SmurfHeader()
 {
   memset(header, 0, smurfheaderlength);  // clear initial falues
+  last_frame_count = 0; 
+  first_cycle = 1; 
+  average_counter = 0;  // number of frames avearaged so far
+  data_ok = true;  // start of assuming data is OK, invalidate later.
+  average_ok = true; 
 }
 
+void SmurfHeader::copy_header(uint8_t *buffer)
+{
+  memcpy(header, buffer, smurfheaderlength);
+  data_ok = true;  // This is where we first get new data so star with header OK. 
+}
 
 
 uint SmurfHeader::get_version(void)
@@ -352,16 +351,64 @@ uint SmurfHeader::get_frame_counter(void)
 }
 
 
-MCEHeader::MCEHeader()
+bool SmurfHeader::check_increment()
 {
-  memset(mce_header, 0, MCEheaderlength * sizeof(MCE_t));
-  mce_header[mce_h_offset_header_version] = MCE_header_version;  // current version. 
+  uint x;
+  bool ok = 0; 
+  x = get_frame_counter();
+  if(first_cycle)
+    {
+      first_cycle = false;
+      ok =  true;
+    }
+  else if (x == (last_frame_count + 1))
+    {
+      ok = true;
+    }
+  else if (!(last_frame_count ^ ((1 << h_frame_counter_offset)-1))) // all FFFF
+    {
+      ok = true; 
+    }
+  else 
+    {
+      ok = false; 
+      return(true);
+    }
+  last_frame_count = x;
+  if (!ok) data_ok = false; // invalidate data. 
+  return(ok); 
+}
+
+
+uint SmurfHeader::average_control() // returns num averages when avearaging is done. 
+{
+  uint x; 
+  if (average_counter ==0) average_ok = data_ok;  // reset avearge ok bit.
+  average_counter++; // increment number of frames averaged. 
+  
+  if (!(get_frame_counter() % 8)) // TEST TEST TEST - until we have averaging bits
+    {
+      x = average_counter; // number of averages
+      average_counter = 0; // reset average
+      return(x);
+    }
 }
 
 
 
+MCEHeader::MCEHeader()
+{
+  memset(mce_header, 0, MCEheaderlength * sizeof(MCE_t));
+  mce_header[mce_h_offset_header_version] = MCE_header_version;  // current version.
+  CC_frame_counter = 0; // counter for MCE frame
+}
 
 
+void MCEHeader::make_header(void)
+{
+  mce_header[MCEheader_CC_counter_offset] = CC_frame_counter++;  // increment counter, put in header
+  return;
+}
 
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
@@ -406,7 +453,7 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
     iter += size;
     tmpsize = size; // ugly, fix later
     }
-  printf("framce counter = %u\n", H->get_frame_counter()); // TESTING
+  
 			      
   
 
