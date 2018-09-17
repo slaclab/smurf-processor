@@ -3,7 +3,19 @@
 
 void error(const char *msg){ perror(msg);};  
 
-int check_data(MCE_t  *data); // for testing, checks various data validity.
+class check_data
+{
+ public:
+  uint last_CC_counter;
+
+  check_data(void);
+  bool test(MCE_t *data);
+
+};
+
+
+
+
 
 
 int main()
@@ -14,8 +26,10 @@ int main()
   int report_ratio = 100;
   bool runforever = true; 
   MCE_t data[MCE_frame_length]; // will hold received data
+  check_data *C;
+  C = new check_data();
   printf("starting SMuRF pipe test \n");
-
+  
   if(-1 == mkfifo(pipe_name, 0666)) // unlink, try agian
     {
       unlink(pipe_name);
@@ -49,8 +63,20 @@ int main()
 }
 
 
-int check_data(MCE_t *data)
+check_data::check_data(void)
 {
-  printf("count = %u \n", data[MCEheader_CC_counter_offset]);
-  return(0);
+  last_CC_counter = 0; 
+}
+
+bool check_data::test(MCE_t *data)
+{
+  uint x; 
+  x = data[MCEheader_CC_counter_offset];
+  if ((x != last_CC_counter + 1))
+    {
+      last_CC_counter = x;
+      printf("counter error %u \n", x); 
+      return(false);
+    }
+  return(true); 
 }
