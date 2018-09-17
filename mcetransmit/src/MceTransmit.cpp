@@ -9,22 +9,25 @@
  * the license terms in the LICENSE.txt file found in the top-level directory
  * of this distribution and at:
  *    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
- * No part of the rogue_example software, including this file, may be
+ * No part of the rogue_example software, inclu ding this file, may be
  * copied, modified, propagated, or distributed except according to the terms
  * contained in the LICENSE.txt  file.
  *-----------------------------------------------------------------------------
 */
 
-// Frisch, starting to modify
+
 
 #include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include <boost/python.hpp>
 #include <boost/python/module.hpp>
+#include <smurf2mce.h>
 #include <smurftcp.h>
 
 void error(const char *msg){perror(msg);};    // modify later to deal with errors
+
+uint64_t pull_bit_field(char *ptr, uint offset, uint width); 
 
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -60,7 +63,6 @@ public:
 
   //void acceptframe_test(char* data, size_t size); // test version for local use, just a wrapper
   void process_frame(void); // does average, separates header
-  uint process_header(void); // converts SMuRF header to MCE header. Return is number of averages
   void set_mask(char *new_mask, uint num); // set array mask .
   void clear_wrap(void){memset(wrap_counter, wrap_start, smurfsamples);}; // clears wrap counter
    ~Smurf2MCE(); // destructor
@@ -253,7 +255,8 @@ void Smurf2MCE::process_frame(void)
   char *tcpbuf; 
   uint32_t cnt; 
   int tmp;
-  memcpy(H->header, buffer, smurfheaderlength);
+  H->copy_header(buffer); 
+  if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
   astop = average_samples + smurfsamples;
@@ -272,9 +275,10 @@ void Smurf2MCE::process_frame(void)
               // add counter wrap to data  
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
-  if (!(cnt=process_header())) return;  // just average, otherwise send frame
+  if (!(cnt=H->average_control())) return;  // just average, otherwise send frame
+  M->make_header(); // increments counters, readies counter
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
-    average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset);
+    average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data
@@ -282,19 +286,7 @@ void Smurf2MCE::process_frame(void)
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t));
 }
 
-uint32_t Smurf2MCE::process_header(void)
-{
-  uint tot_averages;
-  return(1); /////////////////// kludge until we have a real header
-  if (H->get_average_bit(0))
-    {
-      tot_averages = average_counter;
-      average_counter = 1; 
-      return(tot_averages);  
-    }
-  average_counter++;
-    return(0);
-}
+
 
 
 
@@ -333,43 +325,90 @@ Smurf2MCE::~Smurf2MCE() // destructor
 SmurfHeader::SmurfHeader()
 {
   memset(header, 0, smurfheaderlength);  // clear initial falues
+  last_frame_count = 0; 
+  first_cycle = 1; 
+  average_counter = 0;  // number of frames avearaged so far
+  data_ok = true;  // start of assuming data is OK, invalidate later.
+  average_ok = true; 
 }
 
-void SmurfHeader::set_average_bit(int n)
-{ 
-  if( n < 8) header[h_averaging_bits_offset] |= 1 << n; 
-  else if (n < 16) header[h_averaging_bits_offset+1] |= 1 << (n-8);
-  else ; // too big  
-}
-
-void SmurfHeader::clear_average_bit(int n)
-{ 
-  if( n < 8) header[h_averaging_bits_offset] &= ~(1 << n); 
-  else if (n < 16) header[h_averaging_bits_offset+1] &= ~(1 << (n-8));
-  else ; // too big  
-}
-
-
-
-
-int SmurfHeader::get_average_bit(int n)
+void SmurfHeader::copy_header(uint8_t *buffer)
 {
-  if( n < 8) return(header[h_averaging_bits_offset] & (1 << n)); 
-  else if (n < 16) return(header[h_averaging_bits_offset+1] & 1 << (n-8));
-  else return(0); 
+  memcpy(header, buffer, smurfheaderlength);
+  data_ok = true;  // This is where we first get new data so star with header OK. 
 }
+
+
+uint SmurfHeader::get_version(void)
+{
+  return(pull_bit_field(header, h_version_offset, h_version_width));
+}
+
+
+uint SmurfHeader::get_frame_counter(void)
+{
+  return(pull_bit_field(header, h_frame_counter_offset, h_frame_counter_width));
+}
+
+
+bool SmurfHeader::check_increment()
+{
+  uint x;
+  bool ok = 0; 
+  x = get_frame_counter();
+  if(first_cycle)
+    {
+      first_cycle = false;
+      ok =  true;
+    }
+  else if (x == (last_frame_count + 1))
+    {
+      ok = true;
+    }
+  else if (!(last_frame_count ^ ((1 << h_frame_counter_offset)-1))) // all FFFF
+    {
+      ok = true; 
+    }
+  else 
+    {
+      ok = false; 
+      return(true);
+    }
+  last_frame_count = x;
+  if (!ok) data_ok = false; // invalidate data. 
+  return(ok); 
+}
+
+
+uint SmurfHeader::average_control() // returns num averages when avearaging is done. 
+{
+  uint x; 
+  if (average_counter ==0) average_ok = data_ok;  // reset avearge ok bit.
+  average_counter++; // increment number of frames averaged. 
+  
+  if (!(get_frame_counter() % 8)) // TEST TEST TEST - until we have averaging bits
+    {
+      x = average_counter; // number of averages
+      average_counter = 0; // reset average
+      return(x);
+    }
+}
+
 
 
 MCEHeader::MCEHeader()
 {
   memset(mce_header, 0, MCEheaderlength * sizeof(MCE_t));
-  mce_header[mce_h_offset_header_version] = MCE_header_version;  // current version. 
+  mce_header[mce_h_offset_header_version] = MCE_header_version;  // current version.
+  CC_frame_counter = 0; // counter for MCE frame
 }
 
 
-
-
-
+void MCEHeader::make_header(void)
+{
+  mce_header[MCEheader_CC_counter_offset] = CC_frame_counter++;  // increment counter, put in header
+  return;
+}
 
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
@@ -414,15 +453,26 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
     iter += size;
     tmpsize = size; // ugly, fix later
     }
- 
+  
+			      
+  
 
-  //buffer = b[bufn]; // buffer swap 
-  //bufn = bufn ? 0 : 1; // swap buffer reference
-  //buffer_last = b[bufn]; // now that we've swapped them
-  //memcpy(buffer, buff, tmpsize);  // just simple for now, but one more memcpy than we need. 
+ 
   process_frame();
 
 }
+
+
+uint64_t pull_bit_field(char *ptr, uint offset, uint width)
+{
+  uint64_t x;  // will hold version number
+  if(width > sizeof(uint64_t)) error("field width too big"); 
+  memcpy(&x, ptr+offset, width); // move the bytes over
+  uint64_t r = (1 << (width*8)) -1; 
+  return(r & (uint64_t)x);
+}
+
+
 
 
 BOOST_PYTHON_MODULE(MceTransmit) {
