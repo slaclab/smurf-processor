@@ -3,19 +3,33 @@
 
 void error(const char *msg){ perror(msg);};  
 
-int check_data(MCE_t  *data); // for testing, checks various data validity.
+class check_data
+{
+ public:
+  uint last_CC_counter;
+
+  check_data(void);
+  bool test(MCE_t *data);
+
+};
+
+
+
+
 
 
 int main()
 {
-  int fifo_fd; // fifo descritor
+  int fifo_fd; // fifo  descritor
   int j, num; 
   int num_frames = 100;
   int report_ratio = 100;
   bool runforever = true; 
   MCE_t data[MCE_frame_length]; // will hold received data
+  check_data *C;
+  C = new check_data();
   printf("starting SMuRF pipe test \n");
-
+  
   if(-1 == mkfifo(pipe_name, 0666)) // unlink, try agian
     {
       unlink(pipe_name);
@@ -35,12 +49,13 @@ int main()
   printf("fifo_fd = %d\n", fifo_fd); 
   for(j = 0; (j < num_frames) || runforever; j++)
     {
-      if(-1 == (num = read(fifo_fd, &data, sizeof(MCE_t) * MCE_frame_length)))
+      if(-1 == (num = read(fifo_fd, data, sizeof(MCE_t) * MCE_frame_length)))
 	{ 
 	  error("read error"); 
 	  break;
 	}
       if(!num) {j--; continue; };
+      C->test(data); // check that daata is OK
       if(!(j % report_ratio)) printf("frame = %d \n", j); 
     }
   close(fifo_fd);
@@ -48,7 +63,22 @@ int main()
 }
 
 
-int check_data(MCE_t *data)
+check_data::check_data(void)
 {
-  return(0);
+  last_CC_counter = 0; 
+}
+
+bool check_data::test(MCE_t *data)
+{
+  uint x; 
+  x = data[MCEheader_CC_counter_offset];
+  printf("x = %u \n", x); 
+  if ((x != last_CC_counter + 1))
+    {
+      last_CC_counter = x;
+      printf("counter error %u \n", x); 
+      return(false);
+    }
+  last_CC_counter = x;
+  return(true); 
 }
