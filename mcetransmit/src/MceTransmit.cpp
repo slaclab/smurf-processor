@@ -83,11 +83,6 @@ public:
 
 
 
-
-
-
-
-
 Smurftcp::Smurftcp( const char* port_number,  const char* ip_string)
 {
   printf("tcp connect %s    %s  \n",  port_number, ip_string);
@@ -249,13 +244,26 @@ void Smurf2MCE::process_frame(void)
   smurf_t *d, *p;  // d is this buffer, p is last buffer; 
   char *pm; 
   avgdata_t *a,  *astop; // used for averaging loop
-  uint j; 
+  uint j, k; 
   uint actr; // counter for average array;
   uint dctr; // counter for input data array
   char *tcpbuf; 
   uint32_t cnt; 
   int tmp;
   H->copy_header(buffer); 
+#if 0
+  for (k = 0; k < 13; k++)
+    {
+      for(j = 0; j < 8; j++)
+	{
+	  tmp = k * 8 + j; 
+	  printf(" %2x",(0xFF & H->header[tmp]));
+	}
+      printf("|"); 
+    }
+  printf("\n"); 
+  printf("frame counter = %x \n", H->get_frame_counter()); 
+#endif
   if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
@@ -275,7 +283,7 @@ void Smurf2MCE::process_frame(void)
               // add counter wrap to data  
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
-  if (!(cnt=H->average_control())) return;  // just average, otherwise send frame
+  if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
   M->make_header(); // increments counters, readies counter
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
@@ -355,24 +363,22 @@ bool SmurfHeader::check_increment()
 {
   uint x;
   bool ok = 0; 
-  x = get_frame_counter();
-  if(first_cycle)
+  x = get_frame_counter();  if(first_cycle)
     {
       first_cycle = false;
       ok =  true;
     }
   else if (x == (last_frame_count + 1))
     {
-      ok = true;
+      ok = true;;
     }
-  else if (!(last_frame_count ^ ((1 << h_frame_counter_offset)-1))) // all FFFF
+  else if (!(last_frame_count ^ ((1 << h_frame_counter_width)-1))) // all FFFF
     {
       ok = true; 
     }
   else 
     {
       ok = false; 
-      return(true);
     }
   last_frame_count = x;
   if (!ok) data_ok = false; // invalidate data. 
@@ -452,12 +458,7 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
     dst  += size;
     iter += size;
     tmpsize = size; // ugly, fix later
-    }
-  
-			      
-  
-
- 
+    } 
   process_frame();
 
 }
@@ -466,10 +467,13 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
 uint64_t pull_bit_field(char *ptr, uint offset, uint width)
 {
   uint64_t x;  // will hold version number
+  uint64_t r;
+  uint64_t tmp;
   if(width > sizeof(uint64_t)) error("field width too big"); 
+  r = (1UL << (width*8)) -1; 
   memcpy(&x, ptr+offset, width); // move the bytes over
-  uint64_t r = (1 << (width*8)) -1; 
-  return(r & (uint64_t)x);
+  tmp = r & (uint64_t)x; 
+  return(r & tmp);
 }
 
 
