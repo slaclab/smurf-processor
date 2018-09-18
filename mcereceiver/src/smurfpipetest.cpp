@@ -20,7 +20,7 @@ class check_data
 
 int main()
 {
-  int fifo_fd; // fifo descritor
+  int fifo_fd; // fifo  descritor
   int j, num; 
   int num_frames = 100;
   int report_ratio = 100;
@@ -55,7 +55,7 @@ int main()
 	  break;
 	}
       if(!num) {j--; continue; };
-      check_data(data); // check taht daata is OK
+      C->test(data); // check that daata is OK
       if(!(j % report_ratio)) printf("frame = %d \n", j); 
     }
   close(fifo_fd);
@@ -72,11 +72,13 @@ bool check_data::test(MCE_t *data)
 {
   uint x; 
   x = data[MCEheader_CC_counter_offset];
+  printf("x = %u \n", x); 
   if ((x != last_CC_counter + 1))
     {
       last_CC_counter = x;
       printf("counter error %u \n", x); 
       return(false);
     }
+  last_CC_counter = x;
   return(true); 
 }
