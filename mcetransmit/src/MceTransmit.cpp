@@ -254,7 +254,7 @@ void Smurf2MCE::process_frame(void)
 #if 1
   for (k = 0; k < 16; k++)
     {
-      printf("|%1x|", k); 
+      printf("|%1x", k); 
       for(j = 0; j < 8; j++)
 	{
 	  tmp = k * 8 + j; 
