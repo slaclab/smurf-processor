@@ -27,7 +27,7 @@
 
 void error(const char *msg){perror(msg);};    // modify later to deal with errors
 
-uint64_t pull_bit_field(char *ptr, uint offset, uint width); 
+uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width); 
 
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -251,18 +251,18 @@ void Smurf2MCE::process_frame(void)
   uint32_t cnt; 
   int tmp;
   H->copy_header(buffer); 
-#if 0
-  for (k = 0; k < 13; k++)
+#if 1
+  for (k = 0; k < 16; k++)
     {
+      printf("|%1x|", k); 
       for(j = 0; j < 8; j++)
 	{
 	  tmp = k * 8 + j; 
 	  printf(" %2x",(0xFF & H->header[tmp]));
 	}
-      printf("|"); 
     }
   printf("\n"); 
-  printf("frame counter = %x \n", H->get_frame_counter()); 
+  // printf("frame counter = %x \n", H->get_frame_counter()); 
 #endif
   if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
@@ -332,7 +332,7 @@ Smurf2MCE::~Smurf2MCE() // destructor
 
 SmurfHeader::SmurfHeader()
 {
-  memset(header, 0, smurfheaderlength);  // clear initial falues
+  //memset(header, 0, smurfheaderlength);  // clear initial falues
   last_frame_count = 0; 
   first_cycle = 1; 
   average_counter = 0;  // number of frames avearaged so far
@@ -342,7 +342,8 @@ SmurfHeader::SmurfHeader()
 
 void SmurfHeader::copy_header(uint8_t *buffer)
 {
-  memcpy(header, buffer, smurfheaderlength);
+  //memcpy(header, buffer, smurfheaderlength);
+  header = buffer;  // just move the pointer 
   data_ok = true;  // This is where we first get new data so star with header OK. 
 }
 
@@ -464,7 +465,7 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
 }
 
 
-uint64_t pull_bit_field(char *ptr, uint offset, uint width)
+uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
 {
   uint64_t x;  // will hold version number
   uint64_t r;

@@ -44,7 +44,7 @@ public:
 class SmurfHeader //generates and decodes SMURF data header
 {
 public:
-  char header[smurfheaderlength]; // full header bytes
+  uint8_t *header; // full header bytes
   uint last_frame_count; 
   bool first_cycle; 
   bool data_ok; // set to indicate taht data has passed internal checks.
