@@ -50,10 +50,12 @@ public:
   bool data_ok; // set to indicate taht data has passed internal checks.
   bool average_ok;  // set for a bad header somewhere in average
   uint average_counter; 
+  uint last_ext_counter; 
 
   SmurfHeader(void); // creates header with num samples
   void copy_header(uint8_t *buffer); 
   uint get_version(void); 
+  uint get_ext_counter(void);
   uint get_frame_counter(void);
   bool check_increment(); // checks that the frame counter incremented by 1;
   uint get_average_bit() { return(0);}; // place holder 

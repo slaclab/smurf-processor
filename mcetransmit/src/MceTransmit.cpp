@@ -251,7 +251,7 @@ void Smurf2MCE::process_frame(void)
   uint32_t cnt; 
   int tmp;
   H->copy_header(buffer); 
-#if 1
+#if 0
   for (k = 0; k < 16; k++)
     {
       printf("|%1x", k); 
@@ -262,8 +262,8 @@ void Smurf2MCE::process_frame(void)
 	}
     }
   printf("\n"); 
-  // printf("frame counter = %x \n", H->get_frame_counter()); 
 #endif
+  //printf("ext counter = %x \n", H->get_ext_counter()); 
   if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
@@ -284,6 +284,7 @@ void Smurf2MCE::process_frame(void)
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
   if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
+  printf("average = %u \n", cnt);
   M->make_header(); // increments counters, readies counter
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
@@ -338,6 +339,7 @@ SmurfHeader::SmurfHeader()
   average_counter = 0;  // number of frames avearaged so far
   data_ok = true;  // start of assuming data is OK, invalidate later.
   average_ok = true; 
+  last_ext_counter = 0;  // this tracks the counter rolling over
 }
 
 void SmurfHeader::copy_header(uint8_t *buffer)
@@ -357,6 +359,11 @@ uint SmurfHeader::get_version(void)
 uint SmurfHeader::get_frame_counter(void)
 {
   return(pull_bit_field(header, h_frame_counter_offset, h_frame_counter_width));
+}
+
+uint SmurfHeader::get_ext_counter(void)
+{
+  return(pull_bit_field(header, h_ext_counter_offset, h_ext_counter_width));
 }
 
 
@@ -389,16 +396,17 @@ bool SmurfHeader::check_increment()
 
 uint SmurfHeader::average_control() // returns num averages when avearaging is done. 
 {
-  uint x; 
+  uint x=0, y; 
   if (average_counter ==0) average_ok = data_ok;  // reset avearge ok bit.
   average_counter++; // increment number of frames averaged. 
-  
-  if (!(get_frame_counter() % 8)) // TEST TEST TEST - until we have averaging bits
+  y = get_ext_counter();
+  if (last_ext_counter > y)  // TEST TEST TEST - until we have averaging bits
     {
       x = average_counter; // number of averages
       average_counter = 0; // reset average
-      return(x);
     }
+  last_ext_counter = y; // copy over counter
+  return(x);  // return, 0 to kep averaging, otehr to zero average. 
 }
 
 

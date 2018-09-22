@@ -58,6 +58,9 @@ const size_t pyrogue_buffer_length = 0x8000; // not sure what the maximum size c
 // smurf header byte offsets
 const int h_version_offset = 0; // offset of version word
 const int h_version_width = 1; // bytes of version word
+const int h_ext_counter_offset = 68;  // resets with next MCE word
+const int h_ext_counter_width = 4; // width
+
 const int h_frame_counter_offset = 84;  // raw frame counter. 
 const int h_frame_counter_width = 4; 
 
