@@ -1,3 +1,4 @@
+bg
 /*
  *-----------------------------------------------------------------------------
  * Title      : Source code for MceTransmit
@@ -269,6 +270,7 @@ void Smurf2MCE::process_frame(void)
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
   astop = average_samples + smurfsamples;
   a = average_samples;
+  //printf("mce syncword %s \n", H->get_syncword());
   for (actr = 0, dctr = 0; (dctr < pyrogue_buffer_length) && (actr < smurfsamples); dctr++) 
     {
       if (!mask[dctr]) continue;   // mask is zero, just continue loop counters. 
@@ -364,6 +366,11 @@ uint SmurfHeader::get_frame_counter(void)
 uint SmurfHeader::get_ext_counter(void)
 {
   return(pull_bit_field(header, h_ext_counter_offset, h_ext_counter_width));
+}
+
+uint SmurfHeader::get_syncword(void)
+{
+  return(pull_bit_field(header, h_mce_syncword_offset, h_mce_syncword_width));
 }
 
 

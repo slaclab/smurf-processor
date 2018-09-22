@@ -60,9 +60,10 @@ const int h_version_offset = 0; // offset of version word
 const int h_version_width = 1; // bytes of version word
 const int h_ext_counter_offset = 68;  // resets with next MCE word
 const int h_ext_counter_width = 4; // width
-
 const int h_frame_counter_offset = 84;  // raw frame counter. 
 const int h_frame_counter_width = 4; 
+const int h_mce_syncword_offset = 96;  // 20 bit MCE sync workd
+const int h_mce_syncword_width = 5;  // yes 40 bits, bletch. 
 
 
 

@@ -57,9 +57,10 @@ public:
   uint get_version(void); 
   uint get_ext_counter(void);
   uint get_frame_counter(void);
-  bool check_increment(); // checks that the frame counter incremented by 1;
-  uint get_average_bit() { return(0);}; // place holder 
-  uint average_control(); 
+  bool check_increment(void); // checks that the frame counter incremented by 1;
+  uint get_average_bit(void) { return(0);}; // place holder 
+  uint get_syncword(void); // returns 20 bit MCE sync word 
+  uint average_control(void); 
 
 };
 
