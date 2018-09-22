@@ -56,7 +56,7 @@ int main()
 	}
       if(!num) {j--; continue; };
       C->test(data); // check that daata is OK
-      if(!(j % report_ratio)) printf("frame = %d \n", j); 
+      if(!(j % report_ratio)) printf("frame = %d, header = %x \n", j, data[mce_h_syncbox_offset] & 0xFFFFFFFF); 
     }
   close(fifo_fd);
   unlink(pipe_name);  // delete the fif o
@@ -72,7 +72,6 @@ bool check_data::test(MCE_t *data)
 {
   uint x; 
   x = data[MCEheader_CC_counter_offset];
-  printf("x = %u \n", x); 
   if ((x != last_CC_counter + 1))
     {
       last_CC_counter = x;
