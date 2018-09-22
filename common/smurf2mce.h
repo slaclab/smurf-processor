@@ -52,6 +52,10 @@ const uint MCE_frame_length = MCEheaderlength + smurfsamples; // number of words
 const uint MCE_header_version = 7;  // current header version
 // mce header word offsets
 const int mce_h_offset_header_version = 6;  // offset to header version. 
+const int mce_h_syncbox_offset = 10;  // words offset to syncbox output
+
+
+
 const size_t pyrogue_buffer_length = 0x8000; // not sure what the maximum size could be 
 
 

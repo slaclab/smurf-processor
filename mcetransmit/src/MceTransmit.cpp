@@ -129,7 +129,7 @@ bool Smurftcp::connect_link(void)
 
 bool Smurftcp::disconnect_link(void) // clean up link
 {
-  if(!connected) return(false);  // already connected
+  if(!connected) return(false);  // already disconnected
   if (sockfd!= -1  ) close(sockfd);
   printf("disconnecting \n");
   return(connected = false);
@@ -270,7 +270,6 @@ void Smurf2MCE::process_frame(void)
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
   astop = average_samples + smurfsamples;
   a = average_samples;
-  //printf("mce syncword %s \n", H->get_syncword());
   for (actr = 0, dctr = 0; (dctr < pyrogue_buffer_length) && (actr < smurfsamples); dctr++) 
     {
       if (!mask[dctr]) continue;   // mask is zero, just continue loop counters. 
@@ -286,8 +285,9 @@ void Smurf2MCE::process_frame(void)
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
   if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
-  printf("average = %u \n", cnt);
+  //printf("avg = %u , sync = %x \n", cnt, H->get_syncword());
   M->make_header(); // increments counters, readies counter
+  M->set_syncword(H->get_syncword()); 
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
@@ -370,7 +370,9 @@ uint SmurfHeader::get_ext_counter(void)
 
 uint SmurfHeader::get_syncword(void)
 {
-  return(pull_bit_field(header, h_mce_syncword_offset, h_mce_syncword_width));
+  uint64_t x;
+  x = pull_bit_field(header, h_mce_syncword_offset, h_mce_syncword_width); 
+  return(x & 0xFFFFFFFF);  // pull out the counter. 
 }
 
 
@@ -430,6 +432,11 @@ void MCEHeader::make_header(void)
 {
   mce_header[MCEheader_CC_counter_offset] = CC_frame_counter++;  // increment counter, put in header
   return;
+}
+
+void MCEHeader::set_syncword(uint val)
+{
+  mce_header[mce_h_syncbox_offset] = val & 0xffffffff; // just write header
 }
 
 

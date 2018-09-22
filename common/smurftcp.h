@@ -33,10 +33,11 @@ class MCEHeader // generates the MCE header data
 {
 public:
   MCE_t CC_frame_counter; // counts for each MCE frame
-  MCE_t mce_header[MCEheaderlength]; // header.
+  MCE_t mce_header[MCEheaderlength]; // creates header with counter
 
   MCEHeader(void);  // creates header
   void make_header(void); // creates new header, icrements counters etc.
+  void set_syncword(uint value); // puts syncword in header
  
 };
 
