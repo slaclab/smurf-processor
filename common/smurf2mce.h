@@ -51,6 +51,8 @@ const uint MCE_frame_length = MCEheaderlength + smurfsamples; // number of words
 
 const uint MCE_header_version = 7;  // current header version
 // mce header word offsets
+const int mce_h__offset_ccframecounter = 1;
+
 const int mce_h_offset_header_version = 6;  // offset to header version. 
 const int mce_h_syncbox_offset = 10;  // words offset to syncbox output
 
@@ -76,11 +78,12 @@ const uint datalen = tcp_header_size + MCEheaderlength*sizeof(MCE_t) + smurfsamp
 const uint tcplen = datalen * 2; // after byte split
 const uint tcpreclen = tcplen * 0x10000;  // allow for multiple  reads in one frame proably big enough
 
-const char server_port_number[] = "5433";  // default unless overridden
+const char server_port_number[] = "3333";  // default unless overriddenw was 5433
 
-const char server_ip_addr[] = "127.0.0.1"; //default
+//const char server_ip_addr[] = "127.0.0.1"; //default
 //const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
 //const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
+const char server_ip_addr[] = "192.168.3.1"; // harvard bicep53
 const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
 
 

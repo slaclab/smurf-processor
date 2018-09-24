@@ -43,6 +43,7 @@ public:
 
 
   bool initialized;
+  uint internal_counter;
   uint8_t *buffer; // holds raw input from PyRogute
   uint8_t *buffer_last; // holds last data
   uint8_t *b[2]; // dual buffers to allow last pulse subtraction
@@ -198,6 +199,7 @@ Smurf2MCE::Smurf2MCE()
   ip = server_ip_addr; 
   average_counter= 1; 
   bufn = 0; // current buffer 
+  internal_counter = 0;
   int j; 
 
 
@@ -264,7 +266,6 @@ void Smurf2MCE::process_frame(void)
     }
   printf("\n"); 
 #endif
-  //printf("ext counter = %x \n", H->get_ext_counter()); 
   if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
@@ -284,8 +285,13 @@ void Smurf2MCE::process_frame(void)
               // add counter wrap to data  
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
+ 
   if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
-  //printf("avg = %u , sync = %x \n", cnt, H->get_syncword());
+  if (!(internal_counter++ % 100))
+    {
+      printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u\n", cnt, H->get_syncword(),internal_counter,
+	     H->get_frame_counter());
+    }
   M->make_header(); // increments counters, readies counter
   M->set_syncword(H->get_syncword()); 
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
@@ -415,6 +421,14 @@ uint SmurfHeader::average_control() // returns num averages when avearaging is d
       average_counter = 0; // reset average
     }
   last_ext_counter = y; // copy over counter
+
+#if 0  
+  if (!(average_counter % 20))
+    {
+      average_counter = 0;
+      return(20);
+    }
+#endif
   return(x);  // return, 0 to kep averaging, otehr to zero average. 
 }
 
@@ -440,9 +454,13 @@ void MCEHeader::set_syncword(uint val)
 }
 
 
+
+
+
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
 {
   uint32_t nbytes = frame->getPayload();
+  //printf("accept frame called \n");
   if (frame->getError() || (frame->getFlags() & 0x100))  // drop frame  (do we need to read out buffer?)
     {
       printf("frame error \n");
