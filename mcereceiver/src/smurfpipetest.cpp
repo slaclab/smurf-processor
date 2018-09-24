@@ -30,15 +30,17 @@ int main()
   C = new check_data();
   printf("starting SMuRF pipe test \n");
   
+
+#if 0
   if(-1 == mkfifo(pipe_name, 0666)) // unlink, try agian
     {
       unlink(pipe_name);
     } 
-
+#endif
   if(-1 == mkfifo(pipe_name, 0666)) 
     {
       error("error creating fifo\n");
-      exit(0);
+      //exit(0);
     }
   if( -1 == (fifo_fd = open(pipe_name, O_RDONLY)))
     {
