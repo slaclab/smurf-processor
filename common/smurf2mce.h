@@ -78,9 +78,9 @@ const uint tcpreclen = tcplen * 0x10000;  // allow for multiple  reads in one fr
 
 const char server_port_number[] = "5433";  // default unless overridden
 
-//const char server_ip_addr[] = "127.0.0.1"; //default
+const char server_ip_addr[] = "127.0.0.1"; //default
 //const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
-const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
+//const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
 const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
 
 
