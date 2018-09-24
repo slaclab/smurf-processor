@@ -253,6 +253,7 @@ void Smurf2MCE::process_frame(void)
   char *tcpbuf; 
   uint32_t cnt; 
   int tmp;
+  MCE_t checksum = 0x89ABCDEF;  // fixed for now
   H->copy_header(buffer); 
 #if 0
   for (k = 0; k < 16; k++)
@@ -298,8 +299,10 @@ void Smurf2MCE::process_frame(void)
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
-  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data
-  S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t));
+  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
+  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
+ 
+  S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t));
 }
 
