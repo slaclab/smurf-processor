@@ -85,7 +85,7 @@ const char server_port_number[] = "3333";  // default unless overriddenw was 543
 //const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
 //const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
 const char server_ip_addr[] = "192.168.3.1"; // harvard bicep53
-const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
-
+//const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
+const char pipe_name[] = "/data/cryo/mas_data_pipe";
 
 #endif
