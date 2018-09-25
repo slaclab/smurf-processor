@@ -110,6 +110,7 @@ Smurftcp::Smurftcp( const char* port_number,  const char* ip_string)
 bool Smurftcp::connect_link(void)
 {
   if(connected) return(1);  // already connected
+  disconnect_link(); // clean up previous link
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM,0)))   // creates a socket   stream
     {
       error("can't open socket");
@@ -147,7 +148,7 @@ void Smurftcp::write_data(size_t bytes) // bytes is the input size, need to add 
   if (!connected)
     {
       printf("trying to re-connect");
-      disconnect_link();
+     
       connect_link();
     } 
   t = (uint32_t*) databuffer; 
@@ -253,7 +254,9 @@ void Smurf2MCE::process_frame(void)
   char *tcpbuf; 
   uint32_t cnt; 
   int tmp;
-  MCE_t checksum = 0x89ABCDEF;  // fixed for now
+  MCE_t checksum;  // fixed for now, #2 for testing
+  uint tcp_buflen; // holds filled lengthof tcp buffer
+  uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
   H->copy_header(buffer); 
 #if 0
   for (k = 0; k < 16; k++)
@@ -288,11 +291,7 @@ void Smurf2MCE::process_frame(void)
     }
  
   if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
-  if (!(internal_counter++ % 100))
-    {
-      printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u\n", cnt, H->get_syncword(),internal_counter,
-	     H->get_frame_counter());
-    }
+  
   M->make_header(); // increments counters, readies counter
   M->set_syncword(H->get_syncword()); 
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
@@ -300,8 +299,24 @@ void Smurf2MCE::process_frame(void)
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
-  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
+  tcp_buflen =  MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t);
+  bufx = (uint32_t*) tcpbuf;  // map buffer to 32 bit
+  checksum  = bufx[0];
+
+  for (j = 1; j < MCE_frame_length-1; j++) checksum =checksum ^ bufx[j]; // calculate checksum
  
+  
+
+  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
+   if (!(internal_counter++ % 100))
+     {
+       printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u\n", cnt, H->get_syncword(),internal_counter,
+	     H->get_frame_counter());
+       //printf("d = %x %x %x\n", bufx[6], bufx[MCE_frame_length-2], bufx[MCE_frame_length-1]);
+
+     }
+
+
   S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t));
 }
