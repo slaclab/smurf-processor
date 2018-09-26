@@ -8,13 +8,13 @@ void error(const char *msg){ perror(msg);};          // modify later to deal wit
 class Smurftestserver
 {
 public:
-  char *tcpbuffer; // raw buffer of tcp data 
+  uint8_t *tcpbuffer; // raw buffer of tcp data, size tcpreclen (big)
   bool inframe; // are we currently in the middle of a frame?
 
-  char *data_frames[numframes]; //  holds set of reorded MCE data frames
-  uint data_frame_n; // which frame we are on now
+  uint8_t *data_frames[numframes]; //  circular buffer holds set of reorded MCE data frames, each datalen.
+  uint data_frame_n; // which frame we are on now (avoids lots of memory copies)
   uint frame_n;  // location in current frame
-  char *output_ptr[numframes]; // pointers to output frames (returned to main program)
+  uint8_t *output_ptr[numframes]; // pointers to output frames (returned to main program)
   uint start_frame;  // after read, which frame do we start with as we cycle through frames
   uint num_finished_frames; // number of completed frames
 
@@ -22,7 +22,6 @@ public:
   bool connected;  // client connected
   int sockfd, fd;  // socket file descriptors. Need 2nd socket after connection to client 
   const char *portnum;   // which port to use - string (due to goofy linux function)
- 
   struct addrinfo *server;  // will hold server address structure
 
   Smurftestserver(const char *port_number, const char *ip_string);  // constructor
@@ -49,14 +48,14 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   connected = false; 
   inframe = false; // are we in the middle of a data frame. 
   uint j;
-  if (!(tcpbuffer = (char*)malloc(tcpreclen))) // tcp receive buffer longer to allow multiple frames if we get behind
+  if (!(tcpbuffer = (uint8_t*)malloc(tcpreclen))) // tcp receive buffer longer to allow multiple frames if we get behind
     {
       error("cant allocate memory");
       return;
     }
   for(j = 0; j <  numframes; j++)
     {
-      if(!(data_frames[j] = (char*)malloc(tcplen)))
+      if(!(data_frames[j] = (uint8_t*)malloc(datalen))) // changed
 	{
 	  error("could not allocate data frame\n");
           return; 
@@ -65,11 +64,12 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   data_frame_n = 0; // first frame
   frame_n = 0;  // pointer at start of first frame
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM, 0)))  { error("can't open socket"); return;}  // opens socket
-  if (getaddrinfo(NULL, portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
+  if (getaddrinfo("192.168.3.1", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
   // was NULL rather than 127.0.0.1 , need to understand this
 
-  printf("sockfd %d , ai_addr %x, ai_addrlen %x\n", sockfd, server->ai_addr, server->ai_addrlen);
-  if (bind(sockfd, server->ai_addr, server->ai_addrlen)){ error(" error binding socket"); return; }
+ 
+  printf("sockfd= %u \n", sockfd);
+  if (bind(sockfd, server->ai_addr, server->ai_addrlen)){ error(" error binding socket"); exit(0); }
   initialized = true; 
   connected = connect_tcp(); // calls connection. 
 }
@@ -77,10 +77,10 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
 bool Smurftestserver::connect_tcp()
 {
   if(!initialized){ printf("not initialized");  return(false);}; // not initialized
-  printf("connect tcp \n");
+  printf("waiting to connect tcp \n");
   listen(sockfd, 5); // listen for connections
   fd = accept(sockfd, NULL, NULL); // not recording client info
-  printf("sockets sockfd = %d ,  fd = %d \n", sockfd, fd);
+  printf("connected sockets sockfd = %d ,  fd = %d \n", sockfd, fd);
   connected = true; 
   return(true); // connected 
 }
@@ -102,8 +102,19 @@ Smurftestserver::~Smurftestserver()
   {
     close(fd);
     close(sockfd);
-    if (tcpbuffer) free(tcpbuffer);
-    for( j = 0; j < numframes; j++) {if(data_frames[j]) free(data_frames[j]);}
+    if (tcpbuffer)
+      {
+	free(tcpbuffer);
+	tcpbuffer = 0; 
+      }
+    for( j = 0; j < numframes; j++)
+      {
+	if(data_frames[j])
+	  {
+	    free(data_frames[j]);
+	    data_frames[j] = 0;
+	  }
+      }
   }
 }
 
@@ -111,11 +122,11 @@ uint Smurftestserver::read_data(void)
 {
   uint num_finished_frames; 
   uint last_read; 
-  int j=0, k=0, tst;;
-  uint32_t *test, *test2; 
+  int j=0, k=0;
+  uint32_t *test, *test2; // used to check header from TCP
   int framex = 0; 
 
-  fd_set rfds;    // for select() command 
+  fd_set rfds;    // for select() command (voodo)
   struct timeval tv;
   int isst=0;  // used by select()
   
@@ -127,7 +138,11 @@ uint Smurftestserver::read_data(void)
   do{
     FD_ZERO(&rfds); // clear registers used for select. 
     FD_SET(fd, &rfds); 
-    if (-1 == select(fd+1, &rfds, NULL, NULL, &tv)) {error("select error" ); return(0);} // can we read ?
+    if (-1 == select(fd+1, &rfds, NULL, NULL, &tv))
+      {
+	printf("file descriptor in select error = %u\n", fd);
+	error("select error"); return(0);
+      } // can we read ?
     isst= FD_ISSET(fd,&rfds);
     if (!isst) return(0);                // can we read from this file descriptor
     last_read = read(fd, tcpbuffer, tcplen); // READ DATA
@@ -163,7 +178,7 @@ uint Smurftestserver::read_data(void)
 	  }
 
 	*(data_frames[data_frame_n]+frame_n++) = tcpbuffer[k] & 0x0F | ((tcpbuffer[k+1] & 0x0F)<<4);  // combine bytes
-	if(frame_n == tcplen) // new frame
+	if(frame_n == datalen) // new frame, WAS tcplen, but needs to be dat alen
 	  {
 	    num_finished_frames++; 
 	    frame_n = 0;  // reset data pointer in frame
@@ -182,7 +197,7 @@ uint Smurftestserver::read_data(void)
       output_ptr[j] = (data_frames[framex ] + tcp_header_size);  // genreate pointers.
       if( MCE_header_version != ((MCE_t) *(output_ptr[j] + mce_h_offset_header_version * sizeof(MCE_t))))
 	{
-	  error("wrong header detected");
+	  error("wrong MCE header detected");
 	}
     }
   return(num_finished_frames); 
@@ -191,7 +206,8 @@ uint Smurftestserver::read_data(void)
 
 Smurfpipe::Smurfpipe()
 {
-  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY)))
+  //  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY))) // OLD VERSION
+  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY, O_NONBLOCK))) // testing out non-blocking version
     {
       error("unable to open pipe \n");
     }
@@ -207,43 +223,36 @@ Smurfpipe::~Smurfpipe()
 
 int Smurfpipe:: write_pipe(MCE_t* data, int points)
 {
-  int n; 
+  int n;
+  //printf("start -");
   n =  write(fifo_fd, data, points * sizeof(MCE_t));
+  //printf("done %u\n", n);
 }
 
 int main()
 {
   int j, k, m, r, x; 
   uint recframes = 0;
-  MCE_t header[numframes][MCEheaderlength];
-  MCE_t data[numframes][smurfsamples]; 
-  MCE_t *tmp;
-  uint number_to_record = 50; // number output frames to record. 
+ 
+ 
+  //uint number_to_record = 50; // number output frames to record. 
   int report_ratio = 100;
   bool runforever = true;  // keep running
   uint channel_to_record = 1; // which channel to record
-  MCE_t record_data[number_to_record];  // holds data for single channel
-  uint num_received[number_to_record];  
   uint max_rec_frames = 0;
   Smurftestserver *S; // create S.
   Smurfpipe *P; // create pipe
   S = new Smurftestserver(server_port_number, server_ip_addr);
   P = new Smurfpipe();
-  for (j = 0; (j< number_to_record) || runforever; )
+  j = 0; 
+  while(1)
   { 
     recframes = S->read_data();
-    for(k = 0; k < recframes; k++)
-      {
-	tmp = (uint32_t*)(S->output_ptr[k]+sizeof(MCE_t)*(k+MCEheaderlength));
-	for(m = 0; m < smurfsamples; m++)
-	{
-	  data[k][m] = *(tmp+m) -average_sample_offset;
-	}
-        tmp = (MCE_t*) S->output_ptr[0] +  mce_h_offset_header_version;
-      } 
+    
     if (recframes == 0) continue; // no frames receive this time
     if(!(j%report_ratio)) printf("frame = %d \n", j);
-    P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write latest frame
+    printf("TEST \n");
+    P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write latbest frame
     j++;
   }    
   printf("done receiving \n");

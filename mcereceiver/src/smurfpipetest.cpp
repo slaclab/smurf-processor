@@ -13,16 +13,10 @@ class check_data
 
 };
 
-
-
-
-
-
 int main()
 {
   int fifo_fd; // fifo  descritor
   int j, num; 
-  int num_frames = 100;
   int report_ratio = 100;
   bool runforever = true; 
   MCE_t data[MCE_frame_length]; // will hold received data
@@ -48,17 +42,24 @@ int main()
       unlink(pipe_name);  // delete the fifo
       exit(0);
     }
-  printf("fifo_fd = %d\n", fifo_fd); 
-  for(j = 0; (j < num_frames) || runforever; j++)
+  printf("fifo_fd = %d\n", fifo_fd);
+  for(j = 0; 1; j++)// loop forever
     {
       if(-1 == (num = read(fifo_fd, data, sizeof(MCE_t) * MCE_frame_length)))
 	{ 
 	  error("read error"); 
 	  break;
 	}
-      if(!num) {j--; continue; };
+      if(!num) {j--; continue; }; // read 0 bytes, try again (inefficient)
+      if(num != (MCE_frame_length * sizeof(MCE_t))
+	{
+	  printf("frame len = %u, wanted %u\n", num, MCE_frame_length);
+	}
       C->test(data); // check that daata is OK
-      if(!(j % report_ratio)) printf("frame = %d, header = %x \n", j, data[mce_h_syncbox_offset] & 0xFFFFFFFF); 
+      if(!(j % report_ratio))
+	{
+	  printf("int frame = %u, syncbox = %u , check = %x\n", j, data[mce_h_syncbox_offset] & 0xFFFFFFFF, data[MCE_frame_length-1]);
+	}
     }
   close(fifo_fd);
   unlink(pipe_name);  // delete the fif o
@@ -72,7 +73,9 @@ check_data::check_data(void)
 
 bool check_data::test(MCE_t *data)
 {
-  uint x; 
+  uint x;
+  uint j;
+  MCE_t checksum;
   x = data[MCEheader_CC_counter_offset];
   if ((x != last_CC_counter + 1))
     {
@@ -81,5 +84,13 @@ bool check_data::test(MCE_t *data)
       return(false);
     }
   last_CC_counter = x;
+  checksum = data[0];
+  for(j = 1; j < MCE_frame_length; j++) checksum = checksum ^ data[j];
+  if(checksum)
+    {
+      printf(" cerror %x dl = %x, %x,  %x\n", checksum,  data[6], data[MCE_frame_length-2], data[MCE_frame_length-1]);
+      return(false);
+    }
+  
   return(true); 
 }
