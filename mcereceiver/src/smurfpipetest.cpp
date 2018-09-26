@@ -51,7 +51,7 @@ int main()
 	  break;
 	}
       if(!num) {j--; continue; }; // read 0 bytes, try again (inefficient)
-      if(num != (MCE_frame_length * sizeof(MCE_t))
+      if(num != (MCE_frame_length * sizeof(MCE_t)))
 	{
 	  printf("frame len = %u, wanted %u\n", num, MCE_frame_length);
 	}
