@@ -248,11 +248,9 @@ int main()
   while(1)
   { 
     recframes = S->read_data();
-    
     if (recframes == 0) continue; // no frames receive this time
     if(!(j%report_ratio)) printf("frame = %d \n", j);
-    printf("TEST \n");
-    P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write latbest frame
+    P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write  latbest frame
     j++;
   }    
   printf("done receiving \n");
