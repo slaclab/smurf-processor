@@ -37,8 +37,9 @@ public:
 
   MCEHeader(void);  // creates header
   void make_header(void); // creates new header, icrements counters etc.
-  void set_syncword(uint value); // puts syncword in header
- 
+  void set_status_word(uint32_t value); 
+  void set_syncword(uint32_t value); // puts syncword in header
+  
 };
 
 

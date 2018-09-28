@@ -293,6 +293,7 @@ void Smurf2MCE::process_frame(void)
   if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
   
   M->make_header(); // increments counters, readies counter
+  M->set_status_word(mce_h_status_value); // sets satic status word (may put in constructor in future)
   M->set_syncword(H->get_syncword()); 
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
@@ -466,7 +467,12 @@ void MCEHeader::make_header(void)
   return;
 }
 
-void MCEHeader::set_syncword(uint val)
+void MCEHeader::set_status_word(uint32_t val)
+{
+   mce_header[ mce_h_offset_status] = val & 0xffffffff; // just write header
+}
+
+void MCEHeader::set_syncword(uint32_t val)
 {
   mce_header[mce_h_syncbox_offset] = val & 0xffffffff; // just write header
 }
