@@ -58,7 +58,7 @@ int main()
       C->test(data); // check that daata is OK
       if(!(j % report_ratio))
 	{
-	  printf("int frame = %u, syncbox = %u , check = %x\n", j, data[mce_h_syncbox_offset] & 0xFFFFFFFF, data[MCE_frame_length-1]);
+	  printf("int frame = %u, syncbox = %u , check = %x\n", j, data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[MCE_frame_length-1]);
 	}
     }
   close(fifo_fd);

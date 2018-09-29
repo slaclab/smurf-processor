@@ -295,9 +295,15 @@ void Smurf2MCE::process_frame(void)
   M->make_header(); // increments counters, readies counter
   M->set_word( mce_h_offset_status, mce_h_status_value);
   M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
-  //M->set_status_word(mce_h_status_value); // sets satic status word (may put in constructor in future)
-  M->set_word( mce_h_syncbox_offset, H->get_syncword());
-  //M->set_syncword(H->get_syncword()); 
+  M->set_word( MCEheader_row_len_offset,  MCEheader_row_len_value);
+  M->set_word( MCEheader_num_rows_reported_offset, MCEheader_num_rows_reported_value);
+  M->set_word( MCEheader_data_rate_offset, cnt);  // use internal averaged frames
+  M->set_word( MCEheader_CC_ARZ_counter, smurfsamples); 
+  M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
+  M->set_word( MCEheader_num_rows_offset, MCEheader_num_rows_value); 
+
+
+  M->set_word( MCEheader_syncbox_offset, H->get_syncword());
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)

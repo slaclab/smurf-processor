@@ -196,7 +196,7 @@ uint Smurftestserver::read_data(void)
       if (*test != header) printf("got wrong header\n");
       if (*test2 != tcplen) printf("got wrong data length\n"); 
       output_ptr[j] = (data_frames[framex ] + tcp_header_size);  // genreate pointers.
-      if( MCE_header_version != ((MCE_t) *(output_ptr[j] + mce_h_offset_header_version * sizeof(MCE_t))))
+      if( MCEheader_version != ((MCE_t) *(output_ptr[j] + MCEheader_version_offset * sizeof(MCE_t))))
 	{
 	  error("wrong MCE header detected");
 	}

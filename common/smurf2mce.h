@@ -65,12 +65,26 @@ const uint32_t average_sample_offset= 0; // used to offset average data to avoid
 const int mce_h_offset_status = 0;
 const int mce_h_status_value = 0x0080C10;  // MCE header word (see excel sheet) 
 
-const uint MCEheader_CC_counter_offset = 1; 
+const uint MCEheader_CC_counter_offset = 1; // this holds a counter we use internally for mce frames
 
-const int mce_h_offset_header_version = 6;  // offset to header version. 
-const uint MCE_header_version = 7;  // current header version
+const uint MCEheader_row_len_offset = 2; // mysterious thing in MCE
+const uint MCEheader_row_len_value = 256; // no idea what this should be
 
-const int mce_h_syncbox_offset = 10;  // words offset to syncbox output
+const uint MCEheader_num_rows_reported_offset= 3; // 33 rows, 
+const uint MCEheader_num_rows_reported_value = 33; 
+
+const uint MCEheader_data_rate_offset =4; //use number of smurf frame averages (strange name)
+const uint MCEheader_CC_ARZ_counter = 5; // no idea, use 528 smurf samples for now
+
+const uint MCEheader_version_offset = 6;  // offset to header version. 
+const uint MCEheader_version = 7;  // current header version
+
+// addr 7,8 unused. 
+
+const uint MCEheader_num_rows_offset = 9; // different from reported rows?
+const uint MCEheader_num_rows_value = 33; 
+
+const int MCEheader_syncbox_offset = 10;  // words offset to syncbox output
 
 
 // smurf header byte offsets
