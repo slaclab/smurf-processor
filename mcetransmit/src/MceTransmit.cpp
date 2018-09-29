@@ -475,7 +475,7 @@ void MCEHeader::set_word(uint offset, uint32_t value)
   mce_header[offset] = value & 0xffffffff; // just write value. 
 }
 
-#if0
+#if 0
 
 void MCEHeader::set_status_word(uint32_t val)
 {
