@@ -59,12 +59,17 @@ const uint32_t average_sample_offset= 0; // used to offset average data to avoid
 
 
 // MCE header
-const uint MCEheader_CC_counter_offset = 1; 
-const uint MCE_header_version = 7;  // current header version
+
+
 
 const int mce_h_offset_status = 0;
 const int mce_h_status_value = 0x0080C10;  // MCE header word (see excel sheet) 
+
+const uint MCEheader_CC_counter_offset = 1; 
+
 const int mce_h_offset_header_version = 6;  // offset to header version. 
+const uint MCE_header_version = 7;  // current header version
+
 const int mce_h_syncbox_offset = 10;  // words offset to syncbox output
 
 

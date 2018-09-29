@@ -293,8 +293,11 @@ void Smurf2MCE::process_frame(void)
   if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
   
   M->make_header(); // increments counters, readies counter
-  M->set_status_word(mce_h_status_value); // sets satic status word (may put in constructor in future)
-  M->set_syncword(H->get_syncword()); 
+  M->set_word( mce_h_offset_status, mce_h_status_value);
+  M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
+  //M->set_status_word(mce_h_status_value); // sets satic status word (may put in constructor in future)
+  M->set_word( mce_h_syncbox_offset, H->get_syncword());
+  //M->set_syncword(H->get_syncword()); 
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
@@ -467,6 +470,13 @@ void MCEHeader::make_header(void)
   return;
 }
 
+void MCEHeader::set_word(uint offset, uint32_t value)
+{
+  mce_header[offset] = value & 0xffffffff; // just write value. 
+}
+
+#if0
+
 void MCEHeader::set_status_word(uint32_t val)
 {
    mce_header[ mce_h_offset_status] = val & 0xffffffff; // just write header
@@ -476,7 +486,7 @@ void MCEHeader::set_syncword(uint32_t val)
 {
   mce_header[mce_h_syncbox_offset] = val & 0xffffffff; // just write header
 }
-
+#endif
 
 
 

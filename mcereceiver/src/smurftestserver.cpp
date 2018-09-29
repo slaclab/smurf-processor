@@ -64,8 +64,8 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   data_frame_n = 0; // first frame
   frame_n = 0;  // pointer at start of first frame
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM, 0)))  { error("can't open socket"); return;}  // opens socket
-  //if (getaddrinfo(NULL, portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
-  if (getaddrinfo("192.168.1.10", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }//home
+  if (getaddrinfo("134.79.216.240", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
+  //if (getaddrinfo("192.168.1.10", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }//home
   // was NULL rather than 127.0.0.1 , need to understand this, 192.168.3.1 at harvard ??????
 
  
