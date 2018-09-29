@@ -48,7 +48,7 @@ const uint tcplen = datalen * 2; // after byte split
 
 
 const uint32_t header = 0x89ABCDEF; // header used on TCP to help test transmission
-// number of frames that can be received at one time.  (shoudl only need one unless link is slow) 
+// number of frames that can be received at one time.  (shoudl only need one unless lin k is slow) 
 const uint numframes = 8; 
 // unwrap rules
 const int upper_unwrap = 0x6000;  // if we are above this and jump, assume a wrap

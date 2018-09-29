@@ -475,20 +475,6 @@ void MCEHeader::set_word(uint offset, uint32_t value)
   mce_header[offset] = value & 0xffffffff; // just write value. 
 }
 
-#if 0
-
-void MCEHeader::set_status_word(uint32_t val)
-{
-   mce_header[ mce_h_offset_status] = val & 0xffffffff; // just write header
-}
-
-void MCEHeader::set_syncword(uint32_t val)
-{
-  mce_header[mce_h_syncbox_offset] = val & 0xffffffff; // just write header
-}
-#endif
-
-
 
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
