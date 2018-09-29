@@ -465,7 +465,7 @@ uint SmurfHeader::average_control() // returns num averages when avearaging is d
 MCEHeader::MCEHeader()
 {
   memset(mce_header, 0, MCEheaderlength * sizeof(MCE_t));
-  mce_header[mce_h_offset_header_version] = MCE_header_version;  // current version.
+  mce_header[MCEheader_version_offset] = MCE_header_version;  // current version.
   CC_frame_counter = 0; // counter for MCE frame
 }
 
