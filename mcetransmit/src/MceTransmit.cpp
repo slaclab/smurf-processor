@@ -124,6 +124,8 @@ bool Smurftcp::connect_link(void)
   if (0 > connect(sockfd, server->ai_addr, server->ai_addrlen))
     {
       error("error connecting to socket");
+      close(sockfd);
+      sockfd = -1; 
       return(false);
     }
   return(connected = true);
@@ -132,7 +134,7 @@ bool Smurftcp::connect_link(void)
 bool Smurftcp::disconnect_link(void) // clean up link
 {
   if(!connected) return(false);  // already disconnected
-  if (sockfd!= -1  ) close(sockfd);
+  if (sockfd != -1  ) close(sockfd);
   printf("disconnecting \n");
   return(connected = false);
 }
