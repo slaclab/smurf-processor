@@ -57,7 +57,7 @@ public:
   Smurftcp *S; // tcp interface, use defaults for now.
   MCEHeader *M; // mce header class
   SmurfHeader *H; // Smurf header class
-  SmurfConfig *C // holds smurf configuratino class
+  SmurfConfig *C; // holds smurf configuratino class
 
 
   Smurf2MCE();
