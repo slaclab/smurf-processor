@@ -490,9 +490,11 @@ void MCEHeader::set_word(uint offset, uint32_t value)
 
 SmurfConfig::SmurfConfig(void)
 {
+  filename = malloc(1024 * sizeof(char));
+  workingdir = malloc(1024 * sizeof(char));
   strcpy(filename, "smurf2mce.cfg");
-  getcwd(filename, 1000); // get working directory
-  printf("working dir = %s \n", filename);
+  getcwd(workingdir, 1000); // get working directory
+  printf("working dir = %s \n", workingdir);
 }
 
 
