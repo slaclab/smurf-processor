@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 
 #ifndef __SMURF2MCE_H__
 #define __SMURF2MCE_H__
