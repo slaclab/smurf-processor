@@ -208,6 +208,7 @@ uint Smurftestserver::read_data(void)
 Smurfpipe::Smurfpipe()
 {
   //  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY))) // OLD VERSION
+  signal(SIGPIPE, SIG_IGN);  // ignores broken pipe - TESTING
   if(-1 == (fifo_fd = open(pipe_name, O_WRONLY, O_NONBLOCK))) // testing out non-blocking version
     {
       error("unable to open pipe \n");
