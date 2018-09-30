@@ -23,6 +23,8 @@ public:
   int sockfd, fd;  // socket file descriptors. Need 2nd socket after connection to client 
   const char *portnum;   // which port to use - string (due to goofy linux function)
   struct addrinfo *server;  // will hold server address structure
+  struct addrinfo hints;  // deep magic, trying this
+
 
   Smurftestserver(const char *port_number, const char *ip_string);  // constructor
   uint read_data(void);  // reads data 
@@ -47,6 +49,18 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   initialized = false;
   connected = false; 
   inframe = false; // are we in the middle of a data frame. 
+
+  // black magic to try to make bind work .
+  hints.ai_flags = AI_PASSIVE;  // maybe makes it return a valid address?  
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = 0;  // any protocol
+  hints.ai_addrlen = 0;
+  hints.ai_addr = NULL;
+  hints.ai_canonname = NULL;
+  hints.ai_next = NULL;  
+
+
   uint j;
   if (!(tcpbuffer = (uint8_t*)malloc(tcpreclen))) // tcp receive buffer longer to allow multiple frames if we get behind
     {
@@ -64,10 +78,10 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   data_frame_n = 0; // first frame
   frame_n = 0;  // pointer at start of first frame
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM, 0)))  { error("can't open socket"); return;}  // opens socket
-  if (getaddrinfo("134.79.216.240", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
+  //if (getaddrinfo("134.79.216.240", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
   //if (getaddrinfo("192.168.1.10", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }//home
   // was NULL rather than 127.0.0.1 , need to understand this, 192.168.3.1 at harvard ??????
-
+  if (getaddrinfo(NULL, portnum, &hints, &server)){ error("error trying to resolve address or port"); return; }
  
   printf("sockfd= %u \n", sockfd);
   if (bind(sockfd, server->ai_addr, server->ai_addrlen)){ error(" error binding socket"); exit(0); }
