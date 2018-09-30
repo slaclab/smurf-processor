@@ -212,6 +212,7 @@ Smurf2MCE::Smurf2MCE()
   S = new Smurftcp(port, ip);
   M = new MCEHeader();  // creates a MCE header class
   H = new SmurfHeader(); 
+  C = new SmurfConfig(); // will hold config info - testing for now
   average_counter = 0; // counter used for test averaging , not  needed in real program
   for(j = 0; j < 2; j++)
     {  // allocate 2 buffers, so we can swap up/ back for background subtraction.
@@ -487,6 +488,13 @@ void MCEHeader::set_word(uint offset, uint32_t value)
 }
 
 
+SmurfConfig::SmurfConfig(void)
+{
+  strcpy(filename, "smurf2mce.cfg");
+  getcwd(filename, 1000); // get working directory
+  printf("working dir = %s \n", filename);
+}
+
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
 {
@@ -547,6 +555,9 @@ uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
   tmp = r & (uint64_t)x; 
   return(r & tmp);
 }
+
+
+
 
 
 

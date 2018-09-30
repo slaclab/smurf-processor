@@ -67,5 +67,13 @@ public:
 };
 
 
+class SmurfConfig  // controls smurf config, initially just reads config file, future - epics interface
+{
+ public:
+  const char filename[1024];
+  const char workingdir[1024];  // will hold working directory
+  
+};
+
 
 #endif
