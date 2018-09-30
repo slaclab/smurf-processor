@@ -135,7 +135,7 @@ bool Smurftcp::connect_link(void)
 
 bool Smurftcp::disconnect_link(void) // clean up link
 {
-  nanosleep(connect_delay); // delay 100msec to avoid hammering on tcp connect
+  nanosleep(&connect_delay, NULL); // delay 100msec to avoid hammering on tcp connect
   if(!connected) return(false);  // already disconnected
   if (sockfd != -1  ) close(sockfd);
   printf("disconnecting \n");
