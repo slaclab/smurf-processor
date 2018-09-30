@@ -73,6 +73,7 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
   const char filename[1024];
   const char workingdir[1024];  // will hold working directory
   
+  smurfConfig(void);
 };
 
 
