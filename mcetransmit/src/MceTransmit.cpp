@@ -499,7 +499,7 @@ bool SmurfConfig::read_config_file(char *fname)
   do{
     n = fscanf(fp, "%s %s\n", variable, value);  // read into buffer
     if(n != 2) continue; // only know how to read 
-    if(!strcmp(variable, "receiver_ip")) strncpy(ip, value); // copy into IP string
+    if(!strcmp(variable, "receiver_ip")) strncpy(ip, value, 100); // copy into IP string
     printf("found ip = %s \n", ip);
 
   }while (n);  // end when n ==0, end of file
