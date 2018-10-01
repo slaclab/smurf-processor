@@ -491,7 +491,7 @@ SmurfConfig::SmurfConfig(void)
 }
 
 
-bool SmurfConfig::read_config_file(fname)
+bool SmurfConfig::read_config_file(char *fname)
 {
   FILE *fp;
   iint n;
