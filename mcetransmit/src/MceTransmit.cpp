@@ -494,11 +494,11 @@ SmurfConfig::SmurfConfig(void)
 bool SmurfConfig::read_config_file(char *fname)
 {
   FILE *fp;
-  iint n;
+  int n;
   if(!( fp = fopen(fname,"r"))) return(false); // open config file
   do{
-    n = fscanf(fp, %s %s, variable, value);  // read into buffer
-    if(n != 2) continue;  // only know how to read 
+    n = fscanf(fp, "%s %s\n", variable, value);  // read into buffer
+    if(n != 2) continue; // only know how to read 
     if(!strcmp(variable, "receiver_ip")) strncpy(ip, value); // copy into IP string
     printf("found ip = %s \n", ip);
 
