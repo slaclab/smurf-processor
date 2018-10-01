@@ -506,7 +506,7 @@ bool SmurfConfig::read_config_file(char *fname)
 	strncpy(ip, value, 100); // copy into IP string
 	ip[99] = NULL; // in case need null terminator
       }
-    printf("s1 = %s, s2 = %s\n",, variable, value);
+    printf("s1 = %s, s2 = %s\n", variable, value);
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
  }
