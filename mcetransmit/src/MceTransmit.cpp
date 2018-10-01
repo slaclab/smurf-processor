@@ -455,14 +455,6 @@ uint SmurfHeader::average_control() // returns num averages when avearaging is d
       average_counter = 0; // reset average
     }
   last_ext_counter = y; // copy over counter
-
-#if 0  
-  if (!(average_counter % 20))
-    {
-      average_counter = 0;
-      return(20);
-    }
-#endif
   return(x);  // return, 0 to kep averaging, otehr to zero average. 
 }
 
@@ -490,12 +482,30 @@ void MCEHeader::set_word(uint offset, uint32_t value)
 
 SmurfConfig::SmurfConfig(void)
 {
+  ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
-  workingdir =(char*) malloc(1024 * sizeof(char));
-  strcpy(filename, "smurf2mce.cfg");
-  getcwd(workingdir, 1000); // get working directory
-  printf("working dir = %s \n", workingdir);
+  variable = (char*) malloc(10000 * sizeof(char)); // big for now check later
+  value = (char*) malloc(10000 * sizeof(char)); // big for now check later
+  strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
+  read = read_file(filename);  
 }
+
+
+bool SmurfConfig::read_config_file(fname)
+{
+  FILE *fp;
+  iint n;
+  if(!( fp = fopen(fname,"r"))) return(false); // open config file
+  do{
+    n = fscanf(fp, %s %s, variable, value);  // read into buffer
+    if(n != 2) continue;  // only know how to read 
+    if(!strcmp(variable, "receiver_ip")) strncpy(ip, value); // copy into IP string
+    printf("found ip = %s \n", ip);
+
+  }while (n);  // end when n ==0, end of file
+  fclose(fp); // done with file
+ }
+
 
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 

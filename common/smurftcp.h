@@ -70,10 +70,14 @@ public:
 class SmurfConfig  // controls smurf config, initially just reads config file, future - epics interface
 {
  public:
-  char *filename;
-  char *workingdir;  // will hold working directory
+  char *filename; // holds name of config file
+  char *variable; // holds input read buffer
+  char *value;    // input read value
+  bool ready;  //file has been read, readyh to run. 
+  char ip[100]; // stored ip address
   
   SmurfConfig(void);
+  bool read_config_file(char *fname);
 };
 
 
