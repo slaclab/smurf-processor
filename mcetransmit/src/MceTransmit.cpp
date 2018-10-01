@@ -517,7 +517,7 @@ bool SmurfConfig::read_config_file(char *fname)
       }
     if(!strcmp(variable, "receiver_ip"))
       {
-	if(stcmp(value, ip)) // update if different 
+	if(srtcmp(value, ip)) // update if different 
 	  { 
 	    printf("updated ip from %s,  to %s \n", ip, value);
 	    strncpy(ip, value, 100); // copy into IP string
