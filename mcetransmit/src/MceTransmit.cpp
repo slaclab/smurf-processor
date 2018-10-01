@@ -484,8 +484,6 @@ SmurfConfig::SmurfConfig(void)
 {
   ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
-  variable = (char*) malloc(10000 * sizeof(char)); // big for now check later
-  value = (char*) malloc(10000 * sizeof(char)); // big for now check later
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
   ready = read_config_file(filename);  
 }
@@ -495,16 +493,20 @@ bool SmurfConfig::read_config_file(char *fname)
 {
   FILE *fp;
   int n, len; 
+  char variable[100];
+  char value[100];
   if(!( fp = fopen(fname,"r"))) return(false); // open config file
   do{
-    n = fscanf(fp, "%s %s\n", variable, value);  // read into buffer
-    if(n != 2) continue; // only know how to read 
+    n = fscanf(fp, "%s", variable);  // read into buffer
+    if(n != 1) continue; // eof or lost here
+     n = fscanf(fp, "%s", value);  // read into buffer
+    if(n != 1) continue; // probably lost if we got here
     if(!strcmp(variable, "receiver_ip"))
       {
 	strncpy(ip, value, 100); // copy into IP string
 	ip[99] = NULL; // in case need null terminator
       }
-    printf("n = %d, str1 = %s, found ip = %s \n",n, variable,  ip);
+    printf("s1 = %s, s2 = %s\n",, variable, value);
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
  }
