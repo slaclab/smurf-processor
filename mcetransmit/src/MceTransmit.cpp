@@ -484,6 +484,7 @@ SmurfConfig::SmurfConfig(void)
 {
   ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
+  memset(ip, NULL, 20); // clear the IP string
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
   num_averages = 0; // default value
   strcpy(ip, "127.0.0.1"); // default
@@ -520,8 +521,7 @@ bool SmurfConfig::read_config_file(char *fname)
 	if(strcmp(value, ip)) // update if different 
 	  { 
 	    printf("updated ip from %s,  to %s \n", ip, value);
-	    strncpy(ip, value, 100); // copy into IP string
-	    ip[99] = NULL; // in case need null terminator
+	    strncpy(ip, value, 20); // copy into IP string
 	  }
 	continue;
       }
