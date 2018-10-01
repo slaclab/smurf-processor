@@ -486,7 +486,7 @@ SmurfConfig::SmurfConfig(void)
   filename = (char*) malloc(1024 * sizeof(char));
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
   num_averages = 0; // default value
-  ip = "127.0.0.1" // default
+  strcpy(ip, "127.0.0.1"); // default
   ready = read_config_file(filename);  
 }
 

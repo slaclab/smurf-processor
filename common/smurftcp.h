@@ -71,10 +71,9 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
 {
  public:
   char *filename; // holds name of config file
-  char *variable; // holds input read buffer
-  char *value;    // input read value
   bool ready;  //file has been read, readyh to run. 
   char ip[100]; // stored ip address
+  int num_averages;  // for use when we are not using the external average trigger
   
   SmurfConfig(void);
   bool read_config_file(char *fname);
