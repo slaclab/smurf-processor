@@ -503,7 +503,7 @@ bool SmurfConfig::read_config_file(char *fname)
   do{
     n = fscanf(fp, "%s", variable);  // read into buffer
     if(n != 1) continue; // eof or lost here
-     n = fscanf(fp, "%s", value);  // read into buffer
+    n = fscanf(fp, "%s", value);  // read into buffer
     if(n != 1) continue; // probably lost if we got here
     if(!strcmp(variable, "num_averages"))
       {
@@ -513,15 +513,18 @@ bool SmurfConfig::read_config_file(char *fname)
 	    printf("num averages updated from %d to %d\n", num_averages, tmp);
 	    num_averages = tmp;
 	  }
-      }else if(!strcmp(variable, "receiver_ip"))
+	continue;
+      }
+    if(!strcmp(variable, "receiver_ip"))
       {
-	if(stcmp(value, ip)
-	  { // they are different, update
+	if(stcmp(value, ip)) // update if different 
+	  { 
 	    printf("updated ip from %s,  to %s \n", ip, value);
 	    strncpy(ip, value, 100); // copy into IP string
 	    ip[99] = NULL; // in case need null terminator
 	  }
-      }else continue;
+	continue;
+      }
     printf("s1 = %s, s2 = %s\n", variable, value);
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
