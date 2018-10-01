@@ -485,6 +485,8 @@ SmurfConfig::SmurfConfig(void)
   ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
+  num_averages = 0; // default value
+  ip = "127.0.0.1" // default
   ready = read_config_file(filename);  
 }
 
@@ -492,20 +494,34 @@ SmurfConfig::SmurfConfig(void)
 bool SmurfConfig::read_config_file(char *fname)
 {
   FILE *fp;
-  int n, len; 
+  int n, r; 
   char variable[100];
   char value[100];
+  int tmp;
+  char *endptr; // used but discarded in conversion
   if(!( fp = fopen(fname,"r"))) return(false); // open config file
   do{
     n = fscanf(fp, "%s", variable);  // read into buffer
     if(n != 1) continue; // eof or lost here
      n = fscanf(fp, "%s", value);  // read into buffer
     if(n != 1) continue; // probably lost if we got here
-    if(!strcmp(variable, "receiver_ip"))
+    if(!strcmp(variable, "num_averages"))
       {
-	strncpy(ip, value, 100); // copy into IP string
-	ip[99] = NULL; // in case need null terminator
-      }
+	tmp = strtol(value, &endptr, 10);  // base 10, doh
+	if (num_averages != tmp)
+	  {
+	    printf("num averages updated from %d to %d\n", num_averages, tmp);
+	    num_averages = tmp;
+	  }
+      }else if(!strcmp(variable, "receiver_ip"))
+      {
+	if(stcmp(value, ip)
+	  { // they are different, update
+	    printf("updated ip from %s,  to %s \n", ip, value);
+	    strncpy(ip, value, 100); // copy into IP string
+	    ip[99] = NULL; // in case need null terminator
+	  }
+      }else continue;
     printf("s1 = %s, s2 = %s\n", variable, value);
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
