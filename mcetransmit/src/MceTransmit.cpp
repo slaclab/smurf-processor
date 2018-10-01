@@ -487,7 +487,7 @@ SmurfConfig::SmurfConfig(void)
   variable = (char*) malloc(10000 * sizeof(char)); // big for now check later
   value = (char*) malloc(10000 * sizeof(char)); // big for now check later
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
-  read = read_file(filename);  
+  read = read_config_file(filename);  
 }
 
 
