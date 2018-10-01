@@ -208,11 +208,12 @@ Smurf2MCE::Smurf2MCE()
   internal_counter = 0;
   int j; 
 
-
-  S = new Smurftcp(port, ip);
+  C = new SmurfConfig(); // will hold config info - testing for now
+  //S = new Smurftcp(port, ip);
+  S = new Smurftcp(C->port_number, C->receiver_ip);
   M = new MCEHeader();  // creates a MCE header class
   H = new SmurfHeader(); 
-  C = new SmurfConfig(); // will hold config info - testing for now
+ 
   average_counter = 0; // counter used for test averaging , not  needed in real program
   for(j = 0; j < 2; j++)
     {  // allocate 2 buffers, so we can swap up/ back for background subtraction.
@@ -221,7 +222,7 @@ Smurf2MCE::Smurf2MCE()
 	  error("could not allocate smurf2mce buffer");
 	  return;
 	}
-      //printf("buffer = %x, len = %d \n", b[j], pyrogue_buffer_length);
+      //printf("buffer = %x, len = %d \n", b[j], pyrogue_buffer_length);80
       memset(b[j], 0, pyrogue_buffer_length); // zero to start with
     }
   if(!(average_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
@@ -264,18 +265,6 @@ void Smurf2MCE::process_frame(void)
   uint tcp_buflen; // holds filled lengthof tcp buffer
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
   H->copy_header(buffer); 
-#if 0
-  for (k = 0; k < 16; k++)
-    {
-      printf("|%1x", k); 
-      for(j = 0; j < 8; j++)
-	{
-	  tmp = k * 8 + j; 
-	  printf(" %2x",(0xFF & H->header[tmp]));
-	}
-    }
-  printf("\n"); 
-#endif
   if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
@@ -296,7 +285,7 @@ void Smurf2MCE::process_frame(void)
 	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
     }
  
-  if (!(cnt = H->average_control())) return;  // just average, otherwise send frame
+  if (!(cnt = H->average_control(C->num_averages))) return;  // just average, otherwise send frame
   
   M->make_header(); // increments counters, readies counter
   M->set_word( mce_h_offset_status, mce_h_status_value);
@@ -324,11 +313,10 @@ void Smurf2MCE::process_frame(void)
   
 
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
-   if (!(internal_counter++ % 100))
+   if (!(internal_counter++ % slow_divider))
      {
        printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u\n", cnt, H->get_syncword(),internal_counter,
 	     H->get_frame_counter());
-       //printf("d = %x %x %x\n", bufx[6], bufx[MCE_frame_length-2], bufx[MCE_frame_length-1]);
 
      }
 
@@ -443,19 +431,30 @@ bool SmurfHeader::check_increment()
 }
 
 
-uint SmurfHeader::average_control() // returns num averages when avearaging is done. 
+uint SmurfHeader::average_control(int num_averages) // returns num averages when avearaging is done. 
 {
   uint x=0, y; 
   if (average_counter ==0) average_ok = data_ok;  // reset avearge ok bit.
   average_counter++; // increment number of frames averaged. 
-  y = get_ext_counter();
-  if (last_ext_counter > y)  // TEST TEST TEST - until we have averaging bits
+  if (num_averages)
     {
-      x = average_counter; // number of averages
-      average_counter = 0; // reset average
+      if (average_counter == num_averages) 
+	{
+	  average_counter = 0; 
+	  return (num_averages); // end averaging with local control
+	}
     }
-  last_ext_counter = y; // copy over counter
-  return(x);  // return, 0 to kep averaging, otehr to zero average. 
+  else{
+    y = get_ext_counter();
+    if (last_ext_counter > y)  // TEST TEST TEST - until we have averaging bits
+      {
+	x = average_counter; // number of averages
+	average_counter = 0; // reset average
+      }
+    last_ext_counter = y; // copy over counter
+    return(x);  // return, 0 to kep averaging, otehr to zero average. 
+  }
+  return(0);
 }
 
 
@@ -484,10 +483,12 @@ SmurfConfig::SmurfConfig(void)
 {
   ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
-  memset(ip, NULL, 20); // clear the IP string
+  memset(receiver_ip, NULL, 20); // clear the IP string
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
   num_averages = 0; // default value
-  strcpy(ip, "127.0.0.1"); // default
+  strcpy(receiver_ip, "127.0.0.1"); // default
+  strcpy(port_number, "3333");  // temporary for now
+  strcpy(data_file_name, "data"); 
   ready = read_config_file(filename);  
 }
 
@@ -518,10 +519,19 @@ bool SmurfConfig::read_config_file(char *fname)
       }
     if(!strcmp(variable, "receiver_ip"))
       {
-	if(strcmp(value, ip)) // update if different 
+	if(strcmp(value, receiver_ip)) // update if different 
 	  { 
-	    printf("updated ip from %s,  to %s \n", ip, value);
-	    strncpy(ip, value, 20); // copy into IP string
+	    printf("updated ip from %s,  to %s \n", receiver_ip, value);
+	    strncpy(receiver_ip, value, 20); // copy into IP string
+	  }
+	continue;
+      }
+    if(!strcmp(variable, "port_number"))
+      {
+	if(strcmp(value, port_number)) // update if different 
+	  { 
+	    printf("updated port number from %s,  to %s \n", port_number, value);
+	    strncpy(port_number, value, 8); // copy into IP string
 	  }
 	continue;
       }

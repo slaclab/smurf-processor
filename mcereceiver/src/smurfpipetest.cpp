@@ -17,20 +17,13 @@ int main()
 {
   int fifo_fd; // fifo  descritor
   int j, num; 
-  int report_ratio = 100;
   bool runforever = true; 
   MCE_t data[MCE_frame_length]; // will hold received data
   check_data *C;
   C = new check_data();
   printf("starting SMuRF pipe test \n");
   
-
-#if 0
-  if(-1 == mkfifo(pipe_name, 0666)) // unlink, try agian
-    {
-      unlink(pipe_name);
-    } 
-#endif
+  
   if(-1 == mkfifo(pipe_name, 0666)) 
     {
       error("error creating fifo\n");
@@ -56,7 +49,7 @@ int main()
 	  printf("frame len = %u, wanted %u\n", num, MCE_frame_length);
 	}
       C->test(data); // check that daata is OK
-      if(!(j % report_ratio))
+      if(!(j % slow_divider))
 	{
 	  printf("int frame = %u, syncbox = %u , check = %x\n", j, data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[MCE_frame_length-1]);
 	}

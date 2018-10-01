@@ -62,7 +62,7 @@ public:
   bool check_increment(void); // checks that the frame counter incremented by 1;
   uint get_average_bit(void) { return(0);}; // place holder 
   uint get_syncword(void); // returns 20 bit MCE sync word 
-  uint average_control(void); 
+  uint average_control(int num); // num=0 means use external average,  
 
 };
 
@@ -72,8 +72,11 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
  public:
   char *filename; // holds name of config file
   bool ready;  //file has been read, readyh to run. 
-  char ip[20]; // stored ip address
   int num_averages;  // for use when we are not using the external average trigger
+  char receiver_ip[20]; // stored ip address in text!
+  char port_number[8]; // por number for tcp connection, in text!
+  char data_file_name[1024]; // name of data file including directory, but without unix time extension
+  
   
   SmurfConfig(void);
   bool read_config_file(char *fname);

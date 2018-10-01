@@ -26,6 +26,8 @@ typedef int16_t smurf_t;  // raw smurf data type. (int? uint? need to know what 
 typedef int32_t avgdata_t;  // data type for averaged data was int but needs int32 (important fix)
 typedef uint32_t MCE_t;  //  data used in mce system
 
+const uint slow_divider = 200; // sets divisiion ration from average to print out rate.
+
 const uint tcpreclen = 0x80000;  // allow for multiple  reads in one frame proably big enough
 const size_t pyrogue_buffer_length = 0x8000; // not sure what the maximum size could be 
 const uint smurf_raw_samples = 4096; // samples before masking.  this is from the smurf to transmitter

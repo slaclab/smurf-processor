@@ -252,7 +252,7 @@ int main()
  
  
   //uint number_to_record = 50; // number output frames to record. 
-  int report_ratio = 100;
+ 
   bool runforever = true;  // keep running
   uint channel_to_record = 1; // which channel to record
   uint max_rec_frames = 0;
@@ -265,7 +265,7 @@ int main()
   { 
     recframes = S->read_data();
     if (recframes == 0) continue; // no frames receive this time
-    if(!(j%report_ratio)) printf("frame = %d \n", j);
+    if(!(j%slow_divider)) printf("frame = %d \n", j);
     P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write  latbest frame
     j++;
   }    
