@@ -71,16 +71,33 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
 {
  public:
   char *filename; // holds name of config file
-  bool ready;  //file has been read, readyh to run. 
+  bool ready;  //file has been read, readyh to run. w
   int num_averages;  // for use when we are not using the external average trigger
   char receiver_ip[20]; // stored ip address in text!
   char port_number[8]; // por number for tcp connection, in text!
   char data_file_name[1024]; // name of data file including directory, but without unix time extension
+  int data_frames; // number of smples per output file. 
   
   
   SmurfConfig(void);
-  bool read_config_file(char *fname);
+  bool read_config_file(void);
 };
+
+
+class SmurfDataFile // writes data file to disk
+{
+ public:
+  char *filename; // name with timestampe
+  uint frame_counter; // counts  number of frames written
+  uint header_length; // size of header
+  uint sample_points; // sample points in frame
+  uint8_t  *frame; // will hold frame data before writing
+  uint fd; // file pointer
+
+  SmurfDataFile(void);
+  uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname); // writes to file, creates new if needded. return frames written, 0 new.
+};
+
 
 
 #endif

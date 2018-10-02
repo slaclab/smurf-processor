@@ -58,14 +58,15 @@ public:
   MCEHeader *M; // mce header class
   SmurfHeader *H; // Smurf header class
   SmurfConfig *C; // holds smurf configuratino class
-
+  SmurfDataFile *D; // outptut file for saving smurf data. 
 
   Smurf2MCE();
   void acceptFrame(ris::FramePtr frame);
 
   //void acceptframe_test(char* data, size_t size); // test version for local use, just a wrapper
   void process_frame(void); // does average, separates header
-  void set_mask(char *new_mask, uint num); // set array mask .
+  void set_mask(char *new_mask, uint num); // set array mask
+  void read_mask(char *filename);// reads file to create maks
   void clear_wrap(void){memset(wrap_counter, wrap_start, smurfsamples);}; // clears wrap counter
    ~Smurf2MCE(); // destructor
 
@@ -213,6 +214,7 @@ Smurf2MCE::Smurf2MCE()
   S = new Smurftcp(C->port_number, C->receiver_ip);
   M = new MCEHeader();  // creates a MCE header class
   H = new SmurfHeader(); 
+  D = new SmurfDataFile();  // holds output data
  
   average_counter = 0; // counter used for test averaging , not  needed in real program
   for(j = 0; j < 2; j++)
@@ -242,6 +244,7 @@ Smurf2MCE::Smurf2MCE()
     }
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data to start
   memset(mask, 0, pyrogue_buffer_length); // set to all off to start
+  read_mask(NULL);  // will use real file name later
   memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));
   initialized = true;
 
@@ -301,6 +304,13 @@ void Smurf2MCE::process_frame(void)
   M->set_word( MCEheader_syncbox_offset, H->get_syncword());
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
+
+
+  if(C->data_frames) // file writing turned on
+    {
+      D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, C->data_file_name);
+    }
+
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
@@ -310,11 +320,11 @@ void Smurf2MCE::process_frame(void)
 
   for (j = 1; j < MCE_frame_length-1; j++) checksum =checksum ^ bufx[j]; // calculate checksum
  
-  
-
+ 
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
    if (!(internal_counter++ % slow_divider))
      {
+       C->read_config_file();  // checks for config changes
        printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u\n", cnt, H->get_syncword(),internal_counter,
 	     H->get_frame_counter());
 
@@ -352,6 +362,36 @@ void Smurf2MCE::set_mask(char *new_mask, uint num)  // UGLY, need to do this rig
 	}
     }
 }
+
+
+void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name. fire the programmer
+{
+  FILE *fp;
+  int ret;
+  uint j = 0;
+  uint x = 0; 
+  uint m;
+
+  fp = fopen("mask.txt", "r");
+  if(fp==0)
+    {
+      printf("unable to open mask file \n");
+      return;
+    }
+    for(j =0; j < smurfsamples; j++)
+      {
+	ret = fscanf(fp,"%u", &m);  // read next line 
+	if ((ret == EOF) || (ret == 0)) break;  // done
+	if(m < smurf_raw_samples){
+	  mask[m] = 1; // set mask.
+	  x++;
+	}
+      } 
+    fclose(fp);
+    printf("set mask for %d \n", x); 
+}
+
+
 
 
 Smurf2MCE::~Smurf2MCE() // destructor
@@ -486,14 +526,15 @@ SmurfConfig::SmurfConfig(void)
   memset(receiver_ip, NULL, 20); // clear the IP string
   strcpy(filename, "smurf2mce.cfg");  // kludge for now. 
   num_averages = 0; // default value
+  data_frames = 0;
   strcpy(receiver_ip, "127.0.0.1"); // default
   strcpy(port_number, "3333");  // temporary for now
   strcpy(data_file_name, "data"); 
-  ready = read_config_file(filename);  
+  ready = read_config_file();  
 }
 
 
-bool SmurfConfig::read_config_file(char *fname)
+bool SmurfConfig::read_config_file(void)
 {
   FILE *fp;
   int n, r; 
@@ -501,7 +542,7 @@ bool SmurfConfig::read_config_file(char *fname)
   char value[100];
   int tmp;
   char *endptr; // used but discarded in conversion
-  if(!( fp = fopen(fname,"r"))) return(false); // open config file
+  if(!( fp = fopen(filename,"r"))) return(false); // open config file
   do{
     n = fscanf(fp, "%s", variable);  // read into buffer
     if(n != 1) continue; // eof or lost here
@@ -514,6 +555,16 @@ bool SmurfConfig::read_config_file(char *fname)
 	  {
 	    printf("num averages updated from %d to %d\n", num_averages, tmp);
 	    num_averages = tmp;
+	  }
+	continue;
+      }
+    if(!strcmp(variable, "data_frames"))
+      {
+	tmp = strtol(value, &endptr, 10);  // base 10, doh
+	if (data_frames != tmp)
+	  {
+	    printf("data_frames updated from %d to %d\n", data_frames, tmp);
+	    data_frames = tmp;
 	  }
 	continue;
       }
@@ -535,10 +586,64 @@ bool SmurfConfig::read_config_file(char *fname)
 	  }
 	continue;
       }
-    printf("s1 = %s, s2 = %s\n", variable, value);
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
  }
+
+
+
+
+SmurfDataFile::SmurfDataFile(void)
+{
+  filename = (char*) malloc(1024 * sizeof(char)); // too big for 
+  memset(filename, 0, 1024); // zero for now
+  frame_counter = 0; // frames written
+  header_length = smurfheaderlength; // from header file for now
+  sample_points = smurfsamples;  // from header file (ugly)
+  frame = (uint8_t*) malloc(60000); // just a big number for now
+  fd = 0; // shows that we don't have a pointer yet
+}
+
+uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname)
+{
+  time_t tx;
+  char tmp[100]; // for strings
+  if(!fd) // need to open a file
+    {
+      tx = time(NULL);
+      memset(filename, 0, 1024); // zero for now
+      strcat(filename, fname); // add file name
+      sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
+      strcat(filename, tmp);
+      printf("new filename = %s \n", filename); 
+      if (!(fd = open(filename, O_WRONLY | O_CREAT)))
+	{
+	  printf("coult not open: %s \n", filename);
+	  return(0); // failed to open file
+	}
+    }
+  memcpy(frame, header, header_bytes);
+  memcpy(frame+header_bytes, data, data_words * sizeof(avgdata_t)); 
+  write(fd, frame, header_bytes + data_words * sizeof(avgdata_t));
+  frame_counter++;
+  if(frame_counter >= frames_to_write)
+    {
+      if(fd) close(fd);
+      fd = 0;
+      frame_counter = 0;
+    }
+  return(frame_counter);
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
