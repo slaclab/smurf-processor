@@ -223,7 +223,7 @@ Smurfpipe::Smurfpipe()
 {
   //  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY))) // OLD VERSION
   signal(SIGPIPE, SIG_IGN);  // ignores broken pipe - TESTING
-  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY, O_NONBLOCK))) // testing out non-blocking version
+  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY| O_NONBLOCK))) // testing out non-blocking version
     {
       error("unable to open pipe \n");
     }
@@ -249,7 +249,7 @@ int main()
 {
   int j, k, m, r, x; 
   uint recframes = 0;
- 
+  MCE_t *tmp;
  
   //uint number_to_record = 50; // number output frames to record. 
  
@@ -265,7 +265,8 @@ int main()
   { 
     recframes = S->read_data();
     if (recframes == 0) continue; // no frames receive this time
-    if(!(j%slow_divider)) printf("frame = %d \n", j);
+    tmp = (MCE_t*) S->output_ptr[recframes-1]; // convert pointer for testing output
+    if(!(j%slow_divider)) printf("frame = %d , data(0) = %d\n", j,*(tmp+43) );
     P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write  latbest frame
     j++;
   }    

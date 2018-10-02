@@ -16,7 +16,7 @@ class check_data
 int main()
 {
   int fifo_fd; // fifo  descritor
-  int j, num; 
+  int j, num, x;
   bool runforever = true; 
   MCE_t data[MCE_frame_length]; // will hold received data
   check_data *C;
@@ -26,7 +26,7 @@ int main()
   
   if(-1 == mkfifo(pipe_name, 0666)) 
     {
-      error("error creating fifo\n");
+      error("can't create new fifo (OK if alreadyexists) \n");
       //exit(0);
     }
   if( -1 == (fifo_fd = open(pipe_name, O_RDONLY)))
@@ -51,7 +51,8 @@ int main()
       C->test(data); // check that daata is OK
       if(!(j % slow_divider))
 	{
-	  printf("int frame = %u, syncbox = %u , check = %x\n", j, data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[MCE_frame_length-1]);
+	  printf("frame = %u, syncbox = %u , data(0) = %d\n", j, data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[43]);
+	  //scanf("%d", &x);
 	}
     }
   close(fifo_fd);
