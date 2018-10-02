@@ -25,6 +25,7 @@
 typedef int16_t smurf_t;  // raw smurf data type. (int? uint? need to know what we get)
 typedef int32_t avgdata_t;  // data type for averaged data was int but needs int32 (important fix)
 typedef uint32_t MCE_t;  //  data used in mce system
+typedef int32_t wrap_t; // type for wrap counter, just offset for now. 
 
 const uint slow_divider = 200; // sets divisiion ration from average to print out rate.
 
@@ -56,8 +57,7 @@ const uint numframes = 8;
 // unwrap rules
 const int upper_unwrap = 0x6000;  // if we are above this and jump, assume a wrap
 const int lower_unwrap = -0x6000; // if we are below this and jump, assume a wrap
-typedef char wrap_t; // type for wrap counter, use char for now
-const wrap_t wrap_start = 0x80;  //starting wrap value
+const wrap_t wrap_start = 0x0;  //starting wrap value
 const uint32_t average_sample_offset= 0; // used to offset average data to avoid wrap, may not be neeeded. 
 
 

@@ -278,14 +278,13 @@ void Smurf2MCE::process_frame(void)
       if (!mask[dctr]) continue;   // mask is zero, just continue loop counters. 
       if ((d[dctr] > upper_unwrap) && (p[dctr] < lower_unwrap)) // unwrap, add 1
 	{
-	  wrap_counter[actr]--; // decrement wrap counter
+	  wrap_counter[actr]-= 0x8000; // decrement wrap counter
 	} else if((d[dctr] < lower_unwrap) && (p[dctr] > upper_unwrap))
 	{
-	  wrap_counter[actr]++; // inccrement wrap counter
+	  wrap_counter[actr]+= 0x8000; // inccrement wrap counter
 	}
 	else; // nothing here
-              // add counter wrap to data  
-	a[actr++] += (avgdata_t)(d[dctr]) + 0x8000 + (0xFFFFFF &(((uint16_t) wrap_counter[actr])<<16));
+      a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
     }
  
   if (!(cnt = H->average_control(C->num_averages))) return;  // just average, otherwise send frame
@@ -311,6 +310,8 @@ void Smurf2MCE::process_frame(void)
       D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, C->data_file_name);
     }
 
+ 
+
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
@@ -325,8 +326,8 @@ void Smurf2MCE::process_frame(void)
    if (!(internal_counter++ % slow_divider))
      {
        C->read_config_file();  // checks for config changes
-       printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u\n", cnt, H->get_syncword(),internal_counter,
-	     H->get_frame_counter());
+       printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u, data(0)=%d\n", cnt, H->get_syncword(),internal_counter,
+	       H->get_frame_counter(), average_samples[0]);
 
      }
 
@@ -486,7 +487,7 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
     }
   else{
     y = get_ext_counter();
-    if (last_ext_counter > y)  // TEST TEST TEST - until we have averaging bits
+    if (last_ext_counter > y)  // 
       {
 	x = average_counter; // number of averages
 	average_counter = 0; // reset average
