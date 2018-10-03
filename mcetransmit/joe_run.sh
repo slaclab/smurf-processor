@@ -1,1 +1,0 @@
-python3 scripts/AmccGui.py --commType pcie-rssi-interleaved --slot 7
