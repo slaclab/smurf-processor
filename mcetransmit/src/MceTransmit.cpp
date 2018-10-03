@@ -650,6 +650,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
 {
+  uint totread = 0;
   uint32_t nbytes = frame->getPayload();
   //printf("accept frame called \n");
   if (frame->getError() || (frame->getFlags() & 0x100))  // drop frame  (do we need to read out buffer?)
@@ -663,7 +664,8 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
   rxLast   = nbytes;
   rxBytes += nbytes;
   rxCount++;
-  int tmp, j, tmpsize; 
+  int tmp, j; 
+
 
          // Iterators to start and end of frame
   rogue::interfaces::stream::Frame::iterator iter = frame->beginRead();
@@ -689,8 +691,11 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
             // Update destination pointer and source iterator
     dst  += size;
     iter += size;
-    tmpsize = size; // ugly, fix later
+    totread += size;
     } 
+  uint target_size = smurfheaderlength * sizeof(char) + smurf_raw_samples * sizeof(smurf_t); 
+  //printf("target size = %u  nbytes = %u, totread = %u \n", target_size, nbytes, totread);
+  if ((target_size != nbytes) || (target_size !=totread)) printf("wrong size frame from Pyrogue \n");
   process_frame();
 
 }
