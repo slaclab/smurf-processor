@@ -24,7 +24,7 @@ PYTHON_SCRIPT_NAME=$TOP/python/pyrogue_server.py
 PCIE_SETUP_SCRIPT=$TOP/setup_pcie.sh
 
 # MCE library location
-MCE_LIB_PATH=$TOP/../lib/
+MCE_LIB_PATH=$TOP/../../lib/
 
 # Setup initial enviroment
 export PYTHONPATH=$PYTHONPATH:$MCE_LIB_PATH
