@@ -21,6 +21,7 @@
 SCRIPT_NAME=$0
 TOP=$(dirname -- "$(readlink -f $0)")
 PYTHON_SCRIPT_NAME=$TOP/python/pyrogue_server.py
+PCIE_SETUP_SCRIPT=$TOP/setup_pcie.sh
 
 # MCE library location
 MCE_LIB_PATH=$TOP/../lib/
@@ -93,6 +94,7 @@ echo "PyRogue directory = $DIR"
 # Setup the enviroment
 echo ""
 echo "Setting the enviroment..."
+source $PCIE_SETUP_SCRIPT
 export PYTHONPATH=$PYTHONPATH:$DIR/python
 
 # Start the server
