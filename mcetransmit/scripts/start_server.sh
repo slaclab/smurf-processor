@@ -21,9 +21,6 @@
 SCRIPT_NAME=$0
 TOP=$(dirname -- "$(readlink -f $0)")
 PYTHON_SCRIPT_NAME=$TOP/python/pyrogue_server.py
-ROGUE_SETUP_SCRIPT=$TOP/setup_rogue.sh
-EPICS_SETUP_SCRIPT=$TOP/setup_epics.sh
-PCIE_SETUP_SCRIPT=$TOP/setup_pcie.sh
 
 # Usage message
 usage() {
