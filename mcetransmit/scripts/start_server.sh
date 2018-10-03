@@ -22,6 +22,12 @@ SCRIPT_NAME=$0
 TOP=$(dirname -- "$(readlink -f $0)")
 PYTHON_SCRIPT_NAME=$TOP/python/pyrogue_server.py
 
+# MCE library location
+MCE_LIB_PATH=$TOP/../lib/
+
+# Setup initial enviroment
+export PYTHONPATH=$PYTHONPATH:$MCE_LIB_PATH
+
 # Usage message
 usage() {
     echo ""
@@ -34,7 +40,6 @@ usage() {
     echo ""
     echo "All other arguments are passed directly to $PYTHON_SCRIPT_NAME which usage is:"
     echo ""
-    source $ROGUE_SETUP_SCRIPT
     $PYTHON_SCRIPT_NAME -h
     exit
 }
