@@ -2,7 +2,7 @@
 
 #include "../../common/smurf2mce.h"
 
-void error(const char *msg){ perror(msg);};          // modify later to deal with errors
+void error(const char *msg){ perror(msg);};          // modify late r to deal with errors
 
 
 class Smurftestserver
