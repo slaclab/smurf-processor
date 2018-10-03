@@ -39,20 +39,6 @@ usage() {
     exit
 }
 
-# Check if the required rogue setup script exists
-if [ ! -f "$ROGUE_SETUP_SCRIPT" ]
-then
-    echo "$ROGUE_SETUP_SCRIPT not found!"
-    exit
-fi
-
-# Check if the required epics setup script exists
-if [ ! -f "$EPICS_SETUP_SCRIPT" ]
-then
-    echo "$EPICS_SETUP_SCRIPT not found!"
-    exit
-fi
-
 # Check for arguments
 ARGS=""
 while [[ $# -gt 0 ]]
@@ -102,9 +88,6 @@ echo "PyRogue directory = $DIR"
 # Setup the enviroment
 echo ""
 echo "Setting the enviroment..."
-source $EPICS_SETUP_SCRIPT
-source $ROGUE_SETUP_SCRIPT
-source $PCIE_SETUP_SCRIPT
 export PYTHONPATH=$PYTHONPATH:$DIR/python
 
 # Start the server
