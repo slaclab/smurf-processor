@@ -278,10 +278,10 @@ void Smurf2MCE::process_frame(void)
       if (!mask[dctr]) continue;   // mask is zero, just continue loop counters. 
       if ((d[dctr] > upper_unwrap) && (p[dctr] < lower_unwrap)) // unwrap, add 1
 	{
-	  wrap_counter[actr]-= 0x8000; // decrement wrap counter
+	  wrap_counter[actr]-= 0x10000; // decrement wrap counter
 	} else if((d[dctr] < lower_unwrap) && (p[dctr] > upper_unwrap))
 	{
-	  wrap_counter[actr]+= 0x8000; // inccrement wrap counter
+	  wrap_counter[actr]+= 0x10000; // inccrement wrap counter
 	}
 	else; // nothing here
       a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
