@@ -29,6 +29,7 @@ from pathlib import Path
 import pyrogue
 import pyrogue.utilities.fileio
 import rogue.interfaces.stream
+import MceTransmit
 
 # Print the usage message
 def usage(name):
@@ -237,8 +238,12 @@ class LocalServer(pyrogue.Root):
             for i in range(8):
                 pyrogue.streamConnect(fpga.stream.application(0x80 + i),
                  stm_data_writer.getChannel(i))
-                pyrogue.streamConnect(fpga.stream.application(0xC0 + i),
-                 stm_data_writer.getChannel(8+i))
+                # pyrogue.streamConnect(fpga.stream.application(0xC0 + i),
+                #  stm_data_writer.getChannel(8+i))
+
+            # Our receiver
+            rx = MceTransmit.Smurf2MCE()
+            pyrogue.streamConnect(fpga.stream.application(0xC1), rx)
 
             # Run control for streaming interfaces
             self.add(pyrogue.RunControl(
