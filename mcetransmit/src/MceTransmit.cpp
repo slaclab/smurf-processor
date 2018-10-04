@@ -26,7 +26,7 @@
 #include <smurf2mce.h>
 #include <smurftcp.h>
 
-void error(const char *msg){perror(msg);};    // modify later to deal with errors
+void error(const char *msg){perror(msg);};    // modify later to deal w ith errors
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width); 
 
@@ -202,8 +202,8 @@ Smurf2MCE::Smurf2MCE()
   rxBytes = 0;
   rxLast = 0; // from test program
   initialized = false;
-  port = server_port_number;
-  ip = server_ip_addr; 
+  //port = server_port_number;
+  //ip = server_ip_addr; 
   average_counter= 1; 
   bufn = 0; // current buffer 
   internal_counter = 0;
