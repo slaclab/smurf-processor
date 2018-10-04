@@ -101,9 +101,9 @@ const int h_mce_syncword_offset = 96;  // 20 bit MCE sync workd
 const int h_mce_syncword_width = 5;  // yes 40 bits, bletch. 
 
 
-const char server_port_number[] = "5345";  // default unless overriddenw was 5433
+//const char server_port_number[] = "5345";  // default unless overriddenw was 5433
 //const char server_ip_addr[] = "127.0.0.1"; //default
-const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
+//const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
 //const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
 //const char server_ip_addr[] = "192.168.3.1"; // harvard bicep53
 const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface

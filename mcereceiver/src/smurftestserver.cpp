@@ -21,12 +21,13 @@ public:
   bool initialized; // memory allocated
   bool connected;  // client connected
   int sockfd, fd;  // socket file descriptors. Need 2nd socket after connection to client 
-  const char *portnum;   // which port to use - string (due to goofy linux function)
+  char *portnum;   // which port to use - string (due to goofy linux function)
+  char *pipe_name; // named pipe
   struct addrinfo *server;  // will hold server address structure
   struct addrinfo hints;  // deep magic, trying this
 
 
-  Smurftestserver(const char *port_number, const char *ip_string);  // constructor
+  Smurftestserver(void);  // constructor
   uint read_data(void);  // reads data 
   bool connect_tcp(); // makes tcp connection
   void disconnect_tcp(void); // close socket connection
@@ -37,15 +38,21 @@ class Smurfpipe // writes to named pipe
 {
 public:
   int fifo_fd;  // file pointer to pipe
-  Smurfpipe();
+  Smurfpipe(char* pipename);
   ~Smurfpipe();
   int write_pipe(MCE_t* data, int points); 
 };
 
 
-Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *ip_string = "134.79.228.97")
+Smurftestserver::Smurftestserver(void)
 {
-  portnum = port_number;
+
+  char variable[256];
+  char value[256];
+  uint j,n; 
+  portnum = (char*) malloc(100); // enough space
+  pipe_name = (char*) malloc(256); // shoudl be enough space even for our crazy file names. 
+  strcpy(portnum, "3333");  // default port
   initialized = false;
   connected = false; 
   inframe = false; // are we in the middle of a data frame. 
@@ -60,8 +67,30 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   hints.ai_canonname = NULL;
   hints.ai_next = NULL;  
 
+  FILE *cfgfp;  // pointer to config file
+  
+  if((cfgfp = fopen("smurfrec.cfg", "r")))
+    {
+      for(j = 0; j < 2; j++) // just 2 things to read
+	{
+	  n = fscanf(cfgfp, "%s", variable);  // read into buffer
+	  if(n != 1) continue; // eof or lost here
+	  n = fscanf(cfgfp, "%s", value);  // read into buffer
+	  if(n != 1) continue; // probably lost if we got here
+	  if(!strcmp(variable, "port_number"))
+	    { 
+	    strncpy(portnum, value, 100); // copy over port number
+	    printf("port = %s \n", portnum);
+	    }
+	  if(!strcmp(variable, "named_pipe"))
+	    { 
+	    strncpy(pipe_name, value, 256); // copy over port number
+	    printf("named_pipe = %s \n", pipe_name);
+	    }
+	}
+    }else printf("couldn't open smurfrec.cfg file");
 
-  uint j;
+
   if (!(tcpbuffer = (uint8_t*)malloc(tcpreclen))) // tcp receive buffer longer to allow multiple frames if we get behind
     {
       error("cant allocate memory");
@@ -78,9 +107,6 @@ Smurftestserver::Smurftestserver(const char *port_number = "5433", const char *i
   data_frame_n = 0; // first frame
   frame_n = 0;  // pointer at start of first frame
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM, 0)))  { error("can't open socket"); return;}  // opens socket
-  //if (getaddrinfo("134.79.216.240", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }
-  //if (getaddrinfo("192.168.1.10", portnum, NULL, &server)){ error("error trying to resolve address or port"); return; }//home
-  // was NULL rather than 127.0.0.1 , need to understand this, 192.168.3.1 at harvard ??????
   if (getaddrinfo(NULL, portnum, &hints, &server)){ error("error trying to resolve address or port"); return; }
  
   printf("sockfd= %u \n", sockfd);
@@ -219,11 +245,11 @@ uint Smurftestserver::read_data(void)
 }
 
 
-Smurfpipe::Smurfpipe()
+Smurfpipe::Smurfpipe(char *pipename)
 {
   //  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY))) // OLD VERSION
   signal(SIGPIPE, SIG_IGN);  // ignores broken pipe - TESTING
-  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY| O_NONBLOCK))) // testing out non-blocking version
+  if(-1 == (fifo_fd = open(pipename, O_WRONLY| O_NONBLOCK))) // testing out non-blocking version
     {
       error("unable to open pipe \n");
     }
@@ -258,8 +284,8 @@ int main()
   uint max_rec_frames = 0;
   Smurftestserver *S; // create S.
   Smurfpipe *P; // create pipe
-  S = new Smurftestserver(server_port_number, server_ip_addr);
-  P = new Smurfpipe();
+  S = new Smurftestserver();
+  P = new Smurfpipe(S->pipe_name);
   j = 0; 
   while(1)
   { 
