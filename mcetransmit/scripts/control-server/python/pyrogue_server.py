@@ -222,8 +222,12 @@ class LocalServer(pyrogue.Root):
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
 
             # File writer for streaming interfaces
+            # DDR interface (TDEST 0x80 - 0x87)
             stm_data_writer = pyrogue.utilities.fileio.StreamWriter(name='streamDataWriter')
             self.add(stm_data_writer)
+            # Stream Interface (TDEST 0xC0 - 0xC7)
+            stm_interface_writer = pyrogue.utilities.fileio.StreamWriter(name='streamingInterface')
+            self.add(stm_interface_writer)
 
             # Instantiate Fpga top level
             # fpga = FpgaTopLevel(ipAddr=ip_addr)
@@ -238,12 +242,12 @@ class LocalServer(pyrogue.Root):
             for i in range(8):
                 pyrogue.streamConnect(fpga.stream.application(0x80 + i),
                  stm_data_writer.getChannel(i))
-                # pyrogue.streamConnect(fpga.stream.application(0xC0 + i),
-                #  stm_data_writer.getChannel(8+i))
+                pyrogue.streamConnect(fpga.stream.application(0xC0 + i),
+                 stm_interface_writer.getChannel(i))
 
             # Our receiver
             rx = MceTransmit.Smurf2MCE()
-            pyrogue.streamConnect(fpga.stream.application(0xC1), rx)
+            pyrogue.streamTap(fpga.stream.application(0xC1), rx)
 
             # Run control for streaming interfaces
             self.add(pyrogue.RunControl(
