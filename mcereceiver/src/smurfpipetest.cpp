@@ -93,7 +93,7 @@ bool check_data::test(MCE_t *data)
       if ((syncbox != last_syncbox + 1))
 	{
 	  missed_frame_count = missed_frame_count + 1; 
-	  printf("mised frames = %u \n", missed_frame_count);
+	  //printf("mised frames = %u \n", missed_frame_count);
 	}
     }
 
