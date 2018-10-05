@@ -302,7 +302,7 @@ int main()
 	if (syncbox != (last_syncbox + 1)) missing_frames++; 
       }
     last_syncbox = syncbox;
-    if(!(j%slow_divider)) printf("frame = %d ,syncbox = %d,  data(0) = %d, missed_frames = %u\n", j,syncbox, *(tmp+43), missing_frames );
+    if(!(j%slow_divider)) printf("S: local_frame = %d ,sync = %d,  data0 = %d, missed_frm = %u\n", j,syncbox, *(tmp+43), missing_frames );
     P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write  latbest frame
     j++;
     

@@ -54,7 +54,7 @@ int main()
       C->test(data); // check that daata is OK
       if(!(j % slow_divider))
 	{
-	  printf("frame = %u, syncbox = %u,  data[0] = %d,  missed_frames = %u\n", j,  data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[43], C->missed_frame_count);
+	  printf("P: Local_frame = %u, sync = %u,  data0 = %d,  missed_frm = %u\n", j,  data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[43], C->missed_frame_count);
 	  //scanf("%d", &x);
 	}
     }
@@ -88,7 +88,7 @@ bool check_data::test(MCE_t *data)
   last_CC_counter = x;
   syncbox = data[MCEheader_syncbox_offset];
   
-  if (total_cycles > 0) // allow startup time
+  if (total_cycles > 1000) // allow startup time
     {
       if ((syncbox != last_syncbox + 1))
 	{
