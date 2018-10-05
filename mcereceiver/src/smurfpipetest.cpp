@@ -7,6 +7,9 @@ class check_data
 {
  public:
   uint last_CC_counter;
+  uint missed_frame_count;
+  uint last_syncbox; 
+  uint total_cycles;
 
   check_data(void);
   bool test(MCE_t *data);
@@ -51,7 +54,7 @@ int main()
       C->test(data); // check that daata is OK
       if(!(j % slow_divider))
 	{
-	  printf("frame = %u, syncbox = %u , data(0) = %d\n", j, data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[43]);
+	  printf("frame = %u, syncbox = %u,  data[0] = %d,  missed_frames = %u\n", j,  data[MCEheader_syncbox_offset] & 0xFFFFFFFF, data[43], C->missed_frame_count);
 	  //scanf("%d", &x);
 	}
     }
@@ -63,6 +66,9 @@ int main()
 check_data::check_data(void)
 {
   last_CC_counter = 0; 
+  missed_frame_count =  0; 
+  total_cycles = 0;
+  last_syncbox = 0;
 }
 
 bool check_data::test(MCE_t *data)
@@ -70,6 +76,8 @@ bool check_data::test(MCE_t *data)
   uint x;
   uint j;
   MCE_t checksum;
+  uint32_t syncbox; 
+  
   x = data[MCEheader_CC_counter_offset];
   if ((x != last_CC_counter + 1))
     {
@@ -78,6 +86,19 @@ bool check_data::test(MCE_t *data)
       return(false);
     }
   last_CC_counter = x;
+  syncbox = data[MCEheader_syncbox_offset];
+  
+  if (total_cycles > 0) // allow startup time
+    {
+      if ((syncbox != last_syncbox + 1))
+	{
+	  missed_frame_count = missed_frame_count + 1; 
+	  printf("mised frames = %u \n", missed_frame_count);
+	}
+    }
+
+  last_syncbox = syncbox; 
+  total_cycles++; 
   checksum = data[0];
   for(j = 1; j < MCE_frame_length; j++) checksum = checksum ^ data[j];
   if(checksum)
