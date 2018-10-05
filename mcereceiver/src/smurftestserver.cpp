@@ -276,6 +276,10 @@ int main()
   int j, k, m, r, x; 
   uint recframes = 0;
   MCE_t *tmp;
+  uint last_syncbox, syncbox;
+  uint missing_frames = 0;
+
+  last_syncbox = syncbox = 0;
  
   //uint number_to_record = 50; // number output frames to record. 
  
@@ -292,9 +296,16 @@ int main()
     recframes = S->read_data();
     if (recframes == 0) continue; // no frames receive this time
     tmp = (MCE_t*) S->output_ptr[recframes-1]; // convert pointer for testing output
-    if(!(j%slow_divider)) printf("frame = %d , data(0) = %d\n", j,*(tmp+43) );
+    syncbox = *(tmp+10);
+    if(j > 1000) // wait for startup
+      {
+	if (syncbox != (last_syncbox + 1)) missing_frames++; 
+      }
+    last_syncbox = syncbox;
+    if(!(j%slow_divider)) printf("frame = %d ,syncbox = %d,  data(0) = %d, missed_frames = %u\n", j,syncbox, *(tmp+43), missing_frames );
     P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write  latbest frame
     j++;
+    
   }    
   printf("done receiving \n");
 }
