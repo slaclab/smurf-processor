@@ -54,6 +54,9 @@ public:
   uint average_counter; // runnign counter of averages
   const char *port;  // character string that holds the port number
   const char *ip;  // character string that holds the ip addres or name
+  uint last_syncword;
+  uint frame_error_counter; 
+
   Smurftcp *S; // tcp interface, use defaults for now.
   MCEHeader *M; // mce header class
   SmurfHeader *H; // Smurf header class
@@ -209,6 +212,9 @@ Smurf2MCE::Smurf2MCE()
   internal_counter = 0;
   int j; 
 
+
+  last_syncword = 0;
+  frame_error_counter = 0; 
   C = new SmurfConfig(); // will hold config info - testing for now
   //S = new Smurftcp(port, ip);
   S = new Smurftcp(C->port_number, C->receiver_ip);
@@ -286,7 +292,7 @@ void Smurf2MCE::process_frame(void)
 	else; // nothing here
       a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
     }
- 
+  //printf("x=%u,  c = %x\n", H->get_frame_counter(), H->get_syncword());
   if (!(cnt = H->average_control(C->num_averages))) return;  // just average, otherwise send frame
   
   M->make_header(); // increments counters, readies counter
@@ -323,11 +329,17 @@ void Smurf2MCE::process_frame(void)
  
  
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
+  if (internal_counter > 2000) // ignore early sync errors
+    {
+      if(!(H->get_syncword() == (last_syncword+1))) frame_error_counter++; // increment error counter
+    }
+  last_syncword = H->get_syncword();
    if (!(internal_counter++ % slow_divider))
      {
        C->read_config_file();  // checks for config changes
-       printf( "avg= %3u, sync = %6u, intctr = %6u, frmctr = %6u, data(0)=%d\n", cnt, H->get_syncword(),internal_counter,
-	       H->get_frame_counter(), average_samples[0]);
+       //printf("error counter = %u \n"); 
+       printf( "avg= %3u, sync = %6u, frmctr = %6u, data(0)=%d, missed_frm = %u\n", cnt, H->get_syncword(),
+	       H->get_frame_counter(), average_samples[0], frame_error_counter);
 
      }
 
