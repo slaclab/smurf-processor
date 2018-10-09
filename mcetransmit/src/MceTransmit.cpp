@@ -55,7 +55,8 @@ public:
   const char *port;  // character string that holds the port number
   const char *ip;  // character string that holds the ip addres or name
   uint last_syncword;
-  uint frame_error_counter; 
+  uint frame_error_counter;
+  uint last_frame_counter; 
 
   Smurftcp *S; // tcp interface, use defaults for now.
   MCEHeader *M; // mce header class
@@ -96,8 +97,8 @@ Smurftcp::Smurftcp( const char* port_number,  const char* ip_string)
   port = port_number;
   ip = ip_string;
   connected = false;
-  connect_delay.tv_sec = 0;  // no seconds in delay connect
-  connect_delay.tv_nsec = 100000000;  // 0.1 second. 
+  connect_delay.tv_sec = 0;  // 0 seconds in delay connect
+  connect_delay.tv_nsec = 1000000;  // 0.001 second. 
   if(!(tcpbuffer = (char*)malloc(tcplen)))
     {
       error("could not allocate write buffer");
@@ -116,6 +117,7 @@ Smurftcp::Smurftcp( const char* port_number,  const char* ip_string)
 bool Smurftcp::connect_link(void)
 {
   if(connected) return(1);  // already connected
+  if(!isdigit(port[0])) return(0); // can't connect, not a valid port
   disconnect_link(); // clean up previous link
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM,0)))   // creates a socket   stream
     {
@@ -154,12 +156,7 @@ void Smurftcp::write_data(size_t bytes) // bytes is the input size, need to add 
   uint tmp, tst, j;
   uint bytes_written = 0;  // tracks how many bytes have been written.
   uint32_t *t; // just a kludge to add a header. 
-  if (!connected)
-    {
-      printf("trying to re-connect");
-     
-      connect_link();
-    } 
+  if (!connected)return;  // can't send
   t = (uint32_t*) databuffer; 
   *t++ = header; // mixcelaneous header
   *t = tcplen;
@@ -215,6 +212,7 @@ Smurf2MCE::Smurf2MCE()
 
   last_syncword = 0;
   frame_error_counter = 0; 
+  last_frame_counter = 0;
   C = new SmurfConfig(); // will hold config info - testing for now
   //S = new Smurftcp(port, ip);
   S = new Smurftcp(C->port_number, C->receiver_ip);
@@ -273,8 +271,8 @@ void Smurf2MCE::process_frame(void)
   MCE_t checksum;  // fixed for now, #2 for testing
   uint tcp_buflen; // holds filled lengthof tcp buffer
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
+  uint  syncjump = 0; // note if there is a untracked sync word jump
   H->copy_header(buffer); 
-  if(!H->check_increment()) printf("bad increment %u \n", H->get_frame_counter());
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
   astop = average_samples + smurfsamples;
@@ -292,8 +290,12 @@ void Smurf2MCE::process_frame(void)
 	else; // nothing here
       a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
     }
-  //printf("x=%u,  c = %x\n", H->get_frame_counter(), H->get_syncword());
-  if (!(cnt = H->average_control(C->num_averages))) return;  // just average, otherwise send frame
+  if (!(cnt = H->average_control(C->num_averages)))
+    {
+      if((H->get_syncword() - last_syncword) !=0) syncjump++;  // unexpedted sync jump. 
+      last_frame_counter = H->get_frame_counter();
+      return;  // just average, otherwise send frame
+    }
   
   M->make_header(); // increments counters, readies counter
   M->set_word( mce_h_offset_status, mce_h_status_value);
@@ -331,21 +333,24 @@ void Smurf2MCE::process_frame(void)
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
   if (internal_counter > 2000) // ignore early sync errors
     {
-      if(!(H->get_syncword() == (last_syncword+1))) frame_error_counter++; // increment error counter
+      if(!(H->get_syncword() == (last_syncword+1)))
+	{
+	  frame_error_counter++; // increment error counter
+	  printf("sync = %u, lasts = %u, sjmp = %2u, frame_ctr = %u, lastframe = %u\n", H->get_syncword(),  last_syncword, syncjump,  H->get_frame_counter(),  last_frame_counter);
+	  syncjump = 0; 
+	}
     }
   last_syncword = H->get_syncword();
    if (!(internal_counter++ % slow_divider))
      {
        C->read_config_file();  // checks for config changes
-       //printf("error counter = %u \n"); 
        printf( "avg= %3u, sync = %6u, frmctr = %6u, data(0)=%d, missed_frm = %u\n", cnt, H->get_syncword(),
 	       H->get_frame_counter(), average_samples[0], frame_error_counter);
+       S->connect_link(); // attempts to re-connect if not connected
 
      }
-
-
   S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
-  memset(average_samples, 0, smurfsamples * sizeof(avgdata_t));
+  memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
 }
 
 
@@ -477,6 +482,7 @@ bool SmurfHeader::check_increment()
   else 
     {
       ok = false; 
+      printf("jump, last = %x,  ct = %x \n", last_frame_count, x);
     }
   last_frame_count = x;
   if (!ok) data_ok = false; // invalidate data. 
@@ -599,6 +605,15 @@ bool SmurfConfig::read_config_file(void)
 	  }
 	continue;
       }
+    if(!strcmp(variable, "data_file_name"))
+      {
+	if(strcmp(value, data_file_name)) // update if different 
+	  { 
+	    printf("updated data file name from  %s,  to %s \n", data_file_name, value);
+	    strncpy(data_file_name, value, 100); // copy into IP string
+	  }
+	continue;
+      }
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
  }
@@ -629,7 +644,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
       strcat(filename, tmp);
       printf("new filename = %s \n", filename); 
-      if (!(fd = open(filename, O_WRONLY | O_CREAT)))
+      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK))) // testing non blocking
 	{
 	  printf("coult not open: %s \n", filename);
 	  return(0); // failed to open file
