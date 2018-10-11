@@ -93,6 +93,8 @@ const int MCEheader_syncbox_offset = 10;  // words offset to syncbox output
 // smurf header byte offsets
 const int h_version_offset = 0; // offset of version word
 const int h_version_width = 1; // bytes of version word
+const int h_1hz_counter_offset = 64;  // resets with next MCE word
+const int h_1hz_counter_width = 4; // width
 const int h_ext_counter_offset = 68;  // resets with next MCE word
 const int h_ext_counter_width = 4; // width
 const int h_frame_counter_offset = 84;  // raw frame counter. 

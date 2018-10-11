@@ -58,6 +58,7 @@ public:
   void copy_header(uint8_t *buffer); 
   uint get_version(void); 
   uint get_ext_counter(void);
+  uint get_1hz_counter(void); 
   uint get_frame_counter(void);
   bool check_increment(void); // checks that the frame counter incremented by 1;
   uint get_average_bit(void) { return(0);}; // place holder 
