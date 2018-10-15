@@ -53,6 +53,13 @@ public:
   bool average_ok;  // set for a bad header somewhere in average
   uint average_counter; 
   uint last_ext_counter; 
+  uint last_syncword; 
+  uint delta_syncword;
+  uint64_t bigtimems; // time in millliseconds
+  uint64_t lastbigtime; 
+  uint64_t unix_dtime; 
+  uint32_t epics_seconds; 
+  uint32_t epics_nanoseconds;
 
   SmurfHeader(void); // creates header with num samples
   void copy_header(uint8_t *buffer); 
@@ -60,11 +67,12 @@ public:
   uint get_ext_counter(void);
   uint get_1hz_counter(void); 
   uint get_frame_counter(void);
-  bool check_increment(void); // checks that the frame counter incremented by 1;
+  bool check_increment(void); // checks that the frame counter i ncremented by 1;
   uint get_average_bit(void) { return(0);}; // place holder 
   uint get_syncword(void); // returns 20 bit MCE sync word 
+  uint get_epics_nanoseconds(void);
+  uint get_epics_seconds(void); 
   uint average_control(int num); // num=0 means use external average,  
-
 };
 
 
@@ -72,7 +80,7 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
 {
  public:
   char *filename; // holds name of config file
-  bool ready;  //file has been read, readyh to run. w
+  bool ready;  //file has been read, readyh to run. w 
   int num_averages;  // for use when we are not using the external average trigger
   char receiver_ip[20]; // stored ip address in text!
   char port_number[8]; // por number for tcp connection, in text!
@@ -99,6 +107,40 @@ class SmurfDataFile // writes data file to disk
   uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname); // writes to file, creates new if needded. return frames written, 0 new.
 };
 
+
+class SmurfTime
+{
+ public:
+  uint64_t current;  //current value
+  uint64_t delta; // difference
+  uint mindelta; 
+  uint maxdelta; 
+  uint max_allowed_delta; 
+  uint error_count; 
+
+  SmurfTime(void);
+  void update(uint64_t val); // updates, takes delta moves current to previous
+  void reset(void){mindelta = 1000000; maxdelta = 0;};
+};
+
+
+// checks data timiers etc.  Call before first branch out of fast loop
+class SmurfValidCheck
+{
+ public:
+  
+  SmurfTime *Unix_time;
+  SmurfTime *Syncbox;
+  SmurfTime *Timingsystem;
+  SmurfTime *Counter_1hz;
+  SmurfTime *Smurf_frame;
+  bool init;   // set after first data taken
+  uint missed_syncbox; 
+
+  SmurfValidCheck(void);  // just initializes
+  void run(SmurfHeader *H); // gets all timer differences
+  void reset(void); 
+};
 
 
 #endif

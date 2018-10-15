@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/timeb.h>
 
 #ifndef __SMURF2MCE_H__
 #define __SMURF2MCE_H__
@@ -66,12 +67,12 @@ const uint32_t average_sample_offset= 0; // used to offset average data to avoid
 
 
 const int mce_h_offset_status = 0;
-const int mce_h_status_value = 0x0080C10;  // MCE header word (see excel sheet) 
+const int mce_h_status_value = 0x0080E15;  //  was 80C10 MCE header word (see excel sheet) 
 
 const uint MCEheader_CC_counter_offset = 1; // this holds a counter we use internally for mce frames
 
 const uint MCEheader_row_len_offset = 2; // mysterious thing in MCE
-const uint MCEheader_row_len_value = 256; // no idea what this should be
+const uint MCEheader_row_len_value = 16; // no idea what this should be
 
 const uint MCEheader_num_rows_reported_offset= 3; // 33 rows, 
 const uint MCEheader_num_rows_reported_value = 33; 
@@ -97,6 +98,10 @@ const int h_1hz_counter_offset = 64;  // resets with next MCE word
 const int h_1hz_counter_width = 4; // width
 const int h_ext_counter_offset = 68;  // resets with next MCE word
 const int h_ext_counter_width = 4; // width
+const int h_epics_ns_offset = 72;  // from timing system, epics time nanoseconds
+const int h_epics_ns_width = 4;
+const int h_epics_s_offset = 76;  // timing system epics time seconds
+const int h_epics_s_width = 4; 
 const int h_frame_counter_offset = 84;  // raw frame counter. 
 const int h_frame_counter_width = 4; 
 const int h_mce_syncword_offset = 96;  // 20 bit MCE sync workd

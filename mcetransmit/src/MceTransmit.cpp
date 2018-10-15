@@ -64,6 +64,7 @@ public:
   SmurfHeader *H; // Smurf header class
   SmurfConfig *C; // holds smurf configuratino class
   SmurfDataFile *D; // outptut file for saving smurf data. 
+  SmurfValidCheck *V; // checks timing etc . 
 
   Smurf2MCE();
   void acceptFrame(ris::FramePtr frame);
@@ -222,6 +223,7 @@ Smurf2MCE::Smurf2MCE()
   M = new MCEHeader();  // creates a MCE header class
   H = new SmurfHeader(); 
   D = new SmurfDataFile();  // holds output data
+  V = new SmurfValidCheck();
  
   average_counter = 0; // counter used for test averaging , not  needed in real program
   for(j = 0; j < 2; j++)
@@ -274,11 +276,6 @@ void Smurf2MCE::process_frame(void)
   MCE_t checksum;  // fixed for now, #2 for testing
   uint tcp_buflen; // holds filled lengthof tcp buffer
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
-  uint  syncjump = 0; // note if there is a untracked sync word jump
-  uint fastdiag = 0;
-  static uint mindt = 1000000; // minimum dt this cycle
-  static uint maxdt = 0; // maximum dt this cycle
-  uint32_t dt = 0; 
   H->copy_header(buffer); 
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
@@ -297,15 +294,10 @@ void Smurf2MCE::process_frame(void)
 	else; // nothing here
       a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
     }
-  if ((H->get_syncword() - last_syncword) > 1) fastdiag = 3;  // will print next 3 lines
-  if (fastdiag>0)
-    {
-      //printf("fastdiag  syncword = %u, CC_ctr = %u \n", H->get_syncword(), H->get_frame_counter()); 
-      fastdiag--;
-    }
-  if (!(cnt = H->average_control(C->num_averages)))
-    {
-      if((H->get_syncword() - last_syncword) !=0) syncjump++;  // unexpedted sync jump. 
+  cnt = H->average_control(C->num_averages);
+  V->run(H);
+  if (!cnt)
+    { 
       last_frame_counter = H->get_frame_counter();
       last_1hz_counter = H->get_1hz_counter();
       return;  // just average, otherwise send frame  END OF FAST LOOP **************************
@@ -320,12 +312,6 @@ void Smurf2MCE::process_frame(void)
   M->set_word( MCEheader_CC_ARZ_counter, smurfsamples); 
   M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
   M->set_word( MCEheader_num_rows_offset, MCEheader_num_rows_value); 
-  if (H->get_1hz_counter()> last_1hz_counter) // fix wrap, just ignore
-    {
-      dt = H->get_1hz_counter() - last_1hz_counter;
-      if (dt < mindt) {mindt = dt;}
-      if (dt > maxdt){ maxdt = dt;} 
-    }
   M->set_word( MCEheader_syncbox_offset, H->get_syncword());
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
@@ -346,31 +332,17 @@ void Smurf2MCE::process_frame(void)
   checksum  = bufx[0];
 
 		  
-  for (j = 1; j < MCE_frame_length-1; j++) checksum = checksum ^ bufx[j]; // calculate checksum
+  for (j = 1; j < MCE_frame_length-1; j++) checksum = checksum ^ bufx[j]; // calculate checksu m
  
   
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
-  if (internal_counter > 2000) // ignore early sync errors
-    {
-      if(!(H->get_syncword() == (last_syncword+1)))
-	{
-	  frame_error_counter++; // increment error counter
-	  printf("sync = %u, lasts = %u, deltafc = %u, deltat =%u\n", H->get_syncword(),  last_syncword,  H->get_frame_counter() - last_frame_counter, H->get_1hz_counter() - last_1hz_counter);
-	  syncjump = 0; 
-	}
-    }
-  last_syncword = H->get_syncword();
    if (!(internal_counter++ % slow_divider))
      {
        C->read_config_file();  // checks for config changes
-       printf( "avg=%3u, syn =%6u, frmctr=%6u, deltafc=%5u, mindt=%6u, maxdt %6u,  data0=%6d, missed_frm=%4u\n", cnt, H->get_syncword(),
-	       H->get_frame_counter(), H->get_frame_counter() - last_frame_counter,  mindt, maxdt,  average_samples[0], frame_error_counter);
+       printf("avg=%3u, sync=%6u, maxds = %2u, minds =  %2u, syncerr = %5u\n", cnt,H->get_syncword(), V->Syncbox->mindelta, V->Syncbox->maxdelta, V->Syncbox->error_count);
        S->connect_link(); // attempts to re-connect if not connected
-       mindt = 1000000;
-       maxdt = 0; 
+       V->reset();
      }
-  last_frame_counter = H->get_frame_counter(); 
-  last_1hz_counter = H->get_1hz_counter();
   S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
 }
@@ -450,6 +422,11 @@ SmurfHeader::SmurfHeader()
   data_ok = true;  // start of assuming data is OK, invalidate later.
   average_ok = true; 
   last_ext_counter = 0;  // this tracks the counter rolling over
+  last_syncword = 0; 
+  delta_syncword = 0;
+  bigtimems=0; 
+  lastbigtime = 0; 
+  unix_dtime = 0;
 }
 
 void SmurfHeader::copy_header(uint8_t *buffer)
@@ -489,6 +466,23 @@ uint SmurfHeader::get_syncword(void)
   return(x & 0xFFFFFFFF);  // pull out the counter. 
 }
 
+uint SmurfHeader::get_epics_seconds(void)
+{
+  uint64_t x;
+  x = pull_bit_field(header, h_epics_s_offset, h_epics_s_width); 
+  return(x & 0xFFFFFFFF);  // pull out the counter. 
+}
+
+uint SmurfHeader::get_epics_nanoseconds(void)
+{
+  uint64_t x;
+  x = pull_bit_field(header, h_epics_ns_offset, h_epics_ns_width); 
+  return(x & 0xFFFFFFFF);  // pull out the counter. 
+}
+
+
+
+
 
 bool SmurfHeader::check_increment()
 {
@@ -521,6 +515,16 @@ bool SmurfHeader::check_increment()
 uint SmurfHeader::average_control(int num_averages) // returns num averages when avearaging is done. 
 {
   uint x=0, y; 
+  timeb tm;  // wil lhold time imnformation
+  ftime(&tm); // get time
+  bigtimems = tm.millitm  + 1000 * tm.time; // make64 bit milliecond clock
+  unix_dtime = bigtimems - lastbigtime;
+  lastbigtime = bigtimems; 
+
+
+  y = get_syncword();
+  delta_syncword = y - last_syncword;
+  last_syncword = y; 
   if (average_counter ==0) average_ok = data_ok;  // reset avearge ok bit.
   average_counter++; // increment number of frames averaged. 
   if (num_averages)
@@ -533,7 +537,7 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
     }
   else{
     y = get_ext_counter();
-    if (last_ext_counter > y)  // 
+    if (delta_syncword)  // 
       {
 	x = average_counter; // number of averages
 	average_counter = 0; // reset average
@@ -706,7 +710,7 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
   uint totread = 0;
   uint32_t nbytes = frame->getPayload();
   //printf("accept frame called \n");
-  if (frame->getError() || (frame->getFlags() & 0x100))  // drop frame  (do we need to read out buffer?)
+  if (frame->getError() || (frame->getFlags() & 0x100))  // drop frame  (do we  need to read out buffer?)
     {
       printf("frame error \n");
       return;  // don't copy data or process
@@ -718,8 +722,6 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
   rxBytes += nbytes;
   rxCount++;
   int tmp, j; 
-
-
          // Iterators to start and end of frame
   rogue::interfaces::stream::Frame::iterator iter = frame->beginRead();
   rogue::interfaces::stream::Frame::iterator  end = frame->endRead();
@@ -750,8 +752,71 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
   //printf("target size = %u  nbytes = %u, totread = %u \n", target_size, nbytes, totread);
   if ((target_size != nbytes) || (target_size !=totread)) printf("wrong size frame from Pyrogue \n");
   process_frame();
+}
+
+SmurfTime::SmurfTime(void) 
+{
+  current = 0;
+  delta = 0;
+  error_count = 0;
+}
+
+void SmurfTime::update(uint64_t val)
+{
+  delta = (val >= current) ? val-current : 0;
+  current = val; 
+  mindelta = (delta > mindelta) ? mindelta : delta; // collect min and max
+  maxdelta = (delta < maxdelta) ? maxdelta : delta; 
+  if (delta > max_allowed_delta) error_count++;
+}
+
+
+SmurfValidCheck::SmurfValidCheck() // just creates  all variables. 
+{
+  Unix_time = new SmurfTime();
+  Syncbox = new SmurfTime();
+  Timingsystem = new SmurfTime();
+  Counter_1hz = new SmurfTime();
+  Smurf_frame = new SmurfTime();
+  init = false; 
+  missed_syncbox = 0; 
+  Unix_time->max_allowed_delta  = 1000000000;
+  Syncbox->max_allowed_delta = 1; 
+  Timingsystem->max_allowed_delta = 1000000000;
+  Counter_1hz->max_allowed_delta = 1000000000;
+  Smurf_frame->max_allowed_delta = 1; 
 
 }
+
+
+
+
+void SmurfValidCheck::run(SmurfHeader *H)
+{
+  timespec tmp_t;  // structure seconds, nanoseconds
+  uint64_t tmp; 
+  clock_gettime(CLOCK_REALTIME, &tmp_t);  // get time s, ns,  might be expensive
+  tmp = 1000000000l * (uint64_t) tmp_t.tv_sec + (uint64_t) tmp_t.tv_nsec;  // brute force multiply to 64 vit
+  Unix_time->update(tmp); 
+  Syncbox->update(H->get_syncword());
+  tmp = 1000000000l * (uint64_t) H->get_epics_seconds() + (uint64_t) H->get_epics_nanoseconds();
+  Timingsystem->update(tmp);
+  Counter_1hz->update(H->get_1hz_counter());
+  Smurf_frame->update(H->get_frame_counter());
+}
+
+
+void SmurfValidCheck::reset()
+{
+  Unix_time->reset();
+  Syncbox->reset();
+  Timingsystem->reset();
+  Counter_1hz->reset();
+  Smurf_frame->reset();
+}
+
+
+
 
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
