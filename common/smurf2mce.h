@@ -72,12 +72,14 @@ const int mce_h_status_value = 0x0080E15;  //  was 80C10 MCE header word (see ex
 const uint MCEheader_CC_counter_offset = 1; // this holds a counter we use internally for mce frames
 
 const uint MCEheader_row_len_offset = 2; // mysterious thing in MCE
-const uint MCEheader_row_len_value = 16; // no idea what this should be
+const uint MCEheader_row_len_value = 60; // no idea what this should be
 
 const uint MCEheader_num_rows_reported_offset= 3; // 33 rows, 
 const uint MCEheader_num_rows_reported_value = 33; 
 
 const uint MCEheader_data_rate_offset =4; //use number of smurf frame averages (strange name)
+const uint MCEheader_data_rate_value = 140; // fixed for now
+
 const uint MCEheader_CC_ARZ_counter = 5; // no idea, use 528 smurf samples for now
 
 const uint MCEheader_version_offset = 6;  // offset to header version. 
