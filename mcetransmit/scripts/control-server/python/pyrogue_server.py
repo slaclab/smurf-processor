@@ -680,6 +680,10 @@ class PcieCard():
 
         # Read the bypass RSSI mask
         mask = self.pcie.Core.EthLane[0].EthConfig.BypRssi.get()
+        dis  = mask
+        dis |= (1<<link)
+        self.pcie.Core.EthLane[0].EthConfig.BypRssi.set(dis)
+        time.sleep(1)
 
         if open:
             print("    Opening PCIe RSSI link {}".format(link))

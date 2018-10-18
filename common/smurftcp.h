@@ -72,7 +72,11 @@ public:
   uint get_syncword(void); // returns 20 bit MCE sync word 
   uint get_epics_nanoseconds(void);
   uint get_epics_seconds(void); 
+  uint get_clear_bit(void);
+  uint disable_file_write(void); 
+  uint disable_stream(void);
   uint average_control(int num); // num=0 means use external average,  
+  void clear_average(); // clears aveage counters
 };
 
 
@@ -104,7 +108,8 @@ class SmurfDataFile // writes data file to disk
   uint fd; // file pointer
 
   SmurfDataFile(void);
-  uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname); // writes to file, creates new if needded. return frames written, 0 new.
+  uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, bool disable);
+  // writes to file, creates new if needded. return frames written, 0 new.
 };
 
 

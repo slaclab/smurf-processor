@@ -51,6 +51,7 @@ public:
   wrap_t *wrap_counter; // byte to track phase wraps. 
   char *mask; // masks which resonators we will use. 
   avgdata_t *average_samples; // holds the averaged sample data
+  avgdata_t *average_mce_samples; // samples modified for MCE format
   uint average_counter; // runnign counter of averages
   const char *port;  // character string that holds the port number
   const char *ip;  // character string that holds the ip addres or name
@@ -210,8 +211,6 @@ Smurf2MCE::Smurf2MCE()
   bufn = 0; // current buffer 
   internal_counter = 0;
   int j; 
-
-
   last_syncword = 0;
   last_1hz_counter = 0;
   frame_error_counter = 0; 
@@ -239,6 +238,11 @@ Smurf2MCE::Smurf2MCE()
   if(!(average_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
     {
       error("could not allocate data sample buffer");
+      return;
+    }
+ if(!(average_mce_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
+    {
+      error("could not allocate mce data sample buffer");
       return;
     }
   if(!(wrap_counter = (wrap_t*)malloc(smurfsamples * sizeof(wrap_t))))
@@ -276,6 +280,7 @@ void Smurf2MCE::process_frame(void)
   MCE_t checksum;  // fixed for now, #2 for testing
   uint tcp_buflen; // holds filled lengthof tcp buffer
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
+  uint32_t avgtmp; 
   H->copy_header(buffer); 
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
@@ -308,9 +313,7 @@ void Smurf2MCE::process_frame(void)
   M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
   M->set_word( MCEheader_row_len_offset,  MCEheader_row_len_value);
   M->set_word( MCEheader_num_rows_reported_offset, MCEheader_num_rows_reported_value);
-  //M->set_word( MCEheader_data_rate_offset, cnt);  // use internal averaged frames
   M->set_word( MCEheader_data_rate_offset, MCEheader_data_rate_value);  // test with fixed average
-
   M->set_word( MCEheader_CC_ARZ_counter, smurfsamples); 
   M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
   M->set_word( MCEheader_num_rows_offset, MCEheader_num_rows_value); 
@@ -318,34 +321,46 @@ void Smurf2MCE::process_frame(void)
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
 
+  // data munging for MCE format
 
-  if(C->data_frames) // file writing turned on
+  if(H->get_clear_bit()) // clear averages and wraps
     {
-      D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, C->data_file_name);
+    
+      memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
+      memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));  // clear wraps
+      H->clear_average();  // clears averaging
     }
 
- 
+  for(j = 0;j < smurfsamples; j++)
+    {
+      average_mce_samples[j] = (average_samples[j] & 0x1FFFFFF) << 7;
+    }
+
+
+  if(C->data_frames) D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, 
+				   C->data_file_name, H->disable_file_write());
 
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
-  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
+  memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_mce_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
   tcp_buflen =  MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t);
   bufx = (uint32_t*) tcpbuf;  // map buffer to 32 bit
-  checksum  = bufx[0];
-
-		  
+  
+  checksum  = bufx[0];		  
   for (j = 1; j < MCE_frame_length-1; j++) checksum = checksum ^ bufx[j]; // calculate checksu m
  
-  
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
    if (!(internal_counter++ % slow_divider))
      {
        C->read_config_file();  // checks for config changes
-       printf("avg=%3u, sync=%6u, maxds = %2u, minds =  %2u, syncerr = %5u\n", cnt,H->get_syncword(), V->Syncbox->mindelta, V->Syncbox->maxdelta, V->Syncbox->error_count);
+       printf("avg=%3u, sync=%6u, maxds = %2u, minds =  %2u, syncerr = %5u\n", cnt,H->get_syncword(), V->Syncbox->mindelta, 
+	      V->Syncbox->maxdelta, V->Syncbox->error_count);
+       printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d\n", H->get_clear_bit(), H->disable_stream(),
+       	      H->disable_file());
        S->connect_link(); // attempts to re-connect if not connected
        V->reset();
      }
-  S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
+   if (!H->disable_stream())  S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
 }
 
@@ -482,6 +497,27 @@ uint SmurfHeader::get_epics_nanoseconds(void)
   return(x & 0xFFFFFFFF);  // pull out the counter. 
 }
 
+uint SmurfHeader::get_clear_bit(void)
+{
+  uint64_t x;
+  x = pull_bit_field(header,  h_user0a_ctrl_offset, h_user0a_ctrl_width);
+  return((x & (1 << h_ctrl_bit_clear))? 1 : 0);
+}
+
+uint SmurfHeader::disable_file_write(void)
+{
+  uint64_t x;
+  x = pull_bit_field(header,  h_user0a_ctrl_offset, h_user0a_ctrl_width);
+  return((x & (1 << h_ctrl_bit_disable_file))? 1 : 0);
+}
+
+uint SmurfHeader::disable_stream(void)
+{
+  uint64_t x;
+  x = pull_bit_field(header,  h_user0a_ctrl_offset, h_user0a_ctrl_width);
+  return((x & (1 <<  h_ctrl_bit_disable_stream))? 1 :0);
+}
+
 
 
 
@@ -513,6 +549,11 @@ bool SmurfHeader::check_increment()
   return(ok); 
 }
 
+
+void SmurfHeader::clear_average(void)
+{
+  average_counter==0;
+}
 
 uint SmurfHeader::average_control(int num_averages) // returns num averages when avearaging is done. 
 {
@@ -664,10 +705,20 @@ SmurfDataFile::SmurfDataFile(void)
   fd = 0; // shows that we don't have a pointer yet
 }
 
-uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname)
+uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, bool disable)
 {
   time_t tx;
   char tmp[100]; // for strings
+  if(disable)
+    {
+      if(fd)  // close file
+	{
+	  close(fd);
+	  fd = 0; 
+	}
+      frame_counter = 0;
+       return(frame_counter); 
+    }
   if(!fd) // need to open a file
     {
       tx = time(NULL);

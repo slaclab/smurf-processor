@@ -109,6 +109,13 @@ const int h_frame_counter_width = 4;
 const int h_mce_syncword_offset = 96;  // 20 bit MCE sync workd
 const int h_mce_syncword_width = 5;  // yes 40 bits, bletch. 
 
+const int h_user0a_ctrl_offset = 104; // first byte first user word, control smurfd
+const int h_user0a_ctrl_width = 1; 
+// bit fields
+const int h_ctrl_bit_clear = 0;  // 1 to clear average and unwrap
+const int h_ctrl_bit_disable_stream = 1;  // 1 to disable streming to mce
+const int h_ctrl_bit_disable_file  = 2;  // 1 to disable writing to files
+
 
 //const char server_port_number[] = "5345";  // default unless overriddenw was 5433
 //const char server_ip_addr[] = "127.0.0.1"; //default
