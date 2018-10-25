@@ -31,6 +31,8 @@ import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 import MceTransmit
 
+PIDFILE = '/tmp/smurf.pid'
+
 # Print the usage message
 def usage(name):
     print("Usage: {} -a|--addr IP_address [-d|--defaults config_file]".format(name),\
@@ -724,8 +726,35 @@ class PcieCard():
         print("      RssiClient[{}].OpenConn = {}".format(link,
             self.pcie.Core.EthLane[0].RssiClient[link].OpenConn.get()))
 
+def kill_old_process():
+    try:
+        finp = open(PIDFILE)
+        pid = int(finp.readlines()[0][:-1])
+        finp.close()
+        cmd = "kill -9 %d" % pid
+        os.system(cmd)
+        print(' ')
+        print(' ')
+        print(' ')
+        print(' ')
+        print(' SMURF already running: killing pid=', str(pid), ' at ', str(time.ctime()))
+        print(' ')
+        print(' ')
+        print(' ')
+        print(' ')
+    except:
+        pass
+
+def save_pid():
+    """ save pid for later killing """
+    fpid = open(PIDFILE, 'w')
+    fpid.write("%d\n" % os.getpid() )
+    fpid.close()
+
 # Main body
 if __name__ == "__main__":
+    kill_old_process()
+    save_pid()
     ip_addr = ""
     group_name = ""
     epics_prefix = ""
