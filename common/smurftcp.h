@@ -72,10 +72,15 @@ public:
   uint get_syncword(void); // returns 20 bit MCE sync word 
   uint get_epics_nanoseconds(void);
   uint get_epics_seconds(void); 
-  uint get_clear_bit(void);
-  uint disable_file_write(void); 
-  uint disable_stream(void);
+  uint get_clear_bit(void);  // 1 means clear averaging and unwrap
+  uint disable_file_write(void); // 1 means don't write a local output file
+  uint disable_stream(void); // 1 means don't stream to MCE 
   uint average_control(int num); // num=0 means use external average,  
+  uint get_num_rows(void);  // num rows from header
+  uint get_num_rows_reported(void);
+  uint get_row_len(void);
+  uint get_data_rate(void);
+  
   void clear_average(); // clears aveage counters
 };
 
@@ -129,7 +134,7 @@ class SmurfTime
 };
 
 
-// checks data timiers etc.  Call before first branch out of fast loop
+// checks data timers etc.  Call before first branch out of fast loop
 class SmurfValidCheck
 {
  public:

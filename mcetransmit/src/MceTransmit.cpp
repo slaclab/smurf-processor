@@ -311,12 +311,12 @@ void Smurf2MCE::process_frame(void)
   M->make_header(); // increments counters, readies counter
   M->set_word( mce_h_offset_status, mce_h_status_value);
   M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
-  M->set_word( MCEheader_row_len_offset,  MCEheader_row_len_value);
-  M->set_word( MCEheader_num_rows_reported_offset, MCEheader_num_rows_reported_value);
-  M->set_word( MCEheader_data_rate_offset, MCEheader_data_rate_value);  // test with fixed average
+  M->set_word( MCEheader_row_len_offset,  H->get_row_len());
+  M->set_word( MCEheader_num_rows_reported_offset, H->get_num_rows_reported());
+  M->set_word( MCEheader_data_rate_offset, H->get_data_rate());  // test with fixed average
   M->set_word( MCEheader_CC_ARZ_counter, smurfsamples); 
   M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
-  M->set_word( MCEheader_num_rows_offset, MCEheader_num_rows_value); 
+  M->set_word( MCEheader_num_rows_offset, H->get_num_rows()); 
   M->set_word( MCEheader_syncbox_offset, H->get_syncword());
   for (j = 0; j < smurfsamples; j++)   // divide out number of samples
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
@@ -356,7 +356,7 @@ void Smurf2MCE::process_frame(void)
        printf("avg=%3u, sync=%6u, maxds = %2u, minds =  %2u, syncerr = %5u\n", cnt,H->get_syncword(), V->Syncbox->mindelta, 
 	      V->Syncbox->maxdelta, V->Syncbox->error_count);
        printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d\n", H->get_clear_bit(), H->disable_stream(),
-       	      H->disable_file());
+       	      H->disable_file_write());
        S->connect_link(); // attempts to re-connect if not connected
        V->reset();
      }
@@ -516,6 +516,37 @@ uint SmurfHeader::disable_stream(void)
   uint64_t x;
   x = pull_bit_field(header,  h_user0a_ctrl_offset, h_user0a_ctrl_width);
   return((x & (1 <<  h_ctrl_bit_disable_stream))? 1 :0);
+}
+
+
+
+uint SmurfHeader::get_num_rows(void)
+{
+  uint x;
+  x = pull_bit_field(header, h_num_rows_offset, h_num_rows_width);
+  return(x ? x: MCEheader_num_rows_value);  // if zero go to default
+}
+
+uint SmurfHeader::get_num_rows_reported(void)
+{
+  uint x;
+  x = pull_bit_field(header, h_num_rows_reported_offset, h_num_rows_reported_width);
+  return(x ? x: MCEheader_num_rows_reported_value);
+
+}
+
+uint SmurfHeader::get_row_len(void)
+{
+  uint x;
+  x = pull_bit_field(header, h_row_len_offset, h_row_len_width);
+  return(x ? x: MCEheader_row_len_value);
+}
+
+uint SmurfHeader::get_data_rate(void)
+{
+  uint x;
+  x = pull_bit_field(header, h_data_rate_offset, h_data_rate_width);
+  return(x ? x: MCEheader_data_rate_value);
 }
 
 
