@@ -110,23 +110,19 @@ const int h_mce_syncword_offset = 96;  // 20 bit MCE sync workd
 const int h_mce_syncword_width = 5;  // yes 40 bits, bletch. 
 
 const int h_user0a_ctrl_offset = 104; // first byte first user word, control smurfd
-const int h_user0a_ctrl_width = 1; 
+const int h_user0a_ctrl_width = 2; 
 // bit fields
 const int h_ctrl_bit_clear = 0;  // 1 to clear average and unwrap
 const int h_ctrl_bit_disable_stream = 1;  // 1 to disable streming to mce
 const int h_ctrl_bit_disable_file  = 2;  // 1 to disable writing to files
 
-const int h_user0a_ctrl2_offset = 105; // unused for now
-const int h_user0a_ctrl2_width = 1;  // unused for now
-
-
-const int h_num_rows_offset = 106;
-const int h_num_rows_width = 1;
-const int h_num_rows_reported_offset = 107;
-const int h_num_rows_reported_width = 1;
-const int h_row_len_offset = 108;
+const int h_num_rows_offset = 112;
+const int h_num_rows_width = 2;
+const int h_num_rows_reported_offset = 114;
+const int h_num_rows_reported_width = 2;
+const int h_row_len_offset = 120;
 const int h_row_len_width = 2;
-const int h_data_rate_offset = 110;
+const int h_data_rate_offset = 122;
 const int h_data_rate_width = 2;
 
 

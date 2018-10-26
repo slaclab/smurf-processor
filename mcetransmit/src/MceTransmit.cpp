@@ -357,6 +357,10 @@ void Smurf2MCE::process_frame(void)
 	      V->Syncbox->maxdelta, V->Syncbox->error_count);
        printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d\n", H->get_clear_bit(), H->disable_stream(),
        	      H->disable_file_write());
+       printf("num_rows =%d, num_rows_rep = %d, row_len = %d, data_rate = %d \n", H->get_num_rows(), H->get_num_rows_reported(), H->get_row_len(), H->get_data_rate());
+       //for(int nx = 112; nx < 120; nx++) printf("%3d->%2x | " ,nx, *(H->header+nx));
+       //printf("\n");
+
        S->connect_link(); // attempts to re-connect if not connected
        V->reset();
      }
@@ -511,7 +515,7 @@ uint SmurfHeader::disable_file_write(void)
   return((x & (1 << h_ctrl_bit_disable_file))? 1 : 0);
 }
 
-uint SmurfHeader::disable_stream(void)
+uint SmurfHeader::disable_stream(void) //
 {
   uint64_t x;
   x = pull_bit_field(header,  h_user0a_ctrl_offset, h_user0a_ctrl_width);
