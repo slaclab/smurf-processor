@@ -21,7 +21,7 @@ public:
   timespec connect_delay; // holds delay time to prevent hammering on connect()
 
   Smurftcp(const char *port_number, const char *ip_string);  // constructor
-  bool connect_link(void); // tries to make tcp connection
+  bool connect_link(bool disable); // tries to make tcp connection
   bool disconnect_link(void); // cleans up link to try again
   char *get_buffer_pointer(void );// returns pointer for writing data
   void write_data(size_t bytes); // writes data to tcp, (does most of the work).

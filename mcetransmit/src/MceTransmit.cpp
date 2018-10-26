@@ -114,14 +114,15 @@ Smurftcp::Smurftcp( const char* port_number,  const char* ip_string)
     }
   signal(SIGPIPE, SIG_IGN);  // ignore broken pipe error, will reconnect on error
   initialized = true;
-  connect_link(); // make tcp connection
+  connect_link(0); // make tcp connection, 0 means don't disable
 }
 
-bool Smurftcp::connect_link(void)
+bool Smurftcp::connect_link(bool disable)
 {
   if(connected) return(1);  // already connected
   if(!isdigit(port[0])) return(0); // can't connect, not a valid port
   disconnect_link(); // clean up previous link
+  if (disable) return(0); // if connect is disabled
   if(0 > (sockfd = socket(AF_INET, SOCK_STREAM,0)))   // creates a socket   stream
     {
       error("can't open socket");
@@ -361,10 +362,13 @@ void Smurf2MCE::process_frame(void)
        //for(int nx = 112; nx < 120; nx++) printf("%3d->%2x | " ,nx, *(H->header+nx));
        //printf("\n");
 
-       S->connect_link(); // attempts to re-connect if not connected
+       S->connect_link(H->disable_stream()); // attempts to re-connect if not connected
        V->reset();
      }
-   if (!H->disable_stream())  S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
+   if (!H->disable_stream())
+     {
+       S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
+     }
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
 }
 
