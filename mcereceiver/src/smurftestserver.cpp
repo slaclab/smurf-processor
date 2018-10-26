@@ -249,6 +249,7 @@ Smurfpipe::Smurfpipe(char *pipename)
 {
   //  if(-1 == (fifo_fd = open(pipe_name, O_WRONLY))) // OLD VERSION
   signal(SIGPIPE, SIG_IGN);  // ignores broken pipe - TESTING
+  printf("pipe name = [%s] \n", pipename);
   if(-1 == (fifo_fd = open(pipename, O_WRONLY| O_NONBLOCK))) // testing out non-blocking version
     {
       error("unable to open pipe \n");
@@ -302,7 +303,11 @@ int main()
 	if (syncbox != (last_syncbox + 1)) missing_frames++; 
       }
     last_syncbox = syncbox;
-    if(!(j%slow_divider)) printf("S: local_frame = %d ,sync = %d,  data0 = %d, missed_frm = %u\n", j,syncbox, *(tmp+43), missing_frames );
+    if(!(j%slow_divider))
+      {
+	printf("S:lclfrm=%10d ,sync=%10d, data0= %6d d_shft7=%6d,  missfrm = %u\n", j,syncbox, *(tmp+43), ((int32_t)*(tmp+43))/128,  missing_frames );
+	printf("S2: row_len=%4u, num_rows_reported=%3u, data_rate = %6u, num_rows=%3u\n", *(tmp+2), *(tmp+3), *(tmp+4), *(tmp+9));
+      }
     P->write_pipe((MCE_t*) S->output_ptr[recframes-1], MCE_frame_length);   // now write  latbest frame
     j++;
     
