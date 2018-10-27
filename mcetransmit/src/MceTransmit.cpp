@@ -49,7 +49,7 @@ public:
   uint8_t *b[2]; // dual buffers to allow last pulse subtraction
   int bufn;  // which buffer we are on.
   wrap_t *wrap_counter; // byte to track phase wraps. 
-  char *mask; // masks which resonators we will use. 
+  uint *mask; // masks which resonators we will use. 
   avgdata_t *average_samples; // holds the averaged sample data
   avgdata_t *average_mce_samples; // samples modified for MCE format
   uint average_counter; // runnign counter of averages
@@ -72,7 +72,6 @@ public:
 
   //void acceptframe_test(char* data, size_t size); // test version for local use, just a wrapper
   void process_frame(void); // does average, separates header
-  void set_mask(char *new_mask, uint num); // set array mask
   void read_mask(char *filename);// reads file to create maks
   void clear_wrap(void){memset(wrap_counter, wrap_start, smurfsamples);}; // clears wrap counter
    ~Smurf2MCE(); // destructor
@@ -251,13 +250,13 @@ Smurf2MCE::Smurf2MCE()
       error("could not allocate wrap_counter");
       return;
     }
-  if(!(mask = (char*)malloc(pyrogue_buffer_length)))
+  if(!(mask = (uint*)malloc(smurfsamples * sizeof(uint))))
     {
       error("could not allocate mask  buffer");
       return;
     }
   memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data to start
-  memset(mask, 0, pyrogue_buffer_length); // set to all off to start
+  memset(mask, 0, smurfsamples * sizeof(uint)); // set to all off to start
   read_mask(NULL);  // will use real file name later
   memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));
   initialized = true;
@@ -273,7 +272,7 @@ void Smurf2MCE::process_frame(void)
   char *pm; 
   avgdata_t *a,  *astop; // used for averaging loop
   uint j, k; 
-  uint actr; // counter for average array;
+  //uint actr; // counter for average array;
   uint dctr; // counter for input data array
   char *tcpbuf; 
   uint32_t cnt; 
@@ -282,11 +281,14 @@ void Smurf2MCE::process_frame(void)
   uint tcp_buflen; // holds filled lengthof tcp buffer
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
   uint32_t avgtmp; 
+  smurf_t dx; // current sample in loop
   H->copy_header(buffer); 
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
   astop = average_samples + smurfsamples;
   a = average_samples;
+
+#if 0  // OLD CODE WILL DELETE ONCE NEW CODE WORKS
   for (actr = 0, dctr = 0; (dctr < pyrogue_buffer_length) && (actr < smurfsamples); dctr++) 
     {
       if (!mask[dctr]) continue;   // mask is zero, just continue loop counters. 
@@ -300,6 +302,28 @@ void Smurf2MCE::process_frame(void)
 	else; // nothing here
       a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
     }
+#endif
+  for(j = 0; j < smurfsamples; j++)
+    {
+      dctr = mask[j];
+      if((mask[j] < 0) || (mask[j] > 4095))
+	{
+	  printf("bad mask %u \n", mask[j]); 
+	  break;
+	}
+      
+      if ((d[dctr] > upper_unwrap) && (p[dctr] < lower_unwrap)) // unwrap, add 1
+	{
+	  wrap_counter[j]-= 0x10000; // decrement wrap counter
+	} else if((d[dctr] < lower_unwrap) && (p[dctr] > upper_unwrap))
+	{
+	  wrap_counter[j]+= 0x10000; // inccrement wrap counter
+	}
+	else; // nothing here
+      a[j]+= (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[j]; // add counter wrap to data 
+    }
+
+
   cnt = H->average_control(C->num_averages);
   V->run(H);
   if(H->get_clear_bit()) // clear averages and wraps
@@ -311,6 +335,7 @@ void Smurf2MCE::process_frame(void)
 
   if (!cnt)
     { 
+      read_mask(NULL);  // re-read the mask file while held at zero
       last_frame_counter = H->get_frame_counter();
       last_1hz_counter = H->get_1hz_counter();
       return;  // just average, otherwise send frame  END OF FAST LOOP **************************
@@ -359,7 +384,7 @@ void Smurf2MCE::process_frame(void)
 	      V->Syncbox->maxdelta, V->Syncbox->error_count);
        printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d\n", H->get_clear_bit(), H->disable_stream(),
        	      H->disable_file_write());
-       printf("num_rows =%d, num_rows_rep = %d, row_len = %d, data_rate = %d \n", H->get_num_rows(), H->get_num_rows_reported(), H->get_row_len(), H->get_data_rate());
+       //printf("num_rows =%d, num_rows_rep = %d, row_len = %d, data_rate = %d \n", H->get_num_rows(), H->get_num_rows_reported(), H->get_row_len(), H->get_data_rate());
        //for(int nx = 112; nx < 120; nx++) printf("%3d->%2x | " ,nx, *(H->header+nx));
        //printf("\n");
 
@@ -377,32 +402,7 @@ void Smurf2MCE::process_frame(void)
 
 
 
-
-void Smurf2MCE::set_mask(char *new_mask, uint num)  // UGLY, need to do this rigth 
-{
-  int j, sum = 0;
-  memcpy(mask,new_mask, num); // copies mask over
-  for (j = 0; j < smurf_raw_samples; j++) // check for correct total points
-    {
-      if (sum == smurfsamples) mask[j] = 0;  // limit maximum mask size
-      sum += mask[j]; 
-    }
-  if (sum < smurfsamples)
-    {
-      for (j = 0; j < smurf_raw_samples; j++)
-	{
-	  if (mask[j] == 0)
-	    {
-	      mask[j]++; 
-	      sum++;
-	      if (sum == smurfsamples) break;  // ok have right length mask. 
-	    }
-	}
-    }
-}
-
-
-void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name. fire the programmer
+void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name.re the programmer
 {
   FILE *fp;
   int ret;
@@ -420,13 +420,9 @@ void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name. fire t
       {
 	ret = fscanf(fp,"%u", &m);  // read next line 
 	if ((ret == EOF) || (ret == 0)) break;  // done
-	if(m < smurf_raw_samples){
-	  mask[m] = 1; // set mask.
-	  x++;
-	}
+	mask[j] = (m < smurf_raw_samples) ? m : 0; 
       } 
     fclose(fp);
-    printf("set mask for %d \n", x); 
 }
 
 
