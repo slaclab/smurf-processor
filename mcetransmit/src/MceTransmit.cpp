@@ -302,6 +302,13 @@ void Smurf2MCE::process_frame(void)
     }
   cnt = H->average_control(C->num_averages);
   V->run(H);
+  if(H->get_clear_bit()) // clear averages and wraps
+    {
+      memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
+      memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));  // clear wraps
+      H->clear_average();  // clears averaging
+    }
+
   if (!cnt)
     { 
       last_frame_counter = H->get_frame_counter();
@@ -324,13 +331,7 @@ void Smurf2MCE::process_frame(void)
 
   // data munging for MCE format
 
-  if(H->get_clear_bit()) // clear averages and wraps
-    {
-    
-      memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
-      memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));  // clear wraps
-      H->clear_average();  // clears averaging
-    }
+ 
 
   for(j = 0;j < smurfsamples; j++)
     {
