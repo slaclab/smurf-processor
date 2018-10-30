@@ -2,3 +2,10 @@ setup.sh
 joe_run.sh 
 build
 lib
+*~
+*.o
+*.pyc
+__pycache__/
+gmon.out
+smurfpipetest
+smurftestserver
