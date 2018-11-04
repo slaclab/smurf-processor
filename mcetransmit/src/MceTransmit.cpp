@@ -762,7 +762,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       strcat(filename, tmp);
       printf("new filename = %s \n", filename); 
       //if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK))) // testing non blocking
-      if (!(fd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR))) // testing non blocking
+      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
 	{
 	  printf("coult not open: %s \n", filename);
 	  return(0); // failed to open file
