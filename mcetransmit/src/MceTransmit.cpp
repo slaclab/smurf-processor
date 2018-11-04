@@ -384,10 +384,8 @@ void Smurf2MCE::process_frame(void)
 	      V->Syncbox->maxdelta, V->Syncbox->error_count);
        printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d\n", H->get_clear_bit(), H->disable_stream(),
        	      H->disable_file_write());
-       //printf("num_rows =%d, num_rows_rep = %d, row_len = %d, data_rate = %d \n", H->get_num_rows(), H->get_num_rows_reported(), H->get_row_len(), H->get_data_rate());
-       //for(int nx = 112; nx < 120; nx++) printf("%3d->%2x | " ,nx, *(H->header+nx));
-       //printf("\n");
-
+       for(uint nx = 0; nx < 4; nx++) printf("%6d ", average_samples[nx]);  // diagnostic printout
+       printf("\n");
        S->connect_link(H->disable_stream()); // attempts to re-connect if not connected
        V->reset();
      }
@@ -763,14 +761,18 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
       strcat(filename, tmp);
       printf("new filename = %s \n", filename); 
-      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK))) // testing non blocking
+      //if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK))) // testing non blocking
+      if (!(fd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR))) // testing non blocking
 	{
 	  printf("coult not open: %s \n", filename);
 	  return(0); // failed to open file
 	}
+      else printf("opened file %s  fd = %d \n", filename, fd); 
     }
   memcpy(frame, header, header_bytes);
+  memcpy(frame + h_num_channels_offset, &data_words, 4); // UGLY horrible kludge, need to fix.
   memcpy(frame+header_bytes, data, data_words * sizeof(avgdata_t)); 
+  // printf("d = %d, %d\n", data[0], data[1]);
   write(fd, frame, header_bytes + data_words * sizeof(avgdata_t));
   frame_counter++;
   if(frame_counter >= frames_to_write)
