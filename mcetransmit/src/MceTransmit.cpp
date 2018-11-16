@@ -127,6 +127,7 @@ bool Smurftcp::connect_link(bool disable)
       error("can't open socket");
       return(false);
     }
+  // fcntl(sockfd, F_SETFL, O_NONBLOCK); // ADDED TO FIX BLOCKING NEW NEW NEW NO
   if (getaddrinfo(ip, port, NULL, &server))
     {
       error("error trying to resolve address or port");
@@ -159,11 +160,21 @@ void Smurftcp::write_data(size_t bytes) // bytes is the input size, need to add 
   uint tmp, tst, j;
   uint bytes_written = 0;  // tracks how many bytes have been written.
   uint32_t *t; // just a kludge to add a header. 
+  // for select
+  fd_set wfds;
+  struct timeval tv;
+  int isst = 0; 
+  tv.tv_sec = 0;
+  tv.tv_usec = 10000;  //10msec. 
+  // end for select
+
+
+
+
   if (!connected)return;  // can't send
   t = (uint32_t*) databuffer; 
   *t++ = header; // mixcelaneous header
   *t = tcplen;
- 
   for( j= 0; j < datalen; j++)  // split bytes to allow use of markers
   {
     tcpbuffer[2*j] = databuffer[j] & 0xF;
@@ -171,8 +182,22 @@ void Smurftcp::write_data(size_t bytes) // bytes is the input size, need to add 
   }
   tcpbuffer[0] = tcpbuffer[0] | 0x80; // add marker
   do{
+ 
+    // select stuff
+    FD_ZERO(&wfds);
+    FD_SET(sockfd, &wfds);
+    if (-1 == select(sockfd+1, NULL, &wfds, NULL, &tv)) // can we write?
+	{
+	  printf("select error \n");
+	  return;
+	}
+    isst = FD_ISSET(sockfd, &wfds); 
+    if(!isst) return;  // just give up
+   // end select stuff
+
     tmp = write(sockfd, tcpbuffer+bytes_written, tcplen - bytes_written);
-    bytes_written += tmp; // increment bytes written pointer
+    bytes_written += tmp; // increment bytes written  pointer
+   
     if (-1 == tmp)
       {
 	connected = false;
@@ -205,8 +230,6 @@ Smurf2MCE::Smurf2MCE()
   rxBytes = 0;
   rxLast = 0; // from test program
   initialized = false;
-  //port = server_port_number;
-  //ip = server_ip_addr; 
   average_counter= 1; 
   bufn = 0; // current buffer 
   internal_counter = 0;
@@ -217,7 +240,6 @@ Smurf2MCE::Smurf2MCE()
   last_frame_counter = 0;
   
   C = new SmurfConfig(); // will hold config info - testing for now
-  //S = new Smurftcp(port, ip);
   S = new Smurftcp(C->port_number, C->receiver_ip);
   M = new MCEHeader();  // creates a MCE header class
   H = new SmurfHeader(); 
@@ -232,7 +254,6 @@ Smurf2MCE::Smurf2MCE()
 	  error("could not allocate smurf2mce buffer");
 	  return;
 	}
-      //printf("buffer = %x, len = %d \n", b[j], pyrogue_buffer_length);80
       memset(b[j], 0, pyrogue_buffer_length); // zero to start with
     }
   if(!(average_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
@@ -272,7 +293,6 @@ void Smurf2MCE::process_frame(void)
   char *pm; 
   avgdata_t *a,  *astop; // used for averaging loop
   uint j, k; 
-  //uint actr; // counter for average array;
   uint dctr; // counter for input data array
   char *tcpbuf; 
   uint32_t cnt; 
@@ -288,21 +308,6 @@ void Smurf2MCE::process_frame(void)
   astop = average_samples + smurfsamples;
   a = average_samples;
 
-#if 0  // OLD CODE WILL DELETE ONCE NEW CODE WORKS
-  for (actr = 0, dctr = 0; (dctr < pyrogue_buffer_length) && (actr < smurfsamples); dctr++) 
-    {
-      if (!mask[dctr]) continue;   // mask is zero, just continue loop counters. 
-      if ((d[dctr] > upper_unwrap) && (p[dctr] < lower_unwrap)) // unwrap, add 1
-	{
-	  wrap_counter[actr]-= 0x10000; // decrement wrap counter
-	} else if((d[dctr] < lower_unwrap) && (p[dctr] > upper_unwrap))
-	{
-	  wrap_counter[actr]+= 0x10000; // inccrement wrap counter
-	}
-	else; // nothing here
-      a[actr++] += (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[actr]; // add counter wrap to data 
-    }
-#endif
   for(j = 0; j < smurfsamples; j++)
     {
       dctr = mask[j];
@@ -355,9 +360,6 @@ void Smurf2MCE::process_frame(void)
     average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
 
   // data munging for MCE format
-
- 
-
   for(j = 0;j < smurfsamples; j++)
     {
       average_mce_samples[j] = (average_samples[j] & 0x1FFFFFF) << 7;
@@ -424,8 +426,6 @@ void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name.re the 
 }
 
 
-
-
 Smurf2MCE::~Smurf2MCE() // destructor
 {
   if(S) delete S; 
@@ -435,7 +435,7 @@ Smurf2MCE::~Smurf2MCE() // destructor
 
 SmurfHeader::SmurfHeader()
 {
-  //memset(header, 0, smurfheaderlength);  // clear initial falues
+ 
   last_frame_count = 0; 
   first_cycle = 1; 
   average_counter = 0;  // number of frames avearaged so far
@@ -451,7 +451,6 @@ SmurfHeader::SmurfHeader()
 
 void SmurfHeader::copy_header(uint8_t *buffer)
 {
-  //memcpy(header, buffer, smurfheaderlength);
   header = buffer;  // just move the pointer 
   data_ok = true;  // This is where we first get new data so star with header OK. 
 }
@@ -772,7 +771,6 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
   memcpy(frame, header, header_bytes);
   memcpy(frame + h_num_channels_offset, &data_words, 4); // UGLY horrible kludge, need to fix.
   memcpy(frame+header_bytes, data, data_words * sizeof(avgdata_t)); 
-  // printf("d = %d, %d\n", data[0], data[1]);
   write(fd, frame, header_bytes + data_words * sizeof(avgdata_t));
   frame_counter++;
   if(frame_counter >= frames_to_write)
