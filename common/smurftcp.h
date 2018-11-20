@@ -94,8 +94,11 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
   char receiver_ip[20]; // stored ip address in text!
   char port_number[8]; // por number for tcp connection, in text!
   char data_file_name[1024]; // name of data file including directory, but without unix time extension
+  int file_name_extend; // 1 (default) is append time, 0 is no append, more in future
   int data_frames; // number of smples per output file. 
-  
+  int filter_order; // for low pass filter
+  double filter_a[16]; //for filter
+  double filter_b[16]; 
   
   SmurfConfig(void);
   bool read_config_file(void);
@@ -105,7 +108,7 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
 class SmurfDataFile // writes data file to disk
 {
  public:
-  char *filename; // name with timestampe
+  char *filename; // name with timestampe 
   uint frame_counter; // counts  number of frames written
   uint header_length; // size of header
   uint sample_points; // sample points in frame
@@ -113,7 +116,7 @@ class SmurfDataFile // writes data file to disk
   uint fd; // file pointer
 
   SmurfDataFile(void);
-  uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, bool disable);
+  uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, int name_mode,  bool disable);
   // writes to file, creates new if needded. return frames written, 0 new.
 };
 
@@ -151,6 +154,30 @@ class SmurfValidCheck
   void run(SmurfHeader *H); // gets all timer differences
   void reset(void); 
 };
+
+// Filter data fnction
+// y(n) = (1/a(1))* b(1)*x(n) + b(2)*x(n-1) + b(nb+1)*x(n-nb) - a(2)*y(n-1) - a(nd+1)*y(n-nb)\
+// from matlab docs implmentatin of general analog filter 
+// Special: if order = -1, use integrating filter, clear returns last integral / samples 
+class SmurfFilter
+{
+ public:
+  uint samples;  // 528 for smurf
+  uint records; // number of past buffers,enough for 8th order filter
+  double *xd;  // memory block with input ring buffer (xd + records * sample) + sample
+  double *yd;    // array of ring buffer pointers output data from filter
+  int bn;  // number of most recent ring buffer pointers
+  uint samples_since_clear; // internal use
+  avgdata_t *output; // output data
+  bool clear;  // true if data is already cleared
+  int order_n; 
+
+  SmurfFilter(uint num_samples, uint num_records); // allocates arrays
+  void clear_filter(void);  // returns last sample, clears all arrays, resets ring buffer pointers,
+  void end_run(void);
+  avgdata_t *filter(avgdata_t *data, int order, double *a, double *b); // input channnle array, outputs filtered channel array 
+};
+
 
 
 #endif

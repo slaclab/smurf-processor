@@ -50,8 +50,9 @@ public:
   int bufn;  // which buffer we are on.
   wrap_t *wrap_counter; // byte to track phase wraps. 
   uint *mask; // masks which resonators we will use. 
-  avgdata_t *average_samples; // holds the averaged sample data
+  avgdata_t *average_samples; // holds the averaged sample data (allocated in filter module)
   avgdata_t *average_mce_samples; // samples modified for MCE format
+  avgdata_t *input_data; // with unwrap, before aveaging
   uint average_counter; // runnign counter of averages
   const char *port;  // character string that holds the port number
   const char *ip;  // character string that holds the ip addres or name
@@ -66,6 +67,7 @@ public:
   SmurfConfig *C; // holds smurf configuratino class
   SmurfDataFile *D; // outptut file for saving smurf data. 
   SmurfValidCheck *V; // checks timing etc . 
+  SmurfFilter *F; // does low pass filter
 
   Smurf2MCE();
   void acceptFrame(ris::FramePtr frame);
@@ -245,6 +247,7 @@ Smurf2MCE::Smurf2MCE()
   H = new SmurfHeader(); 
   D = new SmurfDataFile();  // holds output data
   V = new SmurfValidCheck();
+  F = new SmurfFilter(smurfsamples, 16);  // 
  
   average_counter = 0; // counter used for test averaging , not  needed in real program
   for(j = 0; j < 2; j++)
@@ -256,14 +259,14 @@ Smurf2MCE::Smurf2MCE()
 	}
       memset(b[j], 0, pyrogue_buffer_length); // zero to start with
     }
-  if(!(average_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
-    {
-      error("could not allocate data sample buffer");
-      return;
-    }
  if(!(average_mce_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
     {
       error("could not allocate mce data sample buffer");
+      return;
+    }
+ if(!(input_data = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
+    {
+      error("could not allocate input data sample buffer");
       return;
     }
   if(!(wrap_counter = (wrap_t*)malloc(smurfsamples * sizeof(wrap_t))))
@@ -276,8 +279,9 @@ Smurf2MCE::Smurf2MCE()
       error("could not allocate mask  buffer");
       return;
     }
-  memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data to start
+ 
   memset(mask, 0, smurfsamples * sizeof(uint)); // set to all off to start
+  memset(input_data, 0, smurfsamples * sizeof(avgdata_t)); // set to all off to start
   read_mask(NULL);  // will use real file name later
   memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));
   initialized = true;
@@ -291,23 +295,23 @@ void Smurf2MCE::process_frame(void)
 {
   smurf_t *d, *p;  // d is this buffer, p is last buffer; 
   char *pm; 
-  avgdata_t *a,  *astop; // used for averaging loop
+  //avgdata_t *a; // used for averaging loop
   uint j, k; 
   uint dctr; // counter for input data array
   char *tcpbuf; 
   uint32_t cnt; 
   int tmp;
   MCE_t checksum;  // fixed for now, #2 for testing
-  uint tcp_buflen; // holds filled lengthof tcp buffer
+  uint tcp_buflen; // holds filled length oftcp buffer
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
   uint32_t avgtmp; 
   smurf_t dx; // current sample in loop
+  
+  
   H->copy_header(buffer); 
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
-  astop = average_samples + smurfsamples;
-  a = average_samples;
-
+ 
   for(j = 0; j < smurfsamples; j++)
     {
       dctr = mask[j];
@@ -325,17 +329,18 @@ void Smurf2MCE::process_frame(void)
 	  wrap_counter[j]+= 0x10000; // inccrement wrap counter
 	}
 	else; // nothing here
-      a[j]+= (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[j]; // add counter wrap to data 
+      input_data[j] = (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[j];
     }
-
+  
+  average_samples = F->filter(input_data, C->filter_order, C->filter_a, C->filter_b); // Low Pass Filter
 
   cnt = H->average_control(C->num_averages);
   V->run(H);
   if(H->get_clear_bit()) // clear averages and wraps
     {
-      memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
       memset(wrap_counter, wrap_start, smurfsamples * sizeof(wrap_t));  // clear wraps
       H->clear_average();  // clears averaging
+      F->clear_filter();
     }
 
   if (!cnt)
@@ -345,7 +350,7 @@ void Smurf2MCE::process_frame(void)
       last_1hz_counter = H->get_1hz_counter();
       return;  // just average, otherwise send frame  END OF FAST LOOP **************************
     }
-  
+  F->end_run();  // clears if we are doing a straight average
   M->make_header(); // increments counters, readies counter
   M->set_word( mce_h_offset_status, mce_h_status_value);
   M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
@@ -356,8 +361,6 @@ void Smurf2MCE::process_frame(void)
   M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
   M->set_word( MCEheader_num_rows_offset, H->get_num_rows()); 
   M->set_word( MCEheader_syncbox_offset, H->get_syncword());
-  for (j = 0; j < smurfsamples; j++)   // divide out number of samples
-    average_samples[j] = (avgdata_t) (((double)average_samples[j])/cnt + average_sample_offset); // do in double
 
   // data munging for MCE format
   for(j = 0;j < smurfsamples; j++)
@@ -367,7 +370,7 @@ void Smurf2MCE::process_frame(void)
 
 
   if(C->data_frames) D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, 
-				   C->data_file_name, H->disable_file_write());
+				   C->data_file_name, C->file_name_extend, H->disable_file_write());
 
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
@@ -395,14 +398,13 @@ void Smurf2MCE::process_frame(void)
      {
        S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
      }
-  memset(average_samples, 0, smurfsamples * sizeof(avgdata_t)); // clear average data
 }
 
 
 
 
 
-void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name.re the programmer
+void Smurf2MCE::read_mask(char *filename)  // ugly, hard coded file name. fire the programmer
 {
   FILE *fp;
   int ret;
@@ -657,6 +659,15 @@ SmurfConfig::SmurfConfig(void)
   strcpy(receiver_ip, "127.0.0.1"); // default
   strcpy(port_number, "3333");  // temporary for now
   strcpy(data_file_name, "data"); 
+  file_name_extend = 1;  // default is to append time 
+  filter_order = 0; // default for block average
+  for(uint j =0; j < 16; j++)
+    {
+      filter_a[j] = 0;
+      filter_b[j] = 0;
+    }
+  filter_a[0] = 1;  
+  filter_b[0] = 1; 
   ready = read_config_file();  
 }
 
@@ -668,6 +679,7 @@ bool SmurfConfig::read_config_file(void)
   char variable[100];
   char value[100];
   int tmp;
+  double tmpd;
   char *endptr; // used but discarded in conversion
   if(!( fp = fopen(filename,"r"))) return(false); // open config file
   do{
@@ -722,9 +734,59 @@ bool SmurfConfig::read_config_file(void)
 	  }
 	continue;
       }
+  
+    if(!strcmp(variable, "file_name_extend"))
+      {
+	tmp = strtol(value, &endptr, 10);  // base 10, doh
+	if (file_name_extend != tmp)
+	  {
+	    if(tmp) printf("adding time to file name");
+	    else  printf("not adding time to file name");
+	    file_name_extend = tmp;
+	  }
+	continue;
+      }
+    if(!strcmp(variable, "filter_order"))
+      {
+	tmp = strtol(value, &endptr, 10);  // base 10, doh
+	if (filter_order != tmp)
+	  {
+	    printf("updated filter order from %d to %d\n", filter_order, tmp);
+	    filter_order = tmp;
+	  }
+	continue;
+      }
+    for (uint n = 0; n < 16;  n++)
+      {
+	char tmpa[100]; // holds string
+	char tmpb[100];
+	sprintf(tmpa, "filter_a%d",n); 
+	sprintf(tmpb, "filter_b%d",n);
+	if(!strcmp(variable, tmpa))
+	  {
+	    tmpd = strtod(value, &endptr);  // conver to float
+	    if (filter_a[n] != tmpd)
+	      {
+		printf("filter_a%d updated from %f to %f\n", n, filter_a[n], tmpd);
+		filter_a[n] = tmpd;
+	      }
+	    break;
+	  }
+	if(!strcmp(variable, tmpb))
+	  {
+	    tmpd = strtod(value, &endptr);  // conver to float
+	    if (filter_b[n] != tmpd)
+	      {
+		printf("filter_b%d updated from %f to %f\n", n, filter_b[n], tmpd);
+		filter_b[n] = tmpd;
+	      }
+	    break;
+	  }
+
+      }
   }while ((n!=0) && (n != EOF));  // end when n ==0, end of file
   fclose(fp); // done with file
- }
+}
 
 
 SmurfDataFile::SmurfDataFile(void)
@@ -738,7 +800,7 @@ SmurfDataFile::SmurfDataFile(void)
   fd = 0; // shows that we don't have a pointer yet
 }
 
-uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, bool disable)
+uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, int name_mode,  bool disable)
 {
   time_t tx;
   char tmp[100]; // for strings
@@ -754,13 +816,18 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
     }
   if(!fd) // need to open a file
     {
-      tx = time(NULL);
       memset(filename, 0, 1024); // zero for now
       strcat(filename, fname); // add file name
-      sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
-      strcat(filename, tmp);
+      if (name_mode)
+	{
+	  tx = time(NULL);
+	  sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
+	  strcat(filename, tmp);
+	}
+      else strcat(filename, ".dat");  // just use base name
+
       printf("new filename = %s \n", filename); 
-      //if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK))) // testing non blocking
+     
       if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
 	{
 	  printf("coult not open: %s \n", filename);
@@ -781,17 +848,6 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
     }
   return(frame_counter);
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 void Smurf2MCE::acceptFrame ( ris::FramePtr frame ) 
@@ -904,6 +960,76 @@ void SmurfValidCheck::reset()
   Smurf_frame->reset();
 }
 
+
+
+SmurfFilter::SmurfFilter(uint num_samples, uint num_records)
+{
+  records = num_records;
+  samples = num_samples;
+  clear = false;
+  xd = (double*)malloc(samples * records * sizeof(double));  // don't bother checking valid, only at startup, fix later
+  yd =  (double*)malloc(samples * records * sizeof(double));
+  output = (avgdata_t*) malloc(samples * sizeof(avgdata_t));
+  bn = 0;
+  clear_filter();
+}
+
+
+void SmurfFilter::clear_filter(void)
+{
+  memset(xd, 0, records * samples * sizeof(double));
+  memset(yd, 0, records * samples * sizeof(double));
+  samples_since_clear = 0;  // reset
+  order_n = -1;
+  bn = 0;  // ring buffer pointers back to zero
+}
+
+void SmurfFilter::end_run()
+{
+  if(order_n == -1)
+    {
+      clear_filter();
+    }
+}
+
+ avgdata_t *SmurfFilter::filter(avgdata_t *data, int order, double *a, double *b)
+{
+  if(order_n != order){
+    printf("changed filter order to %d \n", order);
+    clear_filter();
+  }
+  order_n = order;  // used to clear when using the flat average filter
+  samples_since_clear++;  
+  if (order == -1) // special case flat average filter
+    {
+      for(uint n = 0; n <  samples;  n++)
+	{
+	  *(yd + bn * samples + n) += (double) (*(data+n)); // just sum into first record.
+	  *(output+n) = (avgdata_t) (*(yd+bn*samples + n) / (double) samples_since_clear);  // convert 
+	}
+    }  
+  else
+    {
+      bn = (bn + 1) % records;  // increment ring buffer pointer
+      for (uint n = 0; n < samples; n++)
+	{
+	  *(xd + bn * samples + n) = (double) (*(data+n));  // convert to doubles
+	}
+      memset(yd + bn * samples, 0, samples * sizeof(double)); // clear new y data
+      for (uint n = 0; n < samples; n++) // loop over channels for filter  
+	{
+	  *(yd + bn * samples + n) = b[0] * *(xd + bn * samples + n);
+	  for(int r = 1; r <= order; r++) // one more record than order. (eg order = 0 is record)
+	    {
+	      int nx = (bn - r) % records;  // should give the correct buffer reference 
+	      *(yd + bn * samples + n) += b[r] * *(xd + nx * samples + n) - a[r] * *(yd + nx * samples + n);
+	    }
+	  *(yd +bn * samples + n) = *(yd+bn * samples +n) / a[0];  // divide final answer
+	  *(output+n) = (avgdata_t) *(yd+bn*samples + n); 
+	}
+    }
+  return(output); 
+}
 
 
 

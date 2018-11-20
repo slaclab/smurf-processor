@@ -31,6 +31,11 @@ import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 import MceTransmit
 
+import gc
+gc.disable()
+print("GARBGE COLLECTION DISABLED")
+
+
 PIDFILE = '/tmp/smurf.pid'
 
 # Print the usage message
