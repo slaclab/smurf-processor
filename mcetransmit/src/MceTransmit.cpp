@@ -124,12 +124,12 @@ bool Smurftcp::connect_link(bool disable)
   if(!isdigit(port[0])) return(0); // can't connect, not a valid port
   disconnect_link(); // clean up previous link
   if (disable) return(0); // if connect is disabled
-  if(0 > (sockfd = socket(AF_INET, SOCK_STREAM,0)))   // creates a socket   stream
+  if(0 > (sockfd = socket(AF_INET, SOCK_STREAM, 0)))   // creates a socket  
     {
       error("can't open socket");
       return(false);
     }
-  // fcntl(sockfd, F_SETFL, O_NONBLOCK); // ADDED TO FIX BLOCKING NEW NEW NEW NO
+  // fcntl(sockfd, F_SETFL, O_NONBLOCK); // ADDED TO FIX BLOCKING doesn't work, won't connect
   if (getaddrinfo(ip, port, NULL, &server))
     {
       error("error trying to resolve address or port");
@@ -995,7 +995,6 @@ void SmurfFilter::end_run()
  avgdata_t *SmurfFilter::filter(avgdata_t *data, int order, double *a, double *b)
 {
   if(order_n != order){
-    printf("changed filter order to %d \n", order);
     clear_filter();
   }
   order_n = order;  // used to clear when using the flat average filter
