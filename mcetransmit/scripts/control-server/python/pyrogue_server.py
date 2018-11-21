@@ -31,9 +31,9 @@ import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 import MceTransmit
 
-import gc
-gc.disable()
-print("GARBGE COLLECTION DISABLED")
+#import gc
+#gc.disable()
+#print("GARBGE COLLECTION DISABLED")
 
 
 PIDFILE = '/tmp/smurf.pid'
@@ -255,12 +255,17 @@ class LocalServer(pyrogue.Root):
                 pyrogue.streamConnect(fpga.stream.application(0x80 + i),
                  stm_data_writer.getChannel(i))
                 # Streaming interface streams
-                pyrogue.streamConnect(fpga.stream.application(0xC0 + i),
-                 stm_interface_writer.getChannel(i))
+                #pyrogue.streamConnect(fpga.stream.application(0xC0 + i),  # new commended out
+                # stm_interface_writer.getChannel(i))
 
             # Our receiver
+            data_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
             rx = MceTransmit.Smurf2MCE()
-            pyrogue.streamTap(fpga.stream.application(0xC1), rx)
+            #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
+            #pyrogue.streamConnect(base.FpgaTopLevel.stream.Application(0xC1), data_fifo) # new
+            pyrogue.streamConnect(fpga.stream.application(0xC1), data_fifo)
+            pyrogue.streamConnect(data_fifo,rx)
+            #pyrogue.streamTap(fpga.stream.application(0xC1), rx)
 
             # Run control for streaming interfaces
             self.add(pyrogue.RunControl(
@@ -291,11 +296,11 @@ class LocalServer(pyrogue.Root):
 
                         # Setup a FIFO tapped to the steram data and a Slave data buffer
                         # Local variables will talk to the data buffer directly.
-                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size)
+                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size, 0)
                         data_buffer = DataBuffer(size=stream_pv_size, data_type=stream_pv_type)
                         stream_fifo._setSlave(data_buffer)
 
-                        pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
+                        #pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
 
                         # Variable to read the stream data
                         stream_var = pyrogue.LocalVariable(
@@ -423,7 +428,7 @@ class LocalServer(pyrogue.Root):
                         else:
                             fifo_size = stream_pv_size * 4
 
-                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size)
+                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size, 0) # chnages
                         stream_fifo._setSlave(stream_slave)
                         pyrogue.streamTap(fpga.stream.application(0x80+i), stream_fifo)
 
