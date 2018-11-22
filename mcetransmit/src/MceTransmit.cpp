@@ -170,9 +170,6 @@ void Smurftcp::write_data(size_t bytes) // bytes is the input size, need to add 
   tv.tv_usec = 10000;  //10msec. 
   // end for select
 
-
-
-
   if (!connected)return;  // can't send
   t = (uint32_t*) databuffer; 
   *t++ = header; // mixcelaneous header
@@ -828,7 +825,8 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
 
       printf("new filename = %s \n", filename); 
      
-      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
+      // if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
+      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
 	{
 	  printf("coult not open: %s \n", filename);
 	  return(0); // failed to open file
