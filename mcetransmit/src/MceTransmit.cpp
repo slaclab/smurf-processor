@@ -395,6 +395,10 @@ void Smurf2MCE::process_frame(void)
      {
        S->write_data(MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t) + sizeof(MCE_t));
      }
+   else
+     {
+       M->CC_frame_counter = 0;  // set to zero when not streaming 
+     }
 }
 
 
@@ -824,9 +828,9 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       else strcat(filename, ".dat");  // just use base name
 
       printf("new filename = %s \n", filename); 
-     
-      // if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
-      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
+      unlink(filename); // try to delete file if it exists before creating
+      if (!(fd = open(filename, O_WRONLY | O_CREAT | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
+      //if (!(fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_NONBLOCK, S_IRUSR | S_IWUSR))) // testing non blocking
 	{
 	  printf("coult not open: %s \n", filename);
 	  return(0); // failed to open file
