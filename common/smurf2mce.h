@@ -13,22 +13,22 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timeb.h>
+#include <math.h>
 
 #ifndef __SMURF2MCE_H__
 #define __SMURF2MCE_H__
 
 
 // do we really need all these includes? 
-
-//const uint smurf_raw_samples = 1024; // samples before masking. 
 // NOTE: need 1 extra word in MCE data for checksum!!!
 
-typedef int16_t smurf_t;  // raw smurf data type. (int? uint? need to know what we get)
+typedef int16_t smurf_t;  // raw smurf data type.)
 typedef int32_t avgdata_t;  // data type for averaged data was int but needs int32 (important fix)
-typedef uint32_t MCE_t;  //  data used in mce system
-typedef int32_t wrap_t; // type for wrap counter, just offset for now. 
+typedef uint32_t MCE_t;  // data type used in mce system
+typedef int32_t wrap_t; // data type for wrap counter 
+typedef double filter_t;  // data type for filtering data
 
-const uint slow_divider = 200; // sets divisiion ration from average to print out rate.
+const uint slow_divider = 200; // sets divisiion ration from mce rate to display rate
 
 const uint tcpreclen = 0x80000;  // allow for multiple  reads in one frame proably big enough
 const size_t pyrogue_buffer_length = 0x8000; // not sure what the maximum size could be 
@@ -59,13 +59,8 @@ const uint numframes = 8;
 const int upper_unwrap = 0x6000;  // if we are above this and jump, assume a wrap
 const int lower_unwrap = -0x6000; // if we are below this and jump, assume a wrap
 const wrap_t wrap_start = 0x0;  //starting wrap value
-const uint32_t average_sample_offset= 0; // used to offset average data to avoid wrap, may not be neeeded. 
-
 
 // MCE header
-
-
-
 const int mce_h_offset_status = 0;
 const int mce_h_status_value = 0x0080E15;  //  was 80C10 MCE header word (see excel sheet) 
 
@@ -117,6 +112,12 @@ const int h_user0a_ctrl_width = 2;
 const int h_ctrl_bit_clear = 0;  // 1 to clear average and unwrap
 const int h_ctrl_bit_disable_stream = 1;  // 1 to disable streming to mce
 const int h_ctrl_bit_disable_file  = 2;  // 1 to disable writing to files
+const int h_ctrl_bit_read_config = 3;  // set to read config file each cycle
+const int h_ctrl_nibble_test_modes = 4; // used to enable various test modes
+
+const int h_user0b_ctrl_offset = 105;
+const int h_user0b_ctrl_width = 1; 
+
 
 const int h_num_rows_offset = 112;
 const int h_num_rows_width = 2;
@@ -127,15 +128,10 @@ const int h_row_len_width = 2;
 const int h_data_rate_offset = 122;
 const int h_data_rate_width = 2;
 
+const int square_wave_amplitude = 20000;
+const int square_wave_cycles = 1000;
+const double random_amplitude = 1000; 
 
-
-
-//const char server_port_number[] = "5345";  // default unless overriddenw was 5433
-//const char server_ip_addr[] = "127.0.0.1"; //default
-//const char server_ip_addr[] = "134.79.216.240"; //default - lcls-dev3
-//const char server_ip_addr[] = "134.79.228.97"; // tid-pc93130
-//const char server_ip_addr[] = "192.168.3.1"; // harvard bicep53
-const char pipe_name[] = "/tmp/smurffifo"; // named pipe for MCE interface
-//const char pipe_name[] = "/data/cryo/mas_data_pipe";
+const char pipe_name[] = "/tmp/smurffifo"; // named pipe for smurfpipetest
 
 #endif

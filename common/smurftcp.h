@@ -15,13 +15,13 @@ public:
   struct addrinfo *server;  // will hold server address structure
   char *databuffer; // data before splitting into nibbles for tcpbuffer
   char *tcpbuffer;  // data sent over tcp, uses lower nibble, top bit as marker.
-  const char *ip;
-  const char *port;  
+  char ip[100];
+  char port[100];  
   bool connected; // are we connected? 
   timespec connect_delay; // holds delay time to prevent hammering on connect()
 
-  Smurftcp(const char *port_number, const char *ip_string);  // constructor
-  bool connect_link(bool disable); // tries to make tcp connection
+  Smurftcp(char *port_number, char *ip_string);  // constructor
+  bool connect_link(bool disable, char* port_number, char *ip_string); // tries to make tcp connection
   bool disconnect_link(void); // cleans up link to try again
   char *get_buffer_pointer(void );// returns pointer for writing data
   void write_data(size_t bytes); // writes data to tcp, (does most of the work).
@@ -67,7 +67,6 @@ public:
   uint get_ext_counter(void);
   uint get_1hz_counter(void); 
   uint get_frame_counter(void);
-  bool check_increment(void); // checks that the frame counter i ncremented by 1;
   uint get_average_bit(void) { return(0);}; // place holder 
   uint get_syncword(void); // returns 20 bit MCE sync word 
   uint get_epics_nanoseconds(void);
@@ -75,11 +74,14 @@ public:
   uint get_clear_bit(void);  // 1 means clear averaging and unwrap
   uint disable_file_write(void); // 1 means don't write a local output file
   uint disable_stream(void); // 1 means don't stream to MCE 
+  uint read_config_file(void); // 1 means read config file
   uint average_control(int num); // num=0 means use external average,  
   uint get_num_rows(void);  // num rows from header
   uint get_num_rows_reported(void);
   uint get_row_len(void);
   uint get_data_rate(void);
+  uint get_test_parameter(void); 
+  uint get_test_mode(void); //  0 = normal, 1 -> all zeros, 2 -> by channnel
   
   void clear_average(); // clears aveage counters
 };
@@ -97,12 +99,43 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
   int file_name_extend; // 1 (default) is append time, 0 is no append, more in future
   int data_frames; // number of smples per output file. 
   int filter_order; // for low pass filter
-  double filter_a[16]; //for filter
-  double filter_b[16]; 
+  filter_t filter_a[16]; //for filter
+  filter_t filter_b[16]; 
   
   SmurfConfig(void);
   bool read_config_file(void);
 };
+
+class SmurfTestData // generates test data, 4096 samples
+{
+ public:
+  uint smurf_samples;
+  uint MCE_samples;
+  uint counter; 
+  uint toggle;
+  uint16_t counter16; 
+  uint initial_sync; // initial syncbox number
+  bool init; 
+  timespec delaytime; // used for forced frame drop 
+  
+  SmurfTestData(uint smurf_samples_in, uint MCE_samples_in);  // doesn't need to do anythign yet
+  smurf_t *gen_test_smurf_data(smurf_t* input, uint mode, uint sync, uint8_t param); // modifies smurf input data
+  avgdata_t *gen_test_mce_data(avgdata_t *input, uint mode, uint sync, uint8_t param); // modifies MCE output data (give pointer to data)
+};
+
+// test data modes
+// mode 0: normal opearation
+// mode 1: set input smurf data to 0
+// mode 2: set input smurf data to equal channel number 
+// mode 3: ch0 steps -20,000 to +20,000 on sync word / 1000
+// mode 4: even spaced random number total range 1000 counts
+// mode 5: sine waves frequency is (param+1)*flux_ramp_rate / 2^16 samples on all channels
+// mode 8: set output mce data to zero
+// mode 9: set output mce data equal to channel numbber
+// mode 10: MCE output ramped data
+// mode 14: force checksum errors 1/1000 mce frames
+// mode 15: MCE force droppd frames, delay 250ms+param(ms) 1/1000 mce frames
+
 
 
 class SmurfDataFile // writes data file to disk
@@ -132,7 +165,7 @@ class SmurfTime
   uint error_count; 
 
   SmurfTime(void);
-  void update(uint64_t val); // updates, takes delta moves current to previous
+  bool update(uint64_t val); // updates, takes delta moves current to previous, returns true if jump
   void reset(void){mindelta = 1000000; maxdelta = 0;};
 };
 
@@ -141,14 +174,18 @@ class SmurfTime
 class SmurfValidCheck
 {
  public:
-  
-  SmurfTime *Unix_time;
+  FILE *fp; // holds diagnoistc file info
+  //SmurfTime *Unix_time;
   SmurfTime *Syncbox;
   SmurfTime *Timingsystem;
   SmurfTime *Counter_1hz;
   SmurfTime *Smurf_frame;
   bool init;   // set after first data taken
+  bool ready;
   uint missed_syncbox; 
+  uint last_frame_jump;  // frame# at last jump, 
+  uint frame_wait;  //wait n frames before reporting another jump to prevent overloading file
+  uint64_t initial_timing_system;
 
   SmurfValidCheck(void);  // just initializes
   void run(SmurfHeader *H); // gets all timer differences
@@ -158,14 +195,14 @@ class SmurfValidCheck
 // Filter data fnction
 // y(n) = (1/a(1))* b(1)*x(n) + b(2)*x(n-1) + b(nb+1)*x(n-nb) - a(2)*y(n-1) - a(nd+1)*y(n-nb)\
 // from matlab docs implmentatin of general analog filter 
-// Special: if order = -1, use integrating filter, clear returns last integral / samples 
+// Special: if order = -1, use integrating filter, clear returns last integral /  samples 
 class SmurfFilter
 {
  public:
   uint samples;  // 528 for smurf
   uint records; // number of past buffers,enough for 8th order filter
-  double *xd;  // memory block with input ring buffer (xd + records * sample) + sample
-  double *yd;    // array of ring buffer pointers output data from filter
+  filter_t *xd;  // memory block with input ring buffer (xd + records * sample) + sample
+  filter_t *yd;    // array of ring buffer pointers output data from filter
   int bn;  // number of most recent ring buffer pointers
   uint samples_since_clear; // internal use
   avgdata_t *output; // output data
@@ -175,8 +212,10 @@ class SmurfFilter
   SmurfFilter(uint num_samples, uint num_records); // allocates arrays
   void clear_filter(void);  // returns last sample, clears all arrays, resets ring buffer pointers,
   void end_run(void);
-  avgdata_t *filter(avgdata_t *data, int order, double *a, double *b); // input channnle array, outputs filtered channel array 
+  avgdata_t *filter(avgdata_t *data, int order, filter_t *a, filter_t *b); // input channnle array, outputs filtered channel array 
 };
+
+
 
 
 
