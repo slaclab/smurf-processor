@@ -82,7 +82,8 @@ public:
   uint get_data_rate(void);
   uint get_test_parameter(void); 
   uint get_test_mode(void); //  0 = normal, 1 -> all zeros, 2 -> by channnel
-  
+  void put_field(int offset, int width, void *data);  // for adding to smurf header
+
   void clear_average(); // clears aveage counters
 };
 
@@ -162,7 +163,9 @@ class SmurfTime
   uint mindelta; 
   uint maxdelta; 
   uint max_allowed_delta; 
+  uint min_allowed_delta; 
   uint error_count; 
+  
 
   SmurfTime(void);
   bool update(uint64_t val); // updates, takes delta moves current to previous, returns true if jump
@@ -180,6 +183,8 @@ class SmurfValidCheck
   SmurfTime *Timingsystem;
   SmurfTime *Counter_1hz;
   SmurfTime *Smurf_frame;
+  SmurfTime *Unix_time; 
+  SmurfTime *Smurf2mce; // delay from initial call 
   bool init;   // set after first data taken
   bool ready;
   uint missed_syncbox; 

@@ -29,6 +29,7 @@
 void error(const char *msg){perror(msg);};    // Just prints errors
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width); 
+uint64_t get_unix_time(); // returns unix sysetm time as 64 bit nanoseconds
 
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -63,6 +64,7 @@ public:
   uint last_frame_counter; 
   uint last_1hz_counter; 
   uint last_epicsns; 
+ 
 
   Smurftcp *S; // tcp interface, use defaults for now.
   MCEHeader *M; // mce header class
@@ -72,6 +74,7 @@ public:
   SmurfValidCheck *V; // checks timing etc . 
   SmurfFilter *F; // does low pass filter
   SmurfTestData *T; // genreates test data 
+  
 
   Smurf2MCE();
   void acceptFrame(ris::FramePtr frame);
@@ -253,6 +256,7 @@ Smurf2MCE::Smurf2MCE()
   frame_error_counter = 0; 
   last_frame_counter = 0;
   
+  
   C = new SmurfConfig(); // will hold config info - testing for now
   S = new Smurftcp(C->port_number, C->receiver_ip);
   M = new MCEHeader();  // creates a MCE header class
@@ -261,6 +265,8 @@ Smurf2MCE::Smurf2MCE()
   V = new SmurfValidCheck();
   F = new SmurfFilter(smurfsamples, 16);  // 
   T = new SmurfTestData(smurf_raw_samples, smurfsamples);
+ 
+ 
  
   average_counter = 0; // counter used for test averaging , not  needed in real program
   for(j = 0; j < 2; j++)
@@ -319,12 +325,13 @@ void Smurf2MCE::process_frame(void)
   uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
   uint32_t avgtmp; 
   smurf_t dx; // current sample in loop
+  uint64_t tm; 
   
-  
+
   H->copy_header(buffer); 
   d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
   p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
-   V->run(H);
+  // V->run(H);
   if(H->get_test_mode()) T->gen_test_smurf_data(d, H->get_test_mode(), H->get_syncword(), H->get_test_parameter());   // are we using test data, use pointer to data
 
   for(j = 0; j < smurfsamples; j++)
@@ -357,13 +364,15 @@ void Smurf2MCE::process_frame(void)
 
   if(H->read_config_file())
     {
-      if(!(fast_internal_counter++ % 5000)) C->read_config_file();  // checks for config changes, read immediately, then 1Hz 
+      if(!(fast_internal_counter++ % 5000)){
+	C->read_config_file();  // checks for config changes, read immediately, then 1H
+	read_mask(NULL);  // re-read the mask file while held at zero
+      }
     } 
   else fast_internal_counter = 0; 
   if (!cnt)
     { 
-      read_mask(NULL);  // re-read the mask file while held at zero
-      last_frame_counter = H->get_frame_counter();
+      last_frame_counter = H->get_frame_counter(); // does this belont here???? not used anyway 
       last_1hz_counter = H->get_1hz_counter();
       return;  // just average, otherwise send frame  END OF Smurf frame rate LOOP **************************
     }
@@ -389,9 +398,6 @@ void Smurf2MCE::process_frame(void)
       average_mce_samples[j] = (average_samples[j] & 0x1FFFFFF) << 7;
     }
 
-  if(C->data_frames) D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, 
-				   C->data_file_name, C->file_name_extend, H->disable_file_write());
-
   tcpbuf = S->get_buffer_pointer();  // returns location to put data (8 bytes beyond tcp start)
   memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
   memcpy(tcpbuf+ MCEheaderlength * sizeof(MCE_t), average_mce_samples, smurfsamples * sizeof(avgdata_t)); //copy data 
@@ -413,8 +419,8 @@ void Smurf2MCE::process_frame(void)
    if (!(internal_counter++ % slow_divider))
      {
       
-       printf("avg=%3u, sync=%6u, epics_seconds = %u,deltaepcs = %d\n", cnt ,H->get_syncword(), H->get_epics_seconds() , (H->get_epics_nanoseconds() -last_epicsns));
-       printf("syncerr = %5u, smurf_frame_error = %u, timng_sysete_err = %u\n", V->Syncbox->error_count, V->Smurf_frame->error_count, V->Timingsystem->error_count);
+       printf("num_avg=%3u, syncword =%6u, epics_deltaT = %u us, unixdeltaT = %u us \n", cnt ,H->get_syncword(),V->Timingsystem->delta/1000, V-> Unix_time->delta/1000 );
+       printf("syn error = %5u, smurf_frame_error = %u, timing_sysetem_error = %u, unix_error = %u\n", V->Syncbox->error_count, V->Smurf_frame->error_count, V->Timingsystem->error_count, V->Unix_time->error_count);
        printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d, read_config = %d, test_mode = %u, %u\n\n", H->get_clear_bit(), H->disable_stream(),
        	      H->disable_file_write(), H->read_config_file(),  H->get_test_mode() ,H->get_test_parameter());
        for(uint nx = 0; nx < 4; nx++) printf("%6d ", average_samples[nx]);  // diagnostic printout
@@ -432,6 +438,11 @@ void Smurf2MCE::process_frame(void)
      {
        M->CC_frame_counter = 0;  // set to zero when not streaming 
      }
+   V->run(H);
+   tm = V->Unix_time->current; 
+   H->put_field(h_unix_time_offset,  h_unix_time_width, &tm); // add time to data stream
+  if(C->data_frames) D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames, 
+				   C->data_file_name, C->file_name_extend, H->disable_file_write());
 }
 
 
@@ -467,6 +478,9 @@ void Smurf2MCE::acceptFrame ( ris::FramePtr frame )
 {
   uint totread = 0;
   uint32_t nbytes = frame->getPayload();
+  // TIMER TEST
+  V->Smurf2mce->update(get_unix_time()); 
+  
   //printf("accept frame called \n");
   if (frame->getError() || (frame->getFlags() & 0x100))  // drop frame  (do we  need to read out buffer?)
     {
@@ -650,7 +664,10 @@ uint SmurfHeader::get_test_parameter(void)
   return(x);
 }
 
-
+void SmurfHeader::put_field(int offset, int width, void *data)
+{
+  memcpy(header+offset, data, width); // not protected, proabably  a bad idea. 
+}
 
 
 
@@ -929,6 +946,8 @@ SmurfTime::SmurfTime(void)
   current = 0;
   delta = 0;
   error_count = 0;
+  max_allowed_delta = 1000000000; // will be changed later
+  min_allowed_delta = 0; // will be changed later
 }
 
 bool SmurfTime::update(uint64_t val)
@@ -937,7 +956,7 @@ bool SmurfTime::update(uint64_t val)
   current = val; 
   mindelta = (delta > mindelta) ? mindelta : delta; // collect min and max
   maxdelta = (delta < maxdelta) ? maxdelta : delta; 
-  if (delta > max_allowed_delta)
+  if ((delta > max_allowed_delta) || (delta < min_allowed_delta))
     {
       error_count++;
       return(true);
@@ -948,21 +967,24 @@ bool SmurfTime::update(uint64_t val)
 
 SmurfValidCheck::SmurfValidCheck() // just creates  all variables. 
 {
-  //Unix_time = new SmurfTime();
+  Unix_time = new SmurfTime();
   Syncbox = new SmurfTime();
   Timingsystem = new SmurfTime();
   Counter_1hz = new SmurfTime();
   Smurf_frame = new SmurfTime();
+  Smurf2mce = new SmurfTime();
   init = false; 
   ready = false; 
   missed_syncbox = 0; 
   last_frame_jump = 0;
   frame_wait = 0; // Testing for now; 
-  //  Unix_time->max_allowed_delta  = 1000000000; // 1 second, not an accurate clock
+  Unix_time->max_allowed_delta  = 10000000; // 10ms second, not an accurat e clock
+  Unix_time->min_allowed_delta = 2000000; // 2ms to see if we are writing too fast sometimes.
   Syncbox->max_allowed_delta = 1; 
-  Timingsystem->max_allowed_delta = 1000000; // 1ms
+  Timingsystem->max_allowed_delta = 10000000; // 10ms
   Counter_1hz->max_allowed_delta = 1000000000;
-  Smurf_frame->max_allowed_delta = 1;  // basically disable for now, just use syncbox jumps 
+  Smurf2mce->max_allowed_delta = 100000000; // 1 s for now
+  Smurf_frame->max_allowed_delta = 100;  // basically disable for now, just use syncbox jumps 
   if(!(fp = fopen("frame_jump_log.txt", "w")))
    {
      printf("unable to oen frame jump log file frame_jump_log.txt");
@@ -984,7 +1006,7 @@ void SmurfValidCheck::run(SmurfHeader *H)
       printf("initial time = %u \n", initial_timing_system);
       init = true;
     }
-  if(( H->get_epics_seconds() -initial_timing_system) < 60) // not started yet
+  if(( H->get_epics_seconds() -initial_timing_system) < 30) // not started yet
     return;
   if (!ready)
     {
@@ -997,12 +1019,15 @@ void SmurfValidCheck::run(SmurfHeader *H)
       else
 	{
 	  printf("Starting to record frame jumps\n");
+	  fprintf(fp, "columns are: syncbox#, syncbox_delta, smurf_frame_delta, timing_sysetm_deltaT_us, Unix_deltaT_us, smurf2mce_delay_us");
 	  fclose(fp);
 	}
     }
   //clock_gettime(CLOCK_REALTIME, &tmp_t);  // get time s, ns,  might be expensive
-  //tmp = 1000000000l * (uint64_t) tmp_t.tv_sec + (uint64_t) tmp_t.tv_nsec;  //  multiply to 64 vit
-  //jump = Unix_time->update(tmp) ? true: jump; 
+  //tmp = 1000000000l * (uint64_t) tmp_t.tv_sec + (uint64_t) tmp_t.tv_nsec;  //  multiply to 64 uint
+  tmp = get_unix_time();
+  Smurf2mce->update(tmp); 
+  jump = Unix_time->update(tmp) ? true: jump; 
   jump = Syncbox->update(H->get_syncword()) ? true: jump;
   tmp = 1000000000l * (uint64_t) H->get_epics_seconds() + (uint64_t) H->get_epics_nanoseconds();
   jump = Timingsystem->update(tmp) ? true : jump;
@@ -1015,11 +1040,18 @@ void SmurfValidCheck::run(SmurfHeader *H)
 	{
 	  printf("unable to oen frame jump log file frame_jump_log.txt");
 	}
-      fprintf(fp, "Frame jump at syncbox = %u, timingsystem time = %lu seconds \n", Syncbox->current, Timingsystem->current/1000000000);
-      fprintf(fp, "syncbox delta (~200Hz) = %4u \n ", Syncbox->delta);
-      fprintf(fp, "timing system delta = %10u us \n", Timingsystem->delta/1000);
-      fprintf(fp, "counter_delta(480KHz) = %6u\n ", Counter_1hz->delta);
-      fprintf(fp, "smurf_frame_delta = %4u \n\n", Smurf_frame->delta);
+      // fprintf(fp, "Frame jump at syncbox = %u, timingsystem time = %lu seconds \n", Syncbox->current, Timingsystem->current/1000000000);
+      // fprintf(fp, "syncbox delta (~200Hz) = %4u \n ", Syncbox->delta);
+      // fprintf(fp, "timing system delta = %10u us \n", Timingsystem->delta/1000);
+      // fprintf(fp, "Unix time delta = %10u us \n", Unix_time->delta/1000);
+      // fprintf(fp, "counter_delta(480KHz) = %6u\n ", Counter_1hz->delta);
+      // fprintf(fp, "smurf_frame_delta = %4u \n", Smurf_frame->delta);
+      // fprintf(fp, "smurf2mce delay = %u us, \n\n", Smurf2mce->delta/1000);
+      fprintf(fp, "%10u, %2u, %4u, %6u %6u %6u \n", Syncbox->current, Syncbox->delta, Smurf_frame->delta, Timingsystem->delta/1000, Unix_time->delta/1000, Smurf2mce->delta/1000);
+
+
+
+
       fclose(fp);
     }
 }
@@ -1107,17 +1139,8 @@ void SmurfFilter::end_run()
 
 
 
-uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
-{
-  uint64_t x;  // will hold version number
-  uint64_t r;
-  uint64_t tmp;
-  if(width > sizeof(uint64_t)) error("field width too big"); 
-  r = (1UL << (width*8)) -1; 
-  memcpy(&x, ptr+offset, width); // move the bytes over
-  tmp = r & (uint64_t)x; 
-  return(r & tmp);
-}
+
+
 
 SmurfTestData::SmurfTestData(uint ssamples_in, uint msamples_in)
 {
@@ -1199,10 +1222,10 @@ avgdata_t* SmurfTestData::gen_test_mce_data(avgdata_t *input, uint mode, uint sy
       for (uint j = 0; j < MCE_samples; j++) input[j] = j;
       break;
     case 10:
-      for (uint j = 0; j < MCE_samples; j++) input[j] = sync - initial_sync;
+      for (uint j = 0; j < MCE_samples; j++) input[j] = param * (sync - initial_sync);
       break;
     case 14:    // also breaks checksum.  do ramp
-      for (uint j = 0; j < MCE_samples; j++) input[j] = sync - initial_sync;
+      for (uint j = 0; j < MCE_samples; j++) input[j] = param* (sync - initial_sync);
       break;
     case 15:  // force framedrops
       for (uint j = 0; j < MCE_samples; j++) input[j] = 10000000;
@@ -1235,3 +1258,24 @@ BOOST_PYTHON_MODULE(MceTransmit) {
 
 
 
+uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
+{
+  uint64_t x;  // will hold version number
+  uint64_t r;
+  uint64_t tmp;
+  if(width > sizeof(uint64_t)) error("field width too big"); 
+  r = (1UL << (width*8)) -1; 
+  memcpy(&x, ptr+offset, width); // move the bytes over
+  tmp = r & (uint64_t)x; 
+  return(r & tmp);
+}
+
+uint64_t get_unix_time() // returns unix sysetm time as 64 bit nanoseconds
+{
+  timespec tmp_t;  // structure seconds, nanoseconds
+  uint64_t tmp; 
+  //clock_gettime(CLOCK_REALTIME, &tmp_t);  // get time s, ns,  might be expensive
+  clock_gettime(CLOCK_REALTIME, &tmp_t);
+  tmp = 1000000000l * (uint64_t) tmp_t.tv_sec + (uint64_t) tmp_t.tv_nsec;  //  multiply to 64 uint
+  return(tmp);
+}
