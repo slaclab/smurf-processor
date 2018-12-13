@@ -904,6 +904,12 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       frame_counter = 0;
        return(frame_counter); 
     }
+  if (0 != strcmp(fname, filename)) // name has changed. 
+    {
+      printf("file name has changed from %s to %s \n", filename, fname); 
+      if(fd) close(fd); // close existing file if its open
+      fd = 0; 
+    }
   if(!fd) // need to open a file
     {
       memset(filename, 0, 1024); // zero for now
@@ -914,7 +920,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
 	  sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
 	  strcat(filename, tmp);
 	}
-      else strcat(filename, ".dat");  // just use base name
+      //else strcat(filename, ".dat");  // just use base name, Dont append dat.
 
       printf("new filename = %s \n", filename); 
       unlink(filename); // try to delete file if it exists before creating
