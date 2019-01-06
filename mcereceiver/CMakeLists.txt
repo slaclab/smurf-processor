@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Title      : ROGUE Example Module CMAKE
+# Title      : ROGUE RSSI Receiver In C++
 # ----------------------------------------------------------------------------
 # File       : CMakeLists.txt
 # Created    : 2018-02-27
@@ -18,51 +18,48 @@ cmake_minimum_required(VERSION 2.8)
 include(InstallRequiredSystemLibraries)
 
 # Project name
-project (MceTransmit)
+project (mcereceiver)
 
 # C/C++
 enable_language(CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
+SET(BUILD_SHARED_LIBS OFF)
+
+#find cppzmq wrapper, installed by make of cppzmq
+find_package(cppzmq PATHS $ENV{CPPZMQ_PATH})
+
+#####################################
 # Boost Configuration
+#####################################
 set(Boost_USE_MULTITHREADED ON)
 
 # Boost may need help on SLAC machines
 set(BOOST_ROOT:PATHNAME $ENV{BOOST_PATH})
 
-# First try standard suffix for boost
-find_package(Boost 1.58 COMPONENTS system thread python3)
+find_package(Boost 1.58 COMPONENTS system thread)
 
-# Next try Debian/Ubuntu suffix for boost
-if (NOT Boost_FOUND)
-   find_package(Boost 1.58 REQUIRED COMPONENTS system thread python-py35)
-endif()
-
-# Find python3
-find_package(PythonInterp 3 REQUIRED)
-find_package(PythonLibs 3 REQUIRED)
-
-# Find Rogue
-set(Rogue_DIR $ENV{ROGUE_DIR}/lib)
-find_package(Rogue REQUIRED)
-
-#find cppzmq wrapper, installed by make of cppzmq
-find_package(cppzmq REQUIRED)
-
-include_directories(/usr/local/include/)
-
-include_directories(${ROGUE_INCLUDE_DIRS})
+include_directories(../common/)
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PYTHON_INCLUDE_DIRS})
-include_directories(${PROJECT_SOURCE_DIR}/../common/)
 
-# Create rogue python library
-add_library(MceTransmit SHARED src/MceTransmit.cpp)
+# Set output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-# Set output to TOP/lib, remove lib prefix
-set_target_properties(MceTransmit PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set_target_properties(MceTransmit PROPERTIES PREFIX "")
 
-# Link to rogue core
-TARGET_LINK_LIBRARIES(MceTransmit LINK_PUBLIC ${ROGUE_LIBRARIES} cppzmq)
+message("")
+message("----------------------------------------------------------------------")
+message("-- Success!")
+message("")
+message("-- Found cppzmq: ${cppzmq_INCLUDE_DIRS}")
+message("")
+message("-- Found boost: ${Boost_INCLUDE_DIRS}")
+message("")
+
+# Compile each source
+file(GLOB APP_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+foreach (srcFile ${APP_SOURCES})
+   get_filename_component(binName ${srcFile} NAME_WE)
+   add_executable(${binName} ${srcFile})
+   TARGET_LINK_LIBRARIES(${binName} cppzmq ${Boost_LIBRARIES})
+endforeach ()
 
