@@ -44,7 +44,9 @@ namespace ris = rogue::interfaces::stream;
 // Smurf2mce definition should be in smurftcp.h, but doesn't work, not sure why
 class Smurf2MCE : public rogue::interfaces::stream::Slave {
 
-  static const unsigned queueDepth = 100;
+  bool debug_;
+
+  static const unsigned queueDepth = 4000;
 
 // Queue
   rogue::Queue<boost::shared_ptr<rogue::interfaces::stream::Frame>> queue_;
@@ -58,6 +60,7 @@ public:
   uint32_t getCount() { return rxCount; } // Total frames
   uint32_t getBytes() { return rxBytes; } // Total Bytes
   uint32_t getLast()  { return rxLast;  } // Last frame size
+  void     setDebug(bool debug) { debug_ = debug; return;  } // Last frame size
 
 
   bool initialized;
@@ -105,6 +108,7 @@ public:
             .def("getCount", &Smurf2MCE::getCount)
             .def("getBytes", &Smurf2MCE::getBytes)
             .def("getLast",  &Smurf2MCE::getLast)
+            .def("setDebug",  &Smurf2MCE::setDebug)
          ;
          bp::implicitly_convertible<boost::shared_ptr<Smurf2MCE>, ris::SlavePtr>();
   };
@@ -125,6 +129,7 @@ Smurf2MCE::Smurf2MCE() : ris::Slave()
   last_1hz_counter = 0;
   frame_error_counter = 0; 
   last_frame_counter = 0;
+  debug_ = false;
   
   C = new SmurfConfig(); // will hold config info - testing for now
   M = new MCEHeader();  // creates a MCE header class
@@ -248,7 +253,7 @@ void Smurf2MCE::runThread(const char* endpoint)
          	else; // nothing here
                input_data[j] = (avgdata_t)(d[dctr]) + (avgdata_t) wrap_counter[j];
              }  
-           average_samples = F->filter(input_data, C->filter_order, C->filter_a, C->filter_b); // Low Pass Filter
+           average_samples = F->filter(input_data, C->filter_order, C->filter_a, C->filter_b, C->filter_g); // Low Pass Filter
            cnt = H->average_control(C->num_averages);
            if(H->get_clear_bit()) // clear averages and wraps
              {
@@ -311,7 +316,7 @@ void Smurf2MCE::runThread(const char* endpoint)
              }
           
            memcpy(tcpbuf + MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t)); 
-            if (!(internal_counter++ % slow_divider))
+            if ( debug_ &&  ( !(internal_counter++ % slow_divider) ) )
               {
                
                 printf("num_avg=%3u, syncword =%6u, epics_deltaT = %u us, unixdeltaT = %u us \n", cnt ,H->get_syncword(),V->Timingsystem->delta/1000, V-> Unix_time->delta/1000 );
@@ -327,6 +332,7 @@ void Smurf2MCE::runThread(const char* endpoint)
             if (!H->disable_stream())
               {
                 socket.send(message,  ZMQ_NOBLOCK);
+                //socket.send(message);
               }
             else
               {
@@ -623,6 +629,7 @@ SmurfConfig::SmurfConfig(void)
   strcpy(data_file_name, "data"); // default
   file_name_extend = 1;  // default is to append time 
   filter_order = 0; // default for block average
+  filter_g     = 1; // default gain 
   for(uint j =0; j < 16; j++) // clear vilter values
     {
       filter_a[j] = 0;
@@ -720,6 +727,13 @@ bool SmurfConfig::read_config_file(void)
 	  }
 	continue;
       }
+    if(!strcmp(variable, "filter_gain"))
+      {
+	tmpf = strtof(value, &endptr);  // base 10, doh
+	printf("updated filter gain from %g to %g, str=%s\n", filter_g, tmpf, value);
+	filter_g = (filter_t) tmpf;
+	continue;
+      }
     for (uint n = 0; n < 16;  n++)
       {
 	char tmpa[100]; // holds string
@@ -747,7 +761,7 @@ bool SmurfConfig::read_config_file(void)
 }
 
 
-SmurfDataFile::SmurfDataFile(void)
+SmurfDataFile::SmurfDataFile(void) : open_(false), part_(0)
 {
   filename = (char*) malloc(1024 * sizeof(char)); // too big for 
   memset(filename, 0, 1024); // zero for now
@@ -764,6 +778,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
   char tmp[100]; // for strings
   if(disable)
     {
+      part_ = 0;
       if(fd)  // close file
 	{
 	  close(fd);
@@ -772,7 +787,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       frame_counter = 0;
        return(frame_counter); 
     }
-  if (0 != strcmp(fname, filename)) // name has changed. 
+  if ( (name_mode==0) && (0 != strcmp(fname, filename))) // name has changed. 
     {
       printf("file name has changed from %s to %s \n", filename, fname); 
       if(fd) close(fd); // close existing file if its open
@@ -785,7 +800,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       if (name_mode)
 	{
 	  tx = time(NULL);
-	  sprintf(tmp, "_%u.dat", (long)tx);  // LAZY - need to use a real time converter.  
+	  sprintf(tmp, ".part_%05u", part_);  // LAZY - need to use a real time converter.  
 	  strcat(filename, tmp);
 	}
       //else strcat(filename, ".dat");  // just use base name, Dont append dat.
@@ -810,6 +825,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       if(fd) close(fd);
       fd = 0;
       frame_counter = 0;
+      part_ = (part_ + 1) % 99999;
     }
   return(frame_counter);
 }
@@ -972,7 +988,7 @@ void SmurfFilter::end_run()
     }
 }
 
- avgdata_t *SmurfFilter::filter(avgdata_t *data, int order, filter_t *a, filter_t *b)
+avgdata_t *SmurfFilter::filter(avgdata_t *data, int order, filter_t *a, filter_t *b, filter_t g)
 {
   if(order_n != order){
     clear_filter();
@@ -1004,7 +1020,7 @@ void SmurfFilter::end_run()
 	      *(yd + bn * samples + n) += b[r] * *(xd + nx * samples + n) - a[r] * *(yd + nx * samples + n);
 	    }
 	  *(yd +bn * samples + n) = *(yd+bn * samples +n) / a[0];  // divide final answer
-	  *(output+n) = (avgdata_t) *(yd+bn*samples + n); 
+	  *(output+n) = (avgdata_t) ( *(yd+bn*samples + n) * (g) ); 
 	}
     }
   return(output); 
