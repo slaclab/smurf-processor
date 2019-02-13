@@ -17,6 +17,9 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
+# workaround to start in detached screen
+source /home/cryo/.bashrc
+
 # File name definitions
 SCRIPT_NAME=$0
 TOP=$(dirname -- "$(readlink -f $0)")

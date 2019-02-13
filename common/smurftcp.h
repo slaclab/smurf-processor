@@ -94,12 +94,13 @@ class SmurfConfig  // controls smurf config, initially just reads config file, f
   char *filename; // holds name of config file
   bool ready;  //file has been read, readyh to run. w 
   int num_averages;  // for use when we are not using the external average trigger
-  char receiver_ip[20]; // stored ip address in text!
+  char receiver_ip[40]; // stored ip address in text!
   char port_number[8]; // por number for tcp connection, in text!
   char data_file_name[1024]; // name of data file including directory, but without unix time extension
   int file_name_extend; // 1 (default) is append time, 0 is no append, more in future
   int data_frames; // number of smples per output file. 
   int filter_order; // for low pass filter
+  filter_t filter_g;
   filter_t filter_a[16]; //for filter
   filter_t filter_b[16]; 
   
@@ -141,6 +142,8 @@ class SmurfTestData // generates test data, 4096 samples
 
 class SmurfDataFile // writes data file to disk
 {
+  bool open_;
+  int  part_;
  public:
   char *filename; // name with timestampe 
   uint frame_counter; // counts  number of frames written
@@ -217,7 +220,7 @@ class SmurfFilter
   SmurfFilter(uint num_samples, uint num_records); // allocates arrays
   void clear_filter(void);  // returns last sample, clears all arrays, resets ring buffer pointers,
   void end_run(void);
-  avgdata_t *filter(avgdata_t *data, int order, filter_t *a, filter_t *b); // input channnle array, outputs filtered channel array 
+  avgdata_t *filter(avgdata_t *data, int order, filter_t *a, filter_t *b, filter_t g); // input channnle array, outputs filtered channel array 
 };
 
 

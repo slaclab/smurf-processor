@@ -79,7 +79,6 @@ def usage(name):
 def create_gui(root):
     app_top = pyrogue.gui.application(sys.argv)
     gui_top = pyrogue.gui.GuiTop(group='GuiTop')
-    gui_top.resize(800, 1000)
     gui_top.addTree(root)
     print("Starting GUI...\n")
 
@@ -260,11 +259,12 @@ class LocalServer(pyrogue.Root):
 
             # Our receiver
             data_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
-            rx = MceTransmit.Smurf2MCE()
+            self.smurf2mce = MceTransmit.Smurf2MCE()
+            self.smurf2mce.setDebug( False )
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.Application(0xC1), data_fifo) # new
             pyrogue.streamConnect(fpga.stream.application(0xC1), data_fifo)
-            pyrogue.streamConnect(data_fifo,rx)
+            pyrogue.streamConnect(data_fifo, self.smurf2mce)
             #pyrogue.streamTap(fpga.stream.application(0xC1), rx)
 
             # Run control for streaming interfaces
@@ -369,6 +369,21 @@ class LocalServer(pyrogue.Root):
                 name='setDefaults',
                 description='Set default configuration',
                 function=self.set_defaults_cmd))
+
+            self.add(pyrogue.LocalCommand(
+                name='runGarbageCollection',
+                description='runGarbageCollection',
+                function=self.run_garbage_collection))
+
+            self.add(pyrogue.LocalVariable(
+                name='mcetransmitDebug',
+                description='Enable mce transmit debug',
+                mode='RW',
+                value=False,
+                localSet=lambda value: self.smurf2mce.setDebug(value),
+                hidden=False))
+
+
 
             # Start the root
             if group_name:
@@ -487,6 +502,11 @@ class LocalServer(pyrogue.Root):
             print("Stopping EPICS server...")
             self.epics.stop()
         super(LocalServer, self).stop()
+
+    def run_garbage_collection(self):
+        print("Running garbage collection...")
+        gc.collect()
+        print( gc.get_stats() )
 
 class PcieCard():
     """
@@ -904,5 +924,7 @@ if __name__ == "__main__":
 
     # Stop server
     server.stop()
+
+    os.remove(PIDFILE)
 
     print("")
