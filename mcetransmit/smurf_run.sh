@@ -5,8 +5,9 @@ SHELFMANAGER=10.0.1.4
 CRATEID=3
 SMURFSLOT=5
 NOGUI=
+# PCIe interface is default
+INTERFACE=pcie-rssi-interleaved
 INTERM="screen -h 81920 -d -m -S pyrogue "
-
 PARAMS=""
 
 while (( "$#" )); do
@@ -29,6 +30,10 @@ while (( "$#" )); do
       ;;
     --nogui)
       NOGUI=-s
+      shift 1
+      ;;
+    -e)
+      INTERFACE=eth-rssi-interleaved
       shift 1
       ;;
     --) # end argument parsing
@@ -61,6 +66,6 @@ fi
 f="./log/$(date +"%FT%H%M%S")_smurf_run.log"
 amcc_dump_bsi --all ${SHELFMANAGER}/${SMURFSLOT} |& tee $f
 
-${INTERM} /home/cryo/smurf2mce/current/mcetransmit/scripts/control-server/start_server.sh -a ${SMURFIP} -c pcie-rssi-interleaved -l ${RSSI_LINK} -t /usr/local/controls/Applications/smurf/cmb_Det/cryo-det/ultrascale+/firmware/targets/MicrowaveMuxBpEthGen2/images/current.pyrogue.tar.gz -d /usr/local/controls/Applications/smurf/cmb_Det/cryo-det/ultrascale+/firmware/targets/MicrowaveMuxBpEthGen2/config/defaults.yml -e test_epics -f Int16 -b 524288 ${NOGUI} 
+${INTERM} /home/cryo/smurf2mce/current/mcetransmit/scripts/control-server/start_server.sh -a ${SMURFIP} -c ${INTERFACE} -l ${RSSI_LINK} -t /usr/local/controls/Applications/smurf/cmb_Det/cryo-det/ultrascale+/firmware/targets/MicrowaveMuxBpEthGen2/images/current.pyrogue.tar.gz -d /usr/local/controls/Applications/smurf/cmb_Det/cryo-det/ultrascale+/firmware/targets/MicrowaveMuxBpEthGen2/config/defaults.yml -e test_epics -f Int16 -b 524288 ${NOGUI} 
 
 
