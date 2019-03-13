@@ -83,11 +83,4 @@ fi
 f="./log/$(date +"%FT%H%M%S")_smurf_run.log"
 amcc_dump_bsi --all ${SHELFMANAGER}/${SMURFSLOT} |& tee $f
 
-## ed07dde0
-echo ${INTERM} /home/cryo/smurf2mce/current/mcetransmit/scripts/control-server/start_server.sh -a ${SMURFIP} -c ${INTERFACE} -l ${RSSI_LINK} -t ${PYROGUE} -d ${DEFAULTS_YML} -e ${EPICS_ROOT} -f Int16 -b 524288 ${NOGUI} 
-## d4495370
-#${INTERM} /home/cryo/smurf2mce/current/mcetransmit/scripts/control-server/start_server.sh -a ${SMURFIP} -c ${INTERFACE} -l ${RSSI_LINK} -t /home/cryo/lbhb_fw_test2/MicrowaveMuxBpEthGen2-0x00000001-20190215083416-mdewart-d4495370.pyrogue.tar.gz -d /home/cryo/lbhb_fw_test2/defaults_lbhb_fw_test2_d4495370.yml -e ${EPICS_ROOT} -f Int16 -b 524288 ${NOGUI} 
-## 6752dc80
-#${INTERM} /home/cryo/smurf2mce/current/mcetransmit/scripts/control-server/start_server.sh -a ${SMURFIP} -c ${INTERFACE} -l ${RSSI_LINK} -t /home/cryo/shawn/fw_tests/lbhb_fw_test3/MicrowaveMuxBpEthGen2-0x00000001-20190308094902-mdewart-6752dc80.pyrogue.tar.gz -d /home/cryo/shawn/fw_tests/lbhb_fw_test3/defaults_lbhb_fw_test3_6752dc80_mmcswap.yml -e ${EPICS_ROOT} -f Int16 -b 524288 ${NOGUI} 
-
-## 3/12/19 attempting to run with 2x carriers.  Basically ignoring inputs.
+${INTERM} /home/cryo/smurf2mce/current/mcetransmit/scripts/control-server/start_server.sh -a ${SMURFIP} -c ${INTERFACE} -l ${RSSI_LINK} -t ${PYROGUE} -d ${DEFAULTS_YML} -e ${EPICS_ROOT} -f Int16 -b 524288 ${NOGUI} 
