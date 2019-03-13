@@ -33,7 +33,7 @@ import MceTransmit
 
 import gc
 gc.disable()
-print("GARBGE COLLECTION DISABLED")
+print("GARBAGE COLLECTION DISABLED")
 
 
 PIDFILE = '/tmp/smurf.pid'
@@ -783,8 +783,6 @@ def save_pid():
 
 # Main body
 if __name__ == "__main__":
-    kill_old_process()
-    save_pid()
     ip_addr = ""
     group_name = ""
     epics_prefix = ""
@@ -822,6 +820,7 @@ if __name__ == "__main__":
             group_name = arg
         elif opt in ("-e", "--epics"):       # EPICS prefix
             epics_prefix = arg
+            PIDFILE = '/tmp/smurf_%s.pid'%epics_prefix
         elif opt in ("-n", "--nopoll"):      # Disable all polling
             polling_en = False
         elif opt in ("-b", "--stream-size"): # Stream data size (on PVs)
@@ -848,6 +847,10 @@ if __name__ == "__main__":
             pcie_rssi_link = int(arg)
         elif opt in ("-u", "--dump-pvs"):   # Dump PV file
             pv_dump_file = arg
+
+    # kill/save here so we get the epics_prefix tag from the above option parsing
+    kill_old_process()
+    save_pid()
 
     # Verify if IP address is valid
     if ip_addr:
