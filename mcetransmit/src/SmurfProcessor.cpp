@@ -1127,6 +1127,7 @@ avgdata_t* SmurfTestData::gen_test_mce_data(avgdata_t *input, uint mode, uint sy
 	  int q = nanosleep(&delaytime, NULL);
 	  printf("end delay, %d\n", q);
 	}
+
       break;
     default:
       return(input);
