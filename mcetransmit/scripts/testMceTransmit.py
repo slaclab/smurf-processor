@@ -14,7 +14,7 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 import rogue.utilities
-import MceTransmit
+import Smurf
 import pyrogue
 import time
 
@@ -22,7 +22,7 @@ import time
 prbsTx = rogue.utilities.Prbs()
 
 # Our receiver
-rx = MceTransmit.SmurfProcessor()
+rx = Smurf.SmurfProcessor()
 
 # Connect the stream
 pyrogue.streamConnect(prbsTx,rx)

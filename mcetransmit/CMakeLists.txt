@@ -4,12 +4,12 @@
 # File       : CMakeLists.txt
 # Created    : 2018-02-27
 # ----------------------------------------------------------------------------
-# This file is part of the rogue_example software. It is subject to 
-# the license terms in the LICENSE.txt file found in the top-level directory 
-# of this distribution and at: 
-#    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
-# No part of the rogue_example software, including this file, may be 
-# copied, modified, propagated, or distributed except according to the terms 
+# This file is part of the rogue_example software. It is subject to
+# the license terms in the LICENSE.txt file found in the top-level directory
+# of this distribution and at:
+#    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+# No part of the rogue_example software, including this file, may be
+# copied, modified, propagated, or distributed except according to the terms
 # contained in the LICENSE.txt file.
 # ----------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 2.8)
 include(InstallRequiredSystemLibraries)
 
 # Project name
-project (MceTransmit)
+project (Smurf)
 
 # C/C++
 enable_language(CXX)
@@ -57,12 +57,12 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/../common/)
 
 # Create rogue python library
-add_library(MceTransmit SHARED src/MceTransmit.cpp)
+add_library(Smurf SHARED src/SmurfProcessor.cpp)
 
 # Set output to TOP/lib, remove lib prefix
-set_target_properties(MceTransmit PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set_target_properties(MceTransmit PROPERTIES PREFIX "")
+set_target_properties(Smurf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set_target_properties(Smurf PROPERTIES PREFIX "")
 
 # Link to rogue core
-TARGET_LINK_LIBRARIES(MceTransmit LINK_PUBLIC ${ROGUE_LIBRARIES} cppzmq)
+TARGET_LINK_LIBRARIES(Smurf LINK_PUBLIC ${ROGUE_LIBRARIES} cppzmq)
 

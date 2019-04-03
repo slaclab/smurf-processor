@@ -14,7 +14,7 @@ import pyrogue.gui
 import PyQt5.QtWidgets
 import sys
 import argparse
-import MceTransmit
+import Smurf
 import time
 
 from FpgaTopLevel import *
@@ -85,7 +85,7 @@ base.add(FpgaTopLevel(
 ))
 
 # Our receiver
-rx = MceTransmit.SmurfProcessor()
+rx = Smurf.SmurfProcessor()
 pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), rx)
 
 #streamDataWriter = pyrogue.utilities.fileio.StreamWriter(name='streamDataWriter')

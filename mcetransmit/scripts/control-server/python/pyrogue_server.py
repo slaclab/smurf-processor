@@ -29,7 +29,7 @@ from pathlib import Path
 import pyrogue
 import pyrogue.utilities.fileio
 import rogue.interfaces.stream
-import MceTransmit
+import Smurf
 
 import gc
 gc.disable()
@@ -259,7 +259,7 @@ class LocalServer(pyrogue.Root):
 
             # Our receiver
             data_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
-            self.smurf2mce = MceTransmit.SmurfProcessor()
+            self.smurf2mce = Smurf.SmurfProcessor()
             self.smurf2mce.setDebug( False )
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.Application(0xC1), data_fifo) # new

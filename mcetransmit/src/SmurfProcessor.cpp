@@ -1137,7 +1137,7 @@ avgdata_t* SmurfTestData::gen_test_mce_data(avgdata_t *input, uint mode, uint sy
 
 
 
-BOOST_PYTHON_MODULE(MceTransmit) {
+BOOST_PYTHON_MODULE(Smurf) {
    PyEval_InitThreads();
    try {
      SmurfProcessor::setup_python();
