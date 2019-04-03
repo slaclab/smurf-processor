@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 #-----------------------------------------------------------------------------
-# This file is part of the 'Development Board Examples'. It is subject to 
-# the license terms in the LICENSE.txt file found in the top-level directory 
-# of this distribution and at: 
-#    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
-# No part of the 'Development Board Examples', including this file, may be 
-# copied, modified, propagated, or distributed except according to the terms 
+# This file is part of the 'Development Board Examples'. It is subject to
+# the license terms in the LICENSE.txt file found in the top-level directory
+# of this distribution and at:
+#    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+# No part of the 'Development Board Examples', including this file, may be
+# copied, modified, propagated, or distributed except according to the terms
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
@@ -29,15 +29,15 @@ parser = argparse.ArgumentParser()
 
 # Add arguments
 parser.add_argument(
-    "--simGui", 
+    "--simGui",
     type     = argBool,
     required = False,
     default  = False,
     help     = "Enable hardware emulation",
-)  
+)
 
 parser.add_argument(
-    "--commType", 
+    "--commType",
     type     = str,
     required = False,
     default  = 'eth-rssi-interleaved',
@@ -45,28 +45,28 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--ipAddr", 
+    "--ipAddr",
     type     = str,
     required = False,
     default  = '192.168.2.10',
     help     = "IP address",
-) 
+)
 
 parser.add_argument(
-    "--slot", 
+    "--slot",
     type     = int,
     required = False,
     default  = 2,
     help     = "ATCA slot",
-) 
+)
 
 parser.add_argument(
-    "--pollEn", 
+    "--pollEn",
     type     = argBool,
     required = False,
     default  = True,
     help     = "auto-polling",
-)  
+)
 
 # Get the arguments
 args = parser.parse_args()
@@ -74,7 +74,7 @@ args = parser.parse_args()
 #################################################################
 
 # Set base
-base = pr.Root(name='AMCc',description='')    
+base = pr.Root(name='AMCc',description='')
 
 # Add Base Device
 base.add(FpgaTopLevel(
@@ -85,7 +85,7 @@ base.add(FpgaTopLevel(
 ))
 
 # Our receiver
-rx = MceTransmit.Smurf2MCE()
+rx = MceTransmit.SmurfProcessor()
 pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), rx)
 
 #streamDataWriter = pyrogue.utilities.fileio.StreamWriter(name='streamDataWriter')
@@ -118,13 +118,13 @@ while 1:
     for i in range(528):
         base.FpgaTopLevel.AppTop.AppCore.StreamReg.node(f'StreamData[{i}]').set(r)
 
-    
+
 
 
 
 # Run GUI
-appTop.exec_()    
-    
+appTop.exec_()
+
 # Close
 base.stop()
-exit()   
+exit()
