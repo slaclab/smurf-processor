@@ -54,7 +54,7 @@ include_directories(/usr/local/include/)
 include_directories(${ROGUE_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${PYTHON_INCLUDE_DIRS})
-include_directories(${PROJECT_SOURCE_DIR}/../common/)
+include_directories(${PROJECT_SOURCE_DIR}/../include/)
 
 # Create rogue python library
 add_library(Smurf SHARED src/SmurfProcessor.cpp)
