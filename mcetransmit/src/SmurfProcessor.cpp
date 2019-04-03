@@ -30,7 +30,7 @@
 #include <rogue/GilRelease.h>
 #include <smurf2mce.h>
 #include <smurftcp.h>
-#include <zmq.hpp>
+// #include <zmq.hpp>
 
 void error(const char *msg){perror(msg);};    // Just prints errors
 
@@ -84,7 +84,7 @@ public:
   uint last_epicsns;
 
 
-  MCEHeader *M; // mce header class
+  // MCEHeader *M; // mce header class
   SmurfHeader *H; // Smurf header class
   SmurfConfig *C; // holds smurf configuratino class
   SmurfDataFile *D; // outptut file for saving smurf data.
@@ -132,7 +132,7 @@ SmurfProcessor::SmurfProcessor() : ris::Slave()
   debug_ = false;
 
   C = new SmurfConfig(); // will hold config info - testing for now
-  M = new MCEHeader();  // creates a MCE header class
+  // M = new MCEHeader();  // creates a MCE header class
   H = new SmurfHeader();
   D = new SmurfDataFile();  // holds output data
   V = new SmurfValidCheck();
@@ -201,26 +201,26 @@ void SmurfProcessor::runThread(const char* endpoint)
   //avgdata_t *a; // used for averaging loop
   uint j, k;
   uint dctr; // counter for input data array
-  char *tcpbuf;
+  // char *tcpbuf;
   uint32_t cnt;
   int tmp;
-  MCE_t checksum;  // fixed for now, #2 for testing
+  // MCE_t checksum;  // fixed for now, #2 for testing
   uint tcp_buflen; // holds filled length oftcp buffer
-  uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
+  // uint32_t *bufx; // holds tcp buffer mapped to 32 bit for checksum
   uint32_t avgtmp;
   smurf_t dx; // current sample in loop
   uint64_t tm;
 
-  zmq::context_t context(1);
-  zmq::socket_t socket(context, ZMQ_PUSH);
-  printf("Connecting to %s\n", endpoint);
-  socket.connect(endpoint);
+  // zmq::context_t context(1);
+  // zmq::socket_t socket(context, ZMQ_PUSH);
+  // printf("Connecting to %s\n", endpoint);
+  // socket.connect(endpoint);
 
 
 
    try{
       while(1) {
-           zmq::message_t message(MCE_frame_length * sizeof(MCE_t));
+           // zmq::message_t message(MCE_frame_length * sizeof(MCE_t));
 
            frame = queue_.pop();
            buffer = b[bufn]; // buffer swap
@@ -277,16 +277,16 @@ void SmurfProcessor::runThread(const char* endpoint)
                continue;  // just average, otherwise send frame  END OF Smurf frame rate LOOP **************************
              }
            F->end_run();  // clears if we are doing a straight average
-           M->make_header(); // increments counters, readies counter
-           M->set_word( mce_h_offset_status, mce_h_status_value);
-           M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
-           M->set_word( MCEheader_row_len_offset,  H->get_row_len());
-           M->set_word( MCEheader_num_rows_reported_offset, H->get_num_rows_reported());
-           M->set_word( MCEheader_data_rate_offset, H->get_data_rate());  // test with fixed average
-           M->set_word( MCEheader_CC_ARZ_counter, smurfsamples);
-           M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
-           M->set_word( MCEheader_num_rows_offset, H->get_num_rows());
-           M->set_word( MCEheader_syncbox_offset, H->get_syncword());
+           // M->make_header(); // increments counters, readies counter
+           // M->set_word( mce_h_offset_status, mce_h_status_value);
+           // M->set_word( MCEheader_CC_counter_offset, M->CC_frame_counter);
+           // M->set_word( MCEheader_row_len_offset,  H->get_row_len());
+           // M->set_word( MCEheader_num_rows_reported_offset, H->get_num_rows_reported());
+           // M->set_word( MCEheader_data_rate_offset, H->get_data_rate());  // test with fixed average
+           // M->set_word( MCEheader_CC_ARZ_counter, smurfsamples);
+           // M->set_word( MCEheader_version_offset,  MCEheader_version); // can be in constructor
+           // M->set_word( MCEheader_num_rows_offset, H->get_num_rows());
+           // M->set_word( MCEheader_syncbox_offset, H->get_syncword());
 
            // test data insertion
            if(H->get_test_mode()) T->gen_test_mce_data(average_samples, H->get_test_mode(), H->get_syncword(), H->get_test_parameter());
@@ -297,25 +297,25 @@ void SmurfProcessor::runThread(const char* endpoint)
                average_mce_samples[j] = (average_samples[j] & 0x1FFFFFF) << 7;
              }
 
-           tcpbuf = (char *) (message.data());  // returns location to put data (8 bytes beyond tcp start)
-           memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
-           memcpy(tcpbuf + MCEheaderlength * sizeof(MCE_t), average_mce_samples, smurfsamples * sizeof(avgdata_t)); //copy data
-           tcp_buflen =  MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t);
-           bufx       = (uint32_t*) (message.data());  // map buffer to 32 bit
+           // tcpbuf = (char *) (message.data());  // returns location to put data (8 bytes beyond tcp start)
+           // memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
+           // memcpy(tcpbuf + MCEheaderlength * sizeof(MCE_t), average_mce_samples, smurfsamples * sizeof(avgdata_t)); //copy data
+           // tcp_buflen =  MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t);
+           // bufx       = (uint32_t*) (message.data());  // map buffer to 32 bit
 
-           checksum  = *(uint32_t *)(message.data());
+           // checksum  = *(uint32_t *)(message.data());
            //checksum  = bufx[0];
-           for (j = 1; j < MCE_frame_length-1; j++) checksum = checksum ^ bufx[j]; // calculate checksum (needed for MCE)
+           // for (j = 1; j < MCE_frame_length-1; j++) checksum = checksum ^ bufx[j]; // calculate checksum (needed for MCE)
            if (H->get_test_mode() == 14)
              {
                if(!(H->get_syncword() % 1000))
          	{
          	  printf("INTENTIONALLY BROKEN CHECKSUM \n");
-         	  checksum = checksum + 1;   // FORCE BROKEN CHECKSUM
+         	  // checksum = checksum + 1;   // FORCE BROKEN CHECKSUM
          	}
              }
 
-           memcpy(tcpbuf + MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t));
+           // memcpy(tcpbuf + MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t));
             if ( debug_ &&  ( !(internal_counter++ % slow_divider) ) )
               {
 
@@ -331,12 +331,12 @@ void SmurfProcessor::runThread(const char* endpoint)
 
             if (!H->disable_stream())
               {
-                socket.send(message,  ZMQ_NOBLOCK);
+                // socket.send(message,  ZMQ_NOBLOCK);
                 //socket.send(message);
               }
             else
               {
-                M->CC_frame_counter = 0;  // set to zero when not streaming
+                // M->CC_frame_counter = 0;  // set to zero when not streaming
               }
             V->run(H);
             tm = V->Unix_time->current;
@@ -344,8 +344,8 @@ void SmurfProcessor::runThread(const char* endpoint)
            if(C->data_frames) D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames,
          				   C->data_file_name, C->file_name_extend, H->disable_file_write());
 
-           tcpbuf   = NULL;  // returns location to put data (8 bytes beyond tcp start)
-           bufx     = NULL;
+           // tcpbuf   = NULL;  // returns location to put data (8 bytes beyond tcp start)
+           // bufx     = NULL;
          boost::this_thread::interruption_point();
       }
    } catch (boost::thread_interrupted&) { printf("caught error\n\n\n"); }
@@ -505,14 +505,16 @@ uint SmurfHeader::get_num_rows(void)
 {
   uint x;
   x = pull_bit_field(header, h_num_rows_offset, h_num_rows_width);
-  return(x ? x: MCEheader_num_rows_value);  // if zero go to default
+  // return(x ? x: MCEheader_num_rows_value);  // if zero go to default
+  return(x ? x: 33); // Not sure what to do here.
 }
 
 uint SmurfHeader::get_num_rows_reported(void)
 {
   uint x;
   x = pull_bit_field(header, h_num_rows_reported_offset, h_num_rows_reported_width);
-  return(x ? x: MCEheader_num_rows_reported_value);
+  // return(x ? x: MCEheader_num_rows_reported_value);
+  return(x ? x: 33); // Not sure what to do here.
 
 }
 
@@ -520,14 +522,16 @@ uint SmurfHeader::get_row_len(void)
 {
   uint x;
   x = pull_bit_field(header, h_row_len_offset, h_row_len_width);
-  return(x ? x: MCEheader_row_len_value);
+  // return(x ? x: MCEheader_row_len_value);
+  return(x ? x: 60); // Not sure what to do here.
 }
 
 uint SmurfHeader::get_data_rate(void)
 {
   uint x;
   x = pull_bit_field(header, h_data_rate_offset, h_data_rate_width);
-  return(x ? x: MCEheader_data_rate_value);
+  // return(x ? x: MCEheader_data_rate_value);
+  return(x ? x: 140); // Not sure what to do here.
 }
 
 
@@ -597,23 +601,23 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
 
 
 // manages the header for MCE data
-MCEHeader::MCEHeader()
-{
-  memset(mce_header, 0, MCEheaderlength * sizeof(MCE_t));
-  mce_header[MCEheader_version_offset] = MCEheader_version;  // current version.
-  CC_frame_counter = 0; // counter for MCE frame
-}
+// MCEHeader::MCEHeader()
+// {
+//   memset(mce_header, 0, MCEheaderlength * sizeof(MCE_t));
+//   mce_header[MCEheader_version_offset] = MCEheader_version;  // current version.
+//   CC_frame_counter = 0; // counter for MCE frame
+// }
 
-void MCEHeader::make_header(void)
-{
-  mce_header[MCEheader_CC_counter_offset] = CC_frame_counter++;  // increment counter, put in header
-  return;
-}
+// void MCEHeader::make_header(void)
+// {
+//   mce_header[MCEheader_CC_counter_offset] = CC_frame_counter++;  // increment counter, put in header
+//   return;
+// }
 
-void MCEHeader::set_word(uint offset, uint32_t value)
-{
-  mce_header[offset] = value & 0xffffffff; // just write value.
-}
+// void MCEHeader::set_word(uint offset, uint32_t value)
+// {
+//   mce_header[offset] = value & 0xffffffff; // just write value.
+// }
 
 // Reads and interprest the smurf2mce.cfg file.
 SmurfConfig::SmurfConfig(void)
