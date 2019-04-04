@@ -29,21 +29,6 @@ typedef DataBuffer<uint8_t> smurf_packet_buffer_t;
 // Smurf2mce definition should be in smurftcp.h, but doesn't work, not sure why
 class SmurfProcessor : public rogue::interfaces::stream::Slave
 {
-
-  bool debug_;
-
-  static const unsigned queueDepth = 4000;
-
-// Queue
-  rogue::Queue<boost::shared_ptr<rogue::interfaces::stream::Frame>> queue_;
-// Transmission thread
-  boost::thread* thread_;
-//! Thread background
-  void runThread(const char* endpoint);
-
-  // Buffer for SMuRF packet passed to the transmit thread.
-  smurf_packet_buffer_t packetBuffer;
-
 public:
   uint32_t rxCount, rxBytes, rxLast;
   uint32_t getCount() { return rxCount; } // Total frames
@@ -104,6 +89,17 @@ public:
     bp::implicitly_convertible<boost::shared_ptr<SmurfProcessor>, ris::SlavePtr>();
   };
 
+private:
+  bool debug_;
+  static const unsigned queueDepth = 4000;
+  // Queue
+  rogue::Queue<boost::shared_ptr<rogue::interfaces::stream::Frame>> queue_;
+  // Transmission thread
+  boost::thread* thread_;
+  //! Thread background
+  void runThread(const char* endpoint);
+  // Buffer for SMuRF packet passed to the transmit thread.
+  smurf_packet_buffer_t packetBuffer;
 };
 
 #endif
