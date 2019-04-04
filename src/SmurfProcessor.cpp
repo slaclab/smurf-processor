@@ -72,7 +72,7 @@ public:
   wrap_t *wrap_counter; // byte to track phase wraps.
   uint *mask; // masks which resonators we will use.
   avgdata_t *average_samples; // holds the averaged sample data (allocated in filter module)
-  avgdata_t *average_mce_samples; // samples modified for MCE format
+  // avgdata_t *average_mce_samples; // samples modified for MCE format
   avgdata_t *input_data; // with unwrap, before aveaging
   uint average_counter; // runnign counter of averages
   const char *port;  // character string that holds the port number
@@ -151,11 +151,11 @@ SmurfProcessor::SmurfProcessor() : ris::Slave()
   }
       memset(b[j], 0, pyrogue_buffer_length); // zero to start with
     }
- if(!(average_mce_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
-    {
-      error("could not allocate mce data sample buffer");
-      return;
-    }
+ // if(!(average_mce_samples = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
+ //    {
+ //      error("could not allocate mce data sample buffer");
+ //      return;
+ //    }
  if(!(input_data = (avgdata_t*)malloc(smurfsamples * sizeof(avgdata_t))))
     {
       error("could not allocate input data sample buffer");
@@ -304,10 +304,10 @@ void SmurfProcessor::runThread(const char* endpoint)
         T->gen_test_mce_data(average_samples, H->get_test_mode(), H->get_syncword(), H->get_test_parameter());
 
       // data munging for MCE format - needs 7 bit shift left for data mode 10
-      for(j = 0;j < smurfsamples; j++)
-      {
-        average_mce_samples[j] = (average_samples[j] & 0x1FFFFFF) << 7;
-      }
+      // for(j = 0;j < smurfsamples; j++)
+      // {
+      //   average_mce_samples[j] = (average_samples[j] & 0x1FFFFFF) << 7;
+      // }
 
       // tcpbuf = (char *) (message.data());  // returns location to put data (8 bytes beyond tcp start)
       // memcpy(tcpbuf, M->mce_header, MCEheaderlength * sizeof(MCE_t));  // copy over MCE header to output buffer
