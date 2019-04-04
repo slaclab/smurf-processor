@@ -581,7 +581,7 @@ uint SmurfHeader::read_config_file(void)
 
 void SmurfHeader::clear_average(void)
 {
-  average_counter==0;
+  average_counter=0;
 }
 
 uint SmurfHeader::average_control(int num_averages) // returns num averages when avearaging is done.
