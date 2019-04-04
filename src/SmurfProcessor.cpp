@@ -262,6 +262,8 @@ void SmurfProcessor::runThread(const char* endpoint)
       V->run(H);
       tm = V->Unix_time->current;
       H->put_field(h_unix_time_offset,  h_unix_time_width, &tm); // add time to data stream
+      H->set_num_channels(smurfsamples);
+
       if(C->data_frames)
       {
         // Add a SMuRF packet in the TX buffer so it can be processed by the transmit method
@@ -274,7 +276,6 @@ void SmurfProcessor::runThread(const char* endpoint)
             smurf_tx_data_t* smurfPackage = txBuffer.getWritePtr();
 
             memcpy(smurfPackage, H->header, smurfheaderlength);
-            memcpy(smurfPackage + h_num_channels_offset, &smurfsamples, 4); // UGLY horrible kludge, need to fix.
             memcpy(smurfPackage+smurfheaderlength, average_samples, smurfsamples * sizeof(avgdata_t));
 
             // Mark the writing operation as done.
@@ -456,7 +457,6 @@ uint SmurfHeader::get_1hz_counter(void)
   return(pull_bit_field(header, h_1hz_counter_offset, h_1hz_counter_width));
 }
 
-
 uint SmurfHeader::get_ext_counter(void)
 {
   return(pull_bit_field(header, h_ext_counter_offset, h_ext_counter_width));
@@ -551,6 +551,16 @@ uint SmurfHeader::get_test_parameter(void)
   uint x;
   x = pull_bit_field(header, h_user0b_ctrl_offset , h_user0b_ctrl_width);
   return(x);
+}
+
+void SmurfHeader::set_num_channels(uint32_t num_ch)
+{
+  put_field(h_num_channels_offset, h_num_channels_offset, &num_ch);
+}
+
+uint32_t SmurfHeader::get_num_channels()
+{
+  return(pull_bit_field(header, h_num_channels_offset, h_num_channels_width));
 }
 
 void SmurfHeader::put_field(int offset, int width, void *data)

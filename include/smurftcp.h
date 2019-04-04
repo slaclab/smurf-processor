@@ -82,6 +82,9 @@ public:
   uint get_data_rate(void);
   uint get_test_parameter(void);
   uint get_test_mode(void); //  0 = normal, 1 -> all zeros, 2 -> by channnel
+  void set_num_channels(uint32_t num_ch); // Set the number of channels in the header
+  uint32_t get_num_channels();            // Get the number of channels from the header
+
   void put_field(int offset, int width, void *data);  // for adding to smurf header
 
   void clear_average(); // clears aveage counters
