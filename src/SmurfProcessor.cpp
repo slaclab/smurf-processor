@@ -263,8 +263,37 @@ void SmurfProcessor::runThread(const char* endpoint)
       tm = V->Unix_time->current;
       H->put_field(h_unix_time_offset,  h_unix_time_width, &tm); // add time to data stream
       if(C->data_frames)
+      {
+        // Add a SMuRF packet in the TX buffer so it can be processed by the transmit method
+        try
+        {
+          // Check if there is room in the buffer
+          if ( ! txBuffer.isFull() )
+          {
+            // Add the packet into the buffer
+            smurf_tx_data_t* smurfPackage = txBuffer.getWritePtr();
+
+            memcpy(smurfPackage, H->header, smurfheaderlength);
+            // memcpy(smurfPackage + h_num_channels_offset, &smurfsamples, 4); // UGLY horrible kludge, need to fix.
+            memcpy(smurfPackage+smurfheaderlength, average_samples, smurfsamples * sizeof(avgdata_t));
+
+            // Mark the writing operation as done.
+            txBuffer.doneWriting();
+          }
+          else
+          {
+            // Increase the loss counter is we couldn't add a new packet into the buffer
+            ++txPacketLossCnt;
+          }
+        }
+        catch (std::runtime_error &e)
+        {
+          std::cout << "SmurfReceiver: Exception caught when writing the data buffer: " << e.what() << std::endl;
+        }
+
         D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames,
                       C->data_file_name, C->file_name_extend, H->disable_file_write());
+      }
 
       // tcpbuf   = NULL;  // returns location to put data (8 bytes beyond tcp start)
       // bufx     = NULL;
