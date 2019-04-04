@@ -893,7 +893,7 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
   }
 
   memcpy(frame, header, header_bytes);
-  memcpy(frame + h_num_channels_offset, &data_words, 4); // UGLY horrible kludge, need to fix.
+  // memcpy(frame + h_num_channels_offset, &data_words, 4); // UGLY horrible kludge, need to fix.
   memcpy(frame+header_bytes, data, data_words * sizeof(avgdata_t));
   write(fd, frame, header_bytes + data_words * sizeof(avgdata_t));
   frame_counter++;
