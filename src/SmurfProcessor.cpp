@@ -274,7 +274,7 @@ void SmurfProcessor::runThread(const char* endpoint)
             smurf_tx_data_t* smurfPackage = txBuffer.getWritePtr();
 
             memcpy(smurfPackage, H->header, smurfheaderlength);
-            // memcpy(smurfPackage + h_num_channels_offset, &smurfsamples, 4); // UGLY horrible kludge, need to fix.
+            memcpy(smurfPackage + h_num_channels_offset, &smurfsamples, 4); // UGLY horrible kludge, need to fix.
             memcpy(smurfPackage+smurfheaderlength, average_samples, smurfsamples * sizeof(avgdata_t));
 
             // Mark the writing operation as done.
