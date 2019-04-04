@@ -77,7 +77,7 @@ public:
   //void acceptframe_test(char* data, size_t size); // test version for local use, just a wrapper
   void read_mask(char *filename);// reads file to create maks
   void clear_wrap(void){memset(wrap_counter, wrap_start, smurfsamples);}; // clears wrap counter
-   ~SmurfProcessor(); // destructor
+  virtual ~SmurfProcessor(); // destructor
 
       // Expose methods to python
   static void setup_python()
