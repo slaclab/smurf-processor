@@ -103,6 +103,9 @@ public:
   // It must be overwritten by the user application
   virtual void transmit(smurf_buffer_data_t* data) {};
 
+  // Print statistic about the transmit methods
+  void printTransmitStatistic() const;
+
 private:
   bool debug_;
   static const unsigned queueDepth = 4000;
@@ -116,6 +119,7 @@ private:
   smurf_packet_buffer_t   packetBuffer;       // Buffer for SMuRF packet passed to the transmit thread.
   boost::atomic<bool>     run;                // Flag to indicate thread to stop their loops
   std::thread             transmitterThread;  // Thread where the SMuRF packet transmission will run
+  int                     txPacketLossCnt;    // How many SMuRF packets could not be send to the transmit method
 };
 
 #endif
