@@ -20,8 +20,8 @@
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
-packetBuffer(10),
-run(true),
+txBuffer(10),
+runTxThread(true),
 transmitterThread( std::thread( &SmurfProcessor::transmitter, this )),
 txPacketLossCnt(0)
 {
@@ -343,11 +343,11 @@ void SmurfProcessor::transmitter()
   for(;;)
   {
     // Check the status of the data buffer
-    if ( packetBuffer.isEmpty() )
+    if ( txBuffer.isEmpty() )
     {
       // If the buffer is empty, wait until new data is ready, with a 10s timeout
-      std::unique_lock<std::mutex> lock(*packetBuffer.getMutex());
-      packetBuffer.getDataReady()->wait_for( lock, std::chrono::seconds(10) );
+      std::unique_lock<std::mutex> lock(*txBuffer.getMutex());
+      txBuffer.getDataReady()->wait_for( lock, std::chrono::seconds(10) );
     }
     else
     {
@@ -355,8 +355,8 @@ void SmurfProcessor::transmitter()
       // std::cout << "   +++ transmitter waking up, new data is ready... +++" << std::endl;
       try
       {
-        transmit(packetBuffer.getReadPtr());
-        packetBuffer.doneReading();
+        transmit(txBuffer.getReadPtr());
+        txBuffer.doneReading();
       }
       catch (std::runtime_error &e)
       {
@@ -365,7 +365,7 @@ void SmurfProcessor::transmitter()
     }
 
     // Check if we should stop the loop
-    if (!run)
+    if (!runTxThread)
     {
       std::cout << "Transmitter interrupted." << std::endl;
       return;
@@ -379,7 +379,7 @@ void SmurfProcessor::printTransmitStatistic() const
   std::cout << "SMuRF Transmission statistics:"             << std::endl;
   std::cout << "=============================="             << std::endl;
   std::cout << "Package loss counter : " << txPacketLossCnt << std::endl;
-  packetBuffer.printStatistic();
+  txBuffer.printStatistic();
   std::cout << "=============================="             << std::endl;
 }
 

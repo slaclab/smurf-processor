@@ -25,8 +25,8 @@ uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width);
 uint64_t get_unix_time(); // returns unix sysetm time as 64 bit nanoseconds
 
 // Data type of the SMuRF packet buffer
-typedef uint8_t                         smurf_buffer_data_t;
-typedef DataBuffer<smurf_buffer_data_t> smurf_packet_buffer_t;
+typedef uint8_t                     smurf_tx_data_t;    // TX buffer elements pointer-to type
+typedef DataBuffer<smurf_tx_data_t> smurf_tx_buffer_t;  // TX buffer type
 
 // SmurfProcessor "acceptframe" is called by python for each smurf frame
 // Smurf2mce definition should be in smurftcp.h, but doesn't work, not sure why
@@ -101,7 +101,7 @@ public:
   // This method is called whenever a new SMuRF packet is ready, and a pointer to it is
   // passed.
   // It must be overwritten by the user application
-  virtual void transmit(smurf_buffer_data_t* data) {};
+  virtual void transmit(smurf_tx_data_t* data) {};
 
   // Print statistic about the transmit methods
   void printTransmitStatistic() const;
@@ -116,10 +116,10 @@ private:
   //! Thread background
   void runThread(const char* endpoint);
 
-  smurf_packet_buffer_t   packetBuffer;       // Buffer for SMuRF packet passed to the transmit thread.
-  boost::atomic<bool>     run;                // Flag to indicate thread to stop their loops
-  std::thread             transmitterThread;  // Thread where the SMuRF packet transmission will run
-  int                     txPacketLossCnt;    // How many SMuRF packets could not be send to the transmit method
+  smurf_tx_buffer_t   txBuffer;           // Buffer for SMuRF packet passed to the transmit thread.
+  boost::atomic<bool> runTxThread;        // Flag to indicate the TX thread to stop its loops
+  std::thread         transmitterThread;  // Thread where the SMuRF packet transmission will run
+  int                 txPacketLossCnt;    // How many SMuRF packets could not be send to the transmit method
 };
 
 #endif
