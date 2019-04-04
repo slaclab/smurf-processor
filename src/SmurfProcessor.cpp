@@ -249,15 +249,15 @@ void SmurfProcessor::runThread(const char* endpoint)
 
       last_epicsns = H->get_epics_nanoseconds();
 
-      if (!H->disable_stream())
-      {
-        // socket.send(message,  ZMQ_NOBLOCK);
-        //socket.send(message);
-      }
-      else
-      {
-        // M->CC_frame_counter = 0;  // set to zero when not streaming
-      }
+      // if (!H->disable_stream())
+      // {
+      //   // socket.send(message,  ZMQ_NOBLOCK);
+      //   //socket.send(message);
+      // }
+      // else
+      // {
+      //   // M->CC_frame_counter = 0;  // set to zero when not streaming
+      // }
 
       V->run(H);
       tm = V->Unix_time->current;
