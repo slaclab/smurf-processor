@@ -87,6 +87,7 @@ public:
       .def("getBytes", &SmurfProcessor::getBytes)
       .def("getLast",  &SmurfProcessor::getLast)
       .def("setDebug",  &SmurfProcessor::setDebug)
+      .def("printTransmitStatistic", &SmurfProcessor::printTransmitStatistic)
     ;
 
     bp::implicitly_convertible<boost::shared_ptr<SmurfProcessor>, ris::SlavePtr>();

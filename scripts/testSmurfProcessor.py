@@ -36,5 +36,7 @@ try:
         #print(" Rx: Count {}, Bytes {}, Last {}".format(rx.getCount(), rx.getBytes(), rx.getLast()))
         time.sleep(.0025)
 
+        rx.printTransmitStatistic()
+
 except KeyboardInterrupt:
     pass
