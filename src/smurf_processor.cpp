@@ -16,7 +16,7 @@
  *-----------------------------------------------------------------------------
 */
 
-#include "SmurfProcessor.h"
+#include "smurf_processor.h"
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
