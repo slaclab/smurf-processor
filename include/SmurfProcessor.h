@@ -13,6 +13,7 @@
 #include <rogue/GilRelease.h>
 #include <smurf2mce.h>
 #include <smurftcp.h>
+#include "data_buffer.h"
 
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -20,6 +21,9 @@ namespace ris = rogue::interfaces::stream;
 void error(const char *msg);
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width);
 uint64_t get_unix_time(); // returns unix sysetm time as 64 bit nanoseconds
+
+// Data type of the SMuRF packet buffer
+typedef DataBuffer<uint8_t> smurf_packet_buffer_t;
 
 // SmurfProcessor "acceptframe" is called by python for each smurf frame
 // Smurf2mce definition should be in smurftcp.h, but doesn't work, not sure why
@@ -36,6 +40,9 @@ class SmurfProcessor : public rogue::interfaces::stream::Slave
   boost::thread* thread_;
 //! Thread background
   void runThread(const char* endpoint);
+
+  // Buffer for SMuRF packet passed to the transmit thread.
+  smurf_packet_buffer_t packetBuffer;
 
 public:
   uint32_t rxCount, rxBytes, rxLast;

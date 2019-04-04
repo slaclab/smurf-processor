@@ -18,7 +18,9 @@
 
 #include "SmurfProcessor.h"
 
-SmurfProcessor::SmurfProcessor() : ris::Slave()
+SmurfProcessor::SmurfProcessor()
+: ris::Slave(),
+packetBuffer(10)
 {
   rxCount = 0;
   rxBytes = 0;

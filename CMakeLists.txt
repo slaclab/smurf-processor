@@ -57,7 +57,8 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 
 # Create rogue python library
-add_library(Smurf SHARED src/SmurfProcessor.cpp)
+AUX_SOURCE_DIRECTORY(src SRC_FILES)
+add_library(Smurf SHARED ${SRC_FILES})
 
 # Set output to TOP/lib, remove lib prefix
 set_target_properties(Smurf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
