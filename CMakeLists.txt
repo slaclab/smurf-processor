@@ -67,3 +67,9 @@ set_target_properties(Smurf PROPERTIES PREFIX "")
 # Link to rogue core
 TARGET_LINK_LIBRARIES(Smurf LINK_PUBLIC ${ROGUE_LIBRARIES} cppzmq)
 
+# Setup configuration file
+set(CONF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
+set(CONF_LIBRARIES    ${PROJECT_SOURCE_DIR}/lib/Smurf.so)
+
+# Create the config file
+configure_file(SmurfConfig.cmake.in ${PROJECT_SOURCE_DIR}/lib/SmurfConfig.cmake @ONLY)
