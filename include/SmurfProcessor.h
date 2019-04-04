@@ -11,6 +11,8 @@
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include <rogue/interfaces/stream/Buffer.h>
 #include <rogue/GilRelease.h>
+#include <thread>
+#include <atomic>
 #include <smurf2mce.h>
 #include <smurftcp.h>
 #include "data_buffer.h"
@@ -23,7 +25,8 @@ uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width);
 uint64_t get_unix_time(); // returns unix sysetm time as 64 bit nanoseconds
 
 // Data type of the SMuRF packet buffer
-typedef DataBuffer<uint8_t> smurf_packet_buffer_t;
+typedef uint8_t                         smurf_buffer_data_t;
+typedef DataBuffer<smurf_buffer_data_t> smurf_packet_buffer_t;
 
 // SmurfProcessor "acceptframe" is called by python for each smurf frame
 // Smurf2mce definition should be in smurftcp.h, but doesn't work, not sure why
@@ -89,6 +92,17 @@ public:
     bp::implicitly_convertible<boost::shared_ptr<SmurfProcessor>, ris::SlavePtr>();
   };
 
+
+  // Transmit thread. Here is where the method 'transmit' is called.
+  void transmitter();
+
+  // This method is intended to be used to take SMuRF packet and send them to other
+  // system.
+  // This method is called whenever a new SMuRF packet is ready, and a pointer to it is
+  // passed.
+  // It must be overwritten by the user application
+  virtual void transmit(smurf_buffer_data_t* data) {};
+
 private:
   bool debug_;
   static const unsigned queueDepth = 4000;
@@ -98,8 +112,10 @@ private:
   boost::thread* thread_;
   //! Thread background
   void runThread(const char* endpoint);
-  // Buffer for SMuRF packet passed to the transmit thread.
-  smurf_packet_buffer_t packetBuffer;
+
+  smurf_packet_buffer_t   packetBuffer;       // Buffer for SMuRF packet passed to the transmit thread.
+  boost::atomic<bool>     run;                // Flag to indicate thread to stop their loops
+  std::thread             transmitterThread;  // Thread where the SMuRF packet transmission will run
 };
 
 #endif

@@ -20,7 +20,9 @@
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
-packetBuffer(10)
+packetBuffer(10),
+run(true),
+transmitterThread( std::thread( &SmurfProcessor::transmitter, this ))
 {
   rxCount = 0;
   rxBytes = 0;
@@ -332,6 +334,43 @@ void SmurfProcessor::frameToBuffer( ris::FramePtr frame, uint8_t * const buffer)
   }
 }
 
+void SmurfProcessor::transmitter()
+{
+  std::cout << "Transmitter thread started..." << std::endl;
+
+  // Infinite loop
+  for(;;)
+  {
+    // Check the status of the data buffer
+    if ( packetBuffer.isEmpty() )
+    {
+      // If the buffer is empty, wait until new data is ready, with a 10s timeout
+      std::unique_lock<std::mutex> lock(*packetBuffer.getMutex());
+      packetBuffer.getDataReady()->wait_for( lock, std::chrono::seconds(10) );
+    }
+    else
+    {
+      // Process new data available in the buffer
+      // std::cout << "   +++ transmitter waking up, new data is ready... +++" << std::endl;
+      try
+      {
+        transmit(packetBuffer.getReadPtr());
+        packetBuffer.doneReading();
+      }
+      catch (std::runtime_error &e)
+      {
+        std::cout << "SmurfReceiver: Exception caught when reading the data buffer: " << e.what() << std::endl;
+      }
+    }
+
+    // Check if we should stop the loop
+    if (!run)
+    {
+      std::cout << "Transmitter interrupted." << std::endl;
+      return;
+    }
+  }
+}
 
 SmurfProcessor::~SmurfProcessor() // destructor
 {
