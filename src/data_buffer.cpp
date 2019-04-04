@@ -169,7 +169,7 @@ void DataBuffer<T>::printStatistic() const
     std::cout << "Total write operations          : " << writeCnt                << std::endl;
     std::cout << "Total read operations           : " << readCnt                 << std::endl;
     std::cout << "Total write attempts while full : " << WOFCnt                  << std::endl;
-    std::cout << "Total read attempts while empty :"  << ROFCnt                  << std::endl;
+    std::cout << "Total read attempts while empty : " << ROFCnt                  << std::endl;
     std::cout << "Buffer 'empty' flag             : " << std::boolalpha << empty << std::endl;
     std::cout << "Buffer 'full' flag              : " << std::boolalpha << full  << std::endl;
     std::cout << "------------------------------"                                << std::endl;
