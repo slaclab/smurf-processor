@@ -648,13 +648,13 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
 //   mce_header[offset] = value & 0xffffffff; // just write value.
 // }
 
-// Reads and interprest the smurf2mce.cfg file.
+// Reads and interprest the smurf.cfg file.
 SmurfConfig::SmurfConfig(void)
 {
   ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
   memset(receiver_ip, NULL, 40); // clear the IP string
-  strcpy(filename, "smurf2mce.cfg");  // kludge for now.
+  strcpy(filename, "smurf.cfg");  // kludge for now.
   num_averages = 0; // default value
   data_frames = 0;
   strcpy(receiver_ip, "tcp://127.0.0.1:3333"); // default
