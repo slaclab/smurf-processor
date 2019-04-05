@@ -46,9 +46,6 @@ find_package(PythonLibs 3 REQUIRED)
 set(Rogue_DIR $ENV{ROGUE_DIR}/lib)
 find_package(Rogue REQUIRED)
 
-#find cppzmq wrapper, installed by make of cppzmq
-find_package(cppzmq REQUIRED)
-
 include_directories(/usr/local/include/)
 
 include_directories(${ROGUE_INCLUDE_DIRS})
@@ -65,7 +62,7 @@ set_target_properties(Smurf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE
 set_target_properties(Smurf PROPERTIES PREFIX "")
 
 # Link to rogue core
-TARGET_LINK_LIBRARIES(Smurf LINK_PUBLIC ${ROGUE_LIBRARIES} cppzmq)
+TARGET_LINK_LIBRARIES(Smurf LINK_PUBLIC ${ROGUE_LIBRARIES})
 
 # Setup configuration file
 set(CONF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
