@@ -259,12 +259,12 @@ class LocalServer(pyrogue.Root):
 
             # Our receiver
             data_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
-            self.smurf2mce = Smurf.SmurfProcessor()
-            self.smurf2mce.setDebug( False )
+            self.smurf_processor = Smurf.SmurfProcessor()
+            self.smurf_processor.setDebug( False )
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.Application(0xC1), data_fifo) # new
             pyrogue.streamConnect(fpga.stream.application(0xC1), data_fifo)
-            pyrogue.streamConnect(data_fifo, self.smurf2mce)
+            pyrogue.streamConnect(data_fifo, self.smurf_processor)
             #pyrogue.streamTap(fpga.stream.application(0xC1), rx)
 
             # Run control for streaming interfaces
@@ -376,11 +376,11 @@ class LocalServer(pyrogue.Root):
                 function=self.run_garbage_collection))
 
             self.add(pyrogue.LocalVariable(
-                name='mcetransmitDebug',
-                description='Enable mce transmit debug',
+                name='smurfProcessorDebug',
+                description='Enable smurf processor transmit debug',
                 mode='RW',
                 value=False,
-                localSet=lambda value: self.smurf2mce.setDebug(value),
+                localSet=lambda value: self.smurf_processor.setDebug(value),
                 hidden=False))
 
 
