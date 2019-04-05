@@ -1254,10 +1254,10 @@ BOOST_PYTHON_MODULE(Smurf)
   }
   catch (...)
   {
-    printf("Failed to load module. import rogue first\n");
+    printf("Failed to load the Smurf module. import rogue first\n");
   }
 
-  printf("Loaded my module\n");
+  printf("Smurf module loaded\n");
 };
 
 
