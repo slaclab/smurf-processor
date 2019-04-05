@@ -20,10 +20,10 @@
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
-txBuffer(10),
-runTxThread(true),
-transmitterThread( std::thread( &SmurfProcessor::transmitter, this )),
-txPacketLossCnt(0)
+txBuffer          ( 10, smurfheaderlength + smurfsamples * sizeof(avgdata_t) ),
+runTxThread       ( true                                                     ),
+transmitterThread ( std::thread( &SmurfProcessor::transmitter, this )        ),
+txPacketLossCnt   ( 0                                                        )
 {
   rxCount = 0;
   rxBytes = 0;

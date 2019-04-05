@@ -2,20 +2,21 @@
 #include "data_buffer.h"
 
 template <typename T>
-DataBuffer<T>::DataBuffer( std::size_t s )
+DataBuffer<T>::DataBuffer(std::size_t d, std::size_t s)
 :
-size(s),
-data(s),
-readPtr(data.begin()),
-writePtr(data.begin()),
-full(false),
-empty(true),
-writeCnt(0),
-readCnt(0),
-WOFCnt(0),
-ROFCnt(0)
+depth    ( d                    ),
+size     ( s                    ),
+data     ( d, std::vector<T>(s) ),
+readPtr  ( data.begin()         ),
+writePtr ( data.begin()         ),
+full     ( false                ),
+empty    ( true                 ),
+writeCnt ( 0                    ),
+readCnt  ( 0                    ),
+WOFCnt   ( 0                    ),
+ROFCnt   ( 0                    )
 {
-    printf("DataBuffer created of size %zu\n", size);
+    printf("DataBuffer created: %zu buffer of %zu bytes each\n", depth, size);
 };
 
 template <typename T>
@@ -38,7 +39,7 @@ T* DataBuffer<T>::getWritePtr()
     }
     else
     {
-        return &(*writePtr);
+        return &(*writePtr->begin());
     }
 };
 
@@ -55,7 +56,7 @@ T* DataBuffer<T>::getReadPtr()
     }
     else
     {
-        return &(*readPtr);
+        return &(*readPtr->begin());
     }
 };
 

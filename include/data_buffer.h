@@ -11,7 +11,7 @@ template <typename T>
 class DataBuffer
 {
 public:
-    DataBuffer(std::size_t s);
+    DataBuffer(std::size_t d, std::size_t s);
 
     virtual ~DataBuffer();
 
@@ -43,10 +43,11 @@ public:
     void printStatistic() const;
 
 private:
+    std::size_t depth;
     std::size_t size;
-    std::vector<T> data;
-    typename std::vector<T>::iterator readPtr;
-    typename std::vector<T>::iterator writePtr;
+    std::vector< std::vector<T> > data;
+    typename std::vector< std::vector<T> >::iterator readPtr;
+    typename std::vector< std::vector<T> >::iterator writePtr;
     bool full;
     bool empty;
     int writeCnt;
