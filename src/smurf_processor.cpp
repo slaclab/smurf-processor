@@ -91,13 +91,14 @@ txPacketLossCnt(0)
 
   queue_.setThold(queueDepth);
 
-  thread_ = new boost::thread(boost::bind(&SmurfProcessor::runThread, this, C->receiver_ip));
+  // thread_ = new boost::thread(boost::bind(&SmurfProcessor::runThread, this));
+  thread_ = new boost::thread(&SmurfProcessor::runThread, this);
 
   initialized = true;
 }
 
 // This function does most of the work. Runs every smurf frame
-void SmurfProcessor::runThread(const char* endpoint)
+void SmurfProcessor::runThread()
 {
   printf("\n");
   printf("Starting SmurfProcessor::runThread()\n");
@@ -653,12 +654,12 @@ SmurfConfig::SmurfConfig(void)
 {
   ready = false;  // has file ben read yet?
   filename = (char*) malloc(1024 * sizeof(char));
-  memset(receiver_ip, NULL, 40); // clear the IP string
+  // memset(receiver_ip, NULL, 40); // clear the IP string
   strcpy(filename, "smurf.cfg");  // kludge for now.
   num_averages = 0; // default value
   data_frames = 0;
-  strcpy(receiver_ip, "tcp://127.0.0.1:3333"); // default
-  strcpy(port_number, "3333");  // default
+  // strcpy(receiver_ip, "tcp://127.0.0.1:3333"); // default
+  // strcpy(port_number, "3333");  // default
   strcpy(data_file_name, "data"); // default
   file_name_extend = 1;  // default is to append time
   filter_order = 0; // default for block average
@@ -729,28 +730,28 @@ bool SmurfConfig::read_config_file(void)
       continue;
     }
 
-    if(!strcmp(variable, "receiver_ip"))
-    {
+    // if(!strcmp(variable, "receiver_ip"))
+    // {
 
-      if(strcmp(value, receiver_ip)) // update if different
-      {
-        printf("updated ip from %s,  to %s \n", receiver_ip, value);
-        strncpy(receiver_ip, value, 40); // copy into IP string
-      }
+    //   if(strcmp(value, receiver_ip)) // update if different
+    //   {
+    //     printf("updated ip from %s,  to %s \n", receiver_ip, value);
+    //     strncpy(receiver_ip, value, 40); // copy into IP string
+    //   }
 
-      continue;
-    }
+    //   continue;
+    // }
 
-    if(!strcmp(variable, "port_number"))
-    {
-      if(strcmp(value, port_number)) // update if different
-      {
-        printf("updated port number from %s,  to %s \n", port_number, value);
-        strncpy(port_number, value, 8); // copy into IP string
-      }
+    // if(!strcmp(variable, "port_number"))
+    // {
+    //   if(strcmp(value, port_number)) // update if different
+    //   {
+    //     printf("updated port number from %s,  to %s \n", port_number, value);
+    //     strncpy(port_number, value, 8); // copy into IP string
+    //   }
 
-      continue;
-    }
+    //   continue;
+    // }
 
     if(!strcmp(variable, "data_file_name"))
     {

@@ -115,7 +115,7 @@ private:
   // Transmission thread
   boost::thread* thread_;
   //! Thread background
-  void runThread(const char* endpoint);
+  void runThread();
 
   smurf_tx_buffer_t   txBuffer;           // Buffer for SMuRF packet passed to the transmit thread.
   boost::atomic<bool> runTxThread;        // Flag to indicate the TX thread to stop its loops
