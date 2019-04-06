@@ -239,7 +239,7 @@ void SmurfProcessor::runThread()
       // memcpy(tcpbuf + MCEheaderlength * sizeof(MCE_t) + smurfsamples * sizeof(avgdata_t), &checksum, sizeof(MCE_t));
       if ( debug_ &&  ( !(internal_counter++ % slow_divider) ) )
       {
-        printf("num_avg=%3u, syncword =%6u, epics_deltaT = %u us, unixdeltaT = %u us \n", cnt ,H->get_syncword(),V->Timingsystem->delta/1000, V-> Unix_time->delta/1000 );
+        printf("num_avg=%3u, syncword =%6u, epics_deltaT = %" PRIu64 " us, unixdeltaT = %" PRIu64 " us \n", cnt ,H->get_syncword(),V->Timingsystem->delta/1000, V-> Unix_time->delta/1000 );
         printf("syn error = %5u, smurf_frame_error = %u, timing_sysetem_error = %u, unix_error = %u\n", V->Syncbox->error_count, V->Smurf_frame->error_count, V->Timingsystem->error_count, V->Unix_time->error_count);
         printf("clr_avg= %d, dsabl_strm=%d, dsabl_file=%d, read_config = %d, test_mode = %u, %u\n\n", H->get_clear_bit(), H->disable_stream(),
         H->disable_file_write(), H->read_config_file(),  H->get_test_mode() ,H->get_test_parameter());
@@ -979,7 +979,7 @@ void SmurfValidCheck::run(SmurfHeader *H)
   if (!init)
   {
     initial_timing_system = H->get_epics_seconds();
-    printf("initial time = %u \n", initial_timing_system);
+    printf("initial time = %" PRIu64 " \n", initial_timing_system);
     init = true;
   }
 
@@ -1030,7 +1030,7 @@ void SmurfValidCheck::run(SmurfHeader *H)
     // fprintf(fp, "counter_delta(480KHz) = %6u\n ", Counter_1hz->delta);
     // fprintf(fp, "smurf_frame_delta = %4u \n", Smurf_frame->delta);
     // fprintf(fp, "smurf2mce delay = %u us, \n\n", Smurf2mce->delta/1000);
-    fprintf(fp, "%10u, %2u, %4u, %6u %6u %6u \n", Syncbox->current, Syncbox->delta, Smurf_frame->delta, Timingsystem->delta/1000, Unix_time->delta/1000, Smurf2mce->delta/1000);
+    fprintf(fp, "%10" PRIu64 ", %2" PRIu64 ", %4" PRIu64 ", %" PRIu64 " %6" PRIu64 " %6" PRIu64 " \n", Syncbox->current, Syncbox->delta, Smurf_frame->delta, Timingsystem->delta/1000, Unix_time->delta/1000, Smurf2mce->delta/1000);
 
     fclose(fp);
   }
