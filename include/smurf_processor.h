@@ -52,8 +52,8 @@ public:
   // avgdata_t *average_mce_samples; // samples modified for MCE format
   avgdata_t *input_data; // with unwrap, before aveaging
   uint average_counter; // runnign counter of averages
-  const char *port;  // character string that holds the port number
-  const char *ip;  // character string that holds the ip addres or name
+  // const char *port;  // character string that holds the port number
+  // const char *ip;  // character string that holds the ip addres or name
   uint last_syncword;
   uint frame_error_counter;
   uint last_frame_counter;
