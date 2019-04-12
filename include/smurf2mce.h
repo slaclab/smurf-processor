@@ -87,51 +87,6 @@ const wrap_t wrap_start = 0x0;  //starting wrap value
 
 // const int MCEheader_syncbox_offset = 10;  // words offset to syncbox output
 
-
-// smurf header byte offsets
-const int h_version_offset = 0; // offset of version word
-const int h_version_width = 1; // bytes of version word
-const int h_num_channels_offset = 4; // normally 528 channels
-const int h_num_channels_width = 4;  // 32 bit number
-
-const int h_unix_time_offset = 48; // offset to 64 bit unix time
-const int h_unix_time_width = 8;   // 64 bit timing word
-
-const int h_1hz_counter_offset = 64;  // resets with next MCE word
-const int h_1hz_counter_width = 4; // width
-const int h_ext_counter_offset = 68;  // resets with next MCE word
-const int h_ext_counter_width = 4; // width
-const int h_epics_ns_offset = 72;  // from timing system, epics time nanoseconds
-const int h_epics_ns_width = 4;
-const int h_epics_s_offset = 76;  // timing system epics time seconds
-const int h_epics_s_width = 4;
-const int h_frame_counter_offset = 84;  // raw frame counter.
-const int h_frame_counter_width = 4;
-const int h_mce_syncword_offset = 96;  // 20 bit MCE sync workd
-const int h_mce_syncword_width = 5;  // yes 40 bits, bletch.
-
-const int h_user0a_ctrl_offset = 104; // first byte first user word, control smurfd
-const int h_user0a_ctrl_width = 2;
-// bit fields
-const int h_ctrl_bit_clear = 0;  // 1 to clear average and unwrap
-const int h_ctrl_bit_disable_stream = 1;  // 1 to disable streming to mce
-const int h_ctrl_bit_disable_file  = 2;  // 1 to disable writing to files
-const int h_ctrl_bit_read_config = 3;  // set to read config file each cycle
-const int h_ctrl_nibble_test_modes = 4; // used to enable various test modes
-
-const int h_user0b_ctrl_offset = 105;
-const int h_user0b_ctrl_width = 1;
-
-
-const int h_num_rows_offset = 112;
-const int h_num_rows_width = 2;
-const int h_num_rows_reported_offset = 114;
-const int h_num_rows_reported_width = 2;
-const int h_row_len_offset = 120;
-const int h_row_len_width = 2;
-const int h_data_rate_offset = 122;
-const int h_data_rate_width = 2;
-
 const int square_wave_amplitude = 20000;
 const int square_wave_cycles = 1000;
 const double random_amplitude = 1000;

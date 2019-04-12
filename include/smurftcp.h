@@ -4,6 +4,8 @@
 #ifndef __SMURFTCP_H__
 #define __SMURFTCP_H__
 
+#include "smurf_packet.h"
+
 void error(const char *msg); // error handler
 
 
@@ -41,55 +43,6 @@ void error(const char *msg); // error handler
 //   void set_word(uint offset, uint32_t value); // set word in header
 
 // };
-
-
-class SmurfHeader //generates and decodes SMURF data header
-{
-public:
-  uint8_t *header; // full header bytes
-  uint last_frame_count;
-  bool first_cycle;
-  bool data_ok; // set to indicate taht data has passed internal checks.
-  bool average_ok;  // set for a bad header somewhere in average
-  uint average_counter;
-  uint last_ext_counter;
-  uint last_syncword;
-  uint delta_syncword;
-  uint64_t bigtimems; // time in millliseconds
-  uint64_t lastbigtime;
-  uint64_t unix_dtime;
-  uint32_t epics_seconds;
-  uint32_t epics_nanoseconds;
-
-  SmurfHeader(void); // creates header with num samples
-  void copy_header(uint8_t *buffer);
-  uint get_version(void);
-  uint get_ext_counter(void);
-  uint get_1hz_counter(void);
-  uint get_frame_counter(void);
-  uint get_average_bit(void) { return(0);}; // place holder
-  uint get_syncword(void); // returns 20 bit MCE sync word
-  uint get_epics_nanoseconds(void);
-  uint get_epics_seconds(void);
-  uint get_clear_bit(void);  // 1 means clear averaging and unwrap
-  uint disable_file_write(void); // 1 means don't write a local output file
-  uint disable_stream(void); // 1 means don't stream to MCE
-  uint read_config_file(void); // 1 means read config file
-  uint average_control(int num); // num=0 means use external average,
-  uint get_num_rows(void);  // num rows from header
-  uint get_num_rows_reported(void);
-  uint get_row_len(void);
-  uint get_data_rate(void);
-  uint get_test_parameter(void);
-  uint get_test_mode(void); //  0 = normal, 1 -> all zeros, 2 -> by channnel
-  void set_num_channels(uint32_t num_ch); // Set the number of channels in the header
-  uint32_t get_num_channels();            // Get the number of channels from the header
-
-  void put_field(int offset, int width, void *data);  // for adding to smurf header
-
-  void clear_average(); // clears aveage counters
-};
-
 
 class SmurfConfig  // controls smurf config, initially just reads config file, future - epics interface
 {

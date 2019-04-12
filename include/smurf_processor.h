@@ -15,14 +15,12 @@
 #include <atomic>
 #include <smurf2mce.h>
 #include <smurftcp.h>
+#include "common.h"
 #include "data_buffer.h"
+#include "smurf_packet.h"
 
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
-
-void error(const char *msg);
-uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width);
-uint64_t get_unix_time(); // returns unix sysetm time as 64 bit nanoseconds
 
 // Data type of the SMuRF packet buffer
 typedef uint8_t                     smurf_tx_data_t;    // TX buffer elements pointer-to type
