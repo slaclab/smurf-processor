@@ -1,5 +1,8 @@
 #include "smurf_packet.h"
 
+////////////////////////////////////////
+////// + SmurfHeader definitions ///////
+////////////////////////////////////////
 
 // Decodes information in the header part of the data from smurf
 SmurfHeader::SmurfHeader()
@@ -152,9 +155,6 @@ void SmurfHeader::put_field(int offset, int width, void *data)
   memcpy(header+offset, data, width); // not protected, proabably  a bad idea.
 }
 
-
-
-
 uint SmurfHeader::read_config_file(void)
 {
   uint64_t x;
@@ -211,6 +211,100 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
 
   return(0);
 }
+
+////////////////////////////////////////
+////// - SmurfHeader definitions ///////
+////////////////////////////////////////
+
+////////////////////////////////////////
+////// + SmurfPacket definitions ///////
+////////////////////////////////////////
+
+// Default constructor
+SmurfPacket::SmurfPacket()
+:
+  headerLength(smurfheaderlength),
+  payloadLength(smurfsamples),
+  packetLength(smurfheaderlength + smurfsamples * sizeof(avgdata_t)),
+  headerBuffer(smurfheaderlength),
+  payloadBuffer(smurfsamples),
+  header()
+{
+  // Update the SmurfHeader internal pointer to the header buffer
+  header.copy_header(headerBuffer.data());
+  std::cout << "SmurfPacket object created:" << std::endl;
+  std::cout << "Header length       = " << headerLength  << " bytes" << std::endl;
+  std::cout << "Payload length      = " << payloadLength << " words" << std::endl;
+  std::cout << "Total packet length = " << packetLength  << " bytes" << std::endl;
+}
+
+SmurfPacket::SmurfPacket(uint8_t* h)
+{
+  SmurfPacket();
+  copyHeader(h);
+}
+
+SmurfPacket::SmurfPacket(uint8_t* h, avgdata_t* d)
+{
+  SmurfPacket(h);
+  copyHeader(h);
+  copyData(d);
+}
+
+SmurfPacket::~SmurfPacket()
+{
+  std::cout << "SmurfPacket object destroyed" << std::endl;
+}
+
+const std::size_t SmurfPacket::getHeaderLength()  const
+{
+  return headerLength;
+}
+
+const std::size_t SmurfPacket::getPayloadLength() const
+{
+  return payloadLength;
+}
+
+const std::size_t SmurfPacket::getPacketLength()  const
+{
+  return packetLength;
+}
+
+void SmurfPacket::copyHeader(uint8_t* h)
+{
+  memcpy(headerBuffer.data(), h, headerLength);
+}
+
+void SmurfPacket::copyData(avgdata_t* d)
+{
+  memcpy(payloadBuffer.data(), d, payloadLength);
+}
+
+void SmurfPacket::writeToFile(uint fd) const
+{
+  write(fd, headerBuffer.data(), headerLength);
+  write(fd, payloadBuffer.data(), payloadLength * sizeof(avgdata_t));
+}
+
+SmurfHeader* SmurfPacket::getHeaderPtr()
+{
+  return &header;
+}
+
+const avgdata_t SmurfPacket::getData(std::size_t index) const
+{
+  return payloadBuffer.at(index);
+}
+
+const uint8_t SmurfPacket::getHeaderByte(std::size_t index) const
+{
+  return headerBuffer.at(index);
+}
+
+////////////////////////////////////////
+////// - SmurfPacket definitions ///////
+////////////////////////////////////////
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
 {

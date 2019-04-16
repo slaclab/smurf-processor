@@ -1,13 +1,17 @@
 #ifndef _SMURF_PACKET_H_
 #define _SMURF_PACKET_H_
 
+#include <iostream>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
 #include <sys/timeb.h>
+#include <vector>
 
 #include "common.h"
+
+#include "smurf2mce.h"
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width);
 
@@ -55,6 +59,9 @@ const int h_data_rate_offset = 122;
 const int h_data_rate_width = 2;
 
 
+// SmurfHeader class
+// This class contains methods to access the different elements
+// in the SmurfHeader.
 class SmurfHeader //generates and decodes SMURF data header
 {
 public:
@@ -100,6 +107,59 @@ public:
   void put_field(int offset, int width, void *data);  // for adding to smurf header
 
   void clear_average(); // clears aveage counters
+};
+
+// SmurfPakcet Class
+// This class handler SMuRF packets.
+class SmurfPacket
+{
+public:
+  // Default constructor
+  SmurfPacket();
+
+  // Constructor using a raw array for the header data
+  SmurfPacket(uint8_t* h);
+
+  // Constructor using a raw array for the header and payload data
+  SmurfPacket(uint8_t* h, avgdata_t* d);
+
+  // Destructor
+  ~SmurfPacket();
+
+  // Get the length of the header in number of bytes
+  const std::size_t getHeaderLength()  const;
+
+  // Get the length of the payload in number of avgdata_t words
+  const std::size_t getPayloadLength() const;
+
+  // Get the total length of the packet in number of bytes
+  const std::size_t getPacketLength()  const;
+
+  // Copy an array of bytes into the header
+  void copyHeader(uint8_t* h);
+
+  // Copy an array of avgdata_t's into the payload
+  void copyData(avgdata_t* d);
+
+  // Write the packet into a file
+  void writeToFile(uint fd) const;
+
+  // Get a pointer to a SmurfHeader object, to access the header information
+  SmurfHeader* getHeaderPtr();
+
+  // Get a data value, at a specified index
+  const avgdata_t getData(std::size_t index) const;
+
+  // Get a byte from the header, at a specified index
+  const uint8_t getHeaderByte(std::size_t index) const;
+
+private:
+  std::size_t            headerLength;  // Header length (number of bytes)
+  std::size_t            payloadLength; // Payload size (number of avgdata_t)
+  std::size_t            packetLength;  // Total packet length (number of bytes)
+  std::vector<uint8_t>   headerBuffer;  // Header buffer
+  std::vector<avgdata_t> payloadBuffer; // Payload buffer
+  SmurfHeader            header;        // Packet header object
 };
 
 #endif
