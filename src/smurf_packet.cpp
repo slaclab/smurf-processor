@@ -246,7 +246,7 @@ SmurfPacket::SmurfPacket(uint8_t* h)
 
 SmurfPacket::SmurfPacket(uint8_t* h, avgdata_t* d)
 {
-  SmurfPacket(h);
+  SmurfPacket();
   copyHeader(h);
   copyData(d);
 }
