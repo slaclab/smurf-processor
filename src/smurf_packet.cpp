@@ -303,6 +303,11 @@ const avgdata_t SmurfPacket::getValue(std::size_t index) const
   return payloadBuffer.at(index);
 }
 
+void SmurfPacket::setValue(std::size_t index, avgdata_t value)
+{
+  payloadBuffer.at(index) = value;
+}
+
 const uint8_t SmurfPacket::getHeaderByte(std::size_t index) const
 {
   return headerBuffer.at(index);

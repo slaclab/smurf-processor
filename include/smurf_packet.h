@@ -152,6 +152,9 @@ public:
   // Get a data value, at a specified index
   const avgdata_t getValue(std::size_t index) const;
 
+  // Set a data value, at a specific index
+  void setValue(std::size_t index, avgdata_t value);
+
   // Get a byte from the header, at a specified index
   const uint8_t getHeaderByte(std::size_t index) const;
 
