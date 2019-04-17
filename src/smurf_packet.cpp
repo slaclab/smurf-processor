@@ -298,7 +298,7 @@ SmurfHeader* SmurfPacket::getHeaderPtr()
   return &header;
 }
 
-const avgdata_t SmurfPacket::getData(std::size_t index) const
+const avgdata_t SmurfPacket::getValue(std::size_t index) const
 {
   return payloadBuffer.at(index);
 }

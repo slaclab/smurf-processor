@@ -150,10 +150,12 @@ public:
   SmurfHeader* getHeaderPtr();
 
   // Get a data value, at a specified index
-  const avgdata_t getData(std::size_t index) const;
+  const avgdata_t getValue(std::size_t index) const;
 
   // Get a byte from the header, at a specified index
   const uint8_t getHeaderByte(std::size_t index) const;
+
+
 
 private:
   std::size_t            headerLength;  // Header length (number of bytes)
