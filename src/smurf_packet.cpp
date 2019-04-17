@@ -318,6 +318,16 @@ void SmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
   headerBuffer.at(index) = value;
 }
 
+void SmurfPacket::getHeaderArray(uint8_t* h) const
+{
+  memcpy(h, headerBuffer.data(), headerLength);
+}
+
+void SmurfPacket::getDataArray(avgdata_t* d) const
+{
+  memcpy(d, payloadBuffer.data(), payloadLength * sizeof(avgdata_t));
+}
+
 ////////////////////////////////////////
 ////// - SmurfPacket definitions ///////
 ////////////////////////////////////////

@@ -161,6 +161,12 @@ public:
   // Set a byte on the header, at a specific index
   void setHeaderByte(std::size_t index, uint8_t value);
 
+  // Get a copy of the header bufefr as an array of bytes
+  void getHeaderArray(uint8_t* h) const;
+
+  // Get a copy of the data buffer as an array of avgdata_t
+  void getDataArray(avgdata_t* d) const;
+
 private:
   std::size_t            headerLength;  // Header length (number of bytes)
   std::size_t            payloadLength; // Payload size (number of avgdata_t)
