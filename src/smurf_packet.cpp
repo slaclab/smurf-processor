@@ -313,6 +313,11 @@ const uint8_t SmurfPacket::getHeaderByte(std::size_t index) const
   return headerBuffer.at(index);
 }
 
+void SmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
+{
+  headerBuffer.at(index) = value;
+}
+
 ////////////////////////////////////////
 ////// - SmurfPacket definitions ///////
 ////////////////////////////////////////

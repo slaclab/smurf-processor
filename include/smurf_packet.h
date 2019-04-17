@@ -158,7 +158,8 @@ public:
   // Get a byte from the header, at a specified index
   const uint8_t getHeaderByte(std::size_t index) const;
 
-
+  // Set a byte on the header, at a specific index
+  void setHeaderByte(std::size_t index, uint8_t value);
 
 private:
   std::size_t            headerLength;  // Header length (number of bytes)
