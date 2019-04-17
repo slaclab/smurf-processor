@@ -81,6 +81,8 @@ public:
   uint32_t epics_nanoseconds;
 
   SmurfHeader(void); // creates header with num samples
+  SmurfHeader(uint8_t *buffer); // creates header and set pointer
+
   void copy_header(uint8_t *buffer);
   uint get_version(void);
   uint get_ext_counter(void);

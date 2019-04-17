@@ -21,6 +21,13 @@ SmurfHeader::SmurfHeader()
   unix_dtime = 0;
 }
 
+SmurfHeader::SmurfHeader(uint8_t *buffer)
+:
+  SmurfHeader()
+{
+  copy_header(buffer);
+}
+
 void SmurfHeader::copy_header(uint8_t *buffer)
 {
   header = buffer;  // just move the pointer
@@ -228,10 +235,8 @@ SmurfPacket::SmurfPacket()
   packetLength(smurfheaderlength + smurfsamples * sizeof(avgdata_t)),
   headerBuffer(smurfheaderlength),
   payloadBuffer(smurfsamples),
-  header()
+  header(headerBuffer.data())
 {
-  // Update the SmurfHeader internal pointer to the header buffer
-  header.copy_header(headerBuffer.data());
   std::cout << "SmurfPacket object created:" << std::endl;
   std::cout << "Header length       = " << headerLength  << " bytes" << std::endl;
   std::cout << "Payload length      = " << payloadLength << " words" << std::endl;
