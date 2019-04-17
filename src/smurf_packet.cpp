@@ -278,7 +278,7 @@ void SmurfPacket::copyHeader(uint8_t* h)
 
 void SmurfPacket::copyData(avgdata_t* d)
 {
-  memcpy(payloadBuffer.data(), d, payloadLength);
+  memcpy(payloadBuffer.data(), d, payloadLength * sizeof(avgdata_t));
 }
 
 void SmurfPacket::writeToFile(uint fd) const
