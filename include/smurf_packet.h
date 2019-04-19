@@ -137,6 +137,13 @@ public:
   // Get the total length of the packet in number of bytes
   const std::size_t getPacketLength()  const;
 
+  // Header function //
+  const uint8_t  getVersion()             const;  // Get protocol version
+  const uint8_t  getCrateID()             const;  // Get ATCA crate ID
+  const uint8_t  getSlotNumber()          const;  // Get ATCA slot number
+  const uint8_t  getTimingConfiguration() const;  // Get timing configuration
+  const uint32_t getNumberChannels()      const;  // Get number of channel in this packet
+
   // Copy an array of bytes into the header
   void copyHeader(uint8_t* h);
 

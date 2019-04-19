@@ -277,6 +277,31 @@ const std::size_t SmurfPacket::getPacketLength()  const
   return packetLength;
 }
 
+const uint8_t SmurfPacket::getVersion() const
+{
+  return headerBuffer.at(0);
+}
+
+const uint8_t SmurfPacket::getCrateID() const
+{
+  return headerBuffer.at(1);
+}
+
+const uint8_t SmurfPacket::getSlotNumber() const
+{
+  return headerBuffer.at(2);
+}
+
+const uint8_t SmurfPacket::getTimingConfiguration() const
+{
+  return headerBuffer.at(3);
+}
+
+const uint32_t SmurfPacket::getNumberChannels() const
+{
+  return *(reinterpret_cast<const uint32_t*>(&headerBuffer.at(4)));
+}
+
 void SmurfPacket::copyHeader(uint8_t* h)
 {
   memcpy(headerBuffer.data(), h, headerLength);
