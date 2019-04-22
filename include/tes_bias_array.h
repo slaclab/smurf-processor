@@ -61,10 +61,10 @@ public:
   void setPtr(uint8_t *p);
 
   // Write a TES bias value
-  void setWord(const WordIndex& index, int value) const;
+  void setWord(const WordIndex& index, int32_t value) const;
 
   // Read a TES bias value
-  int getWord(const WordIndex& index) const;
+  const int32_t getWord(const WordIndex& index) const;
 
   // Method to the mutex
   std::mutex* getMutex();

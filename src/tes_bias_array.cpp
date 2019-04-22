@@ -17,7 +17,7 @@ void TesBiasArray::setPtr(uint8_t *p)
   pData = p;
 }
 
-void TesBiasArray::setWord(const WordIndex& index, int value) const
+void TesBiasArray::setWord(const WordIndex& index, int32_t value) const
 {
   if (index >= TesBiasCount)
     throw std::runtime_error("Trying to write a TES bias value in an address of out the buffer range.");
@@ -52,7 +52,7 @@ void TesBiasArray::setWord(const WordIndex& index, int value) const
   }
 };
 
-int TesBiasArray::getWord(const WordIndex& index) const
+const int32_t TesBiasArray::getWord(const WordIndex& index) const
 {
   if (index >= TesBiasCount)
     throw std::runtime_error("Trying to read a TES bias value in an address of out the buffer range.");
