@@ -351,19 +351,23 @@ const uint8_t SmurfPacket_RO::getControlField() const
 
 const bool SmurfPacket_RO::getClearAverageBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x01);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
+    (0x01 << clearAvergaveBitOffset));
 }
 const bool SmurfPacket_RO::getDisableStreamBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x02);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
+    (0x01 << disableStreamBitOffset));
 }
 const bool SmurfPacket_RO::getDisableFileWriteBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x04);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
+    (0x01 << disableFileWriteBitOffset));
 }
 const bool SmurfPacket_RO::getReadConfigEachCycleBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x08);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
+    (0x01 << readConfigEachCycleBitOffset));
 }
 const uint8_t SmurfPacket_RO::getTestMode() const
 {
@@ -559,25 +563,25 @@ void SmurfPacket::setControlField(uint8_t value)
 void SmurfPacket::setClearAverageBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
-    setWordBit(getControlField(), 0, value));
+    setWordBit(getControlField(), clearAvergaveBitOffset, value));
 }
 
 void SmurfPacket::setDisableStreamBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
-    setWordBit(getControlField(), 1, value));
+    setWordBit(getControlField(), disableStreamBitOffset, value));
 }
 
 void SmurfPacket::setDisableFileWriteBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
-    setWordBit(getControlField(), 2, value));
+    setWordBit(getControlField(), disableFileWriteBitOffset, value));
 }
 
 void SmurfPacket::setReadConfigEachCycleBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
-    setWordBit(getControlField(), 3, value));
+    setWordBit(getControlField(), readConfigEachCycleBitOffset, value));
 }
 
 void SmurfPacket::setTestMode(uint8_t value)

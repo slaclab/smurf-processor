@@ -216,6 +216,12 @@ protected:
   static const std::size_t headerRowLengthOffset            = 120;
   static const std::size_t headerDataRateOffset             = 122;
 
+  // Header's control field bit offset
+  static const std::size_t clearAvergaveBitOffset           = 0;
+  static const std::size_t disableStreamBitOffset           = 1;
+  static const std::size_t disableFileWriteBitOffset        = 2;
+  static const std::size_t readConfigEachCycleBitOffset     = 3;
+
 };
 
 // SmurfPakcet Class
