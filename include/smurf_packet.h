@@ -114,20 +114,21 @@ public:
 
 // SmurfPakcet Class
 // This class handler SMuRF packets.
-class SmurfPacket
+// This class gives only read access to the packet content
+class SmurfPacket_RO
 {
 public:
   // Default constructor
-  SmurfPacket();
+  SmurfPacket_RO();
 
   // Constructor using a raw array for the header data
-  SmurfPacket(uint8_t* h);
+  SmurfPacket_RO(uint8_t* h);
 
   // Constructor using a raw array for the header and payload data
-  SmurfPacket(uint8_t* h, avgdata_t* d);
+  SmurfPacket_RO(uint8_t* h, avgdata_t* d);
 
   // Destructor
-  ~SmurfPacket();
+  ~SmurfPacket_RO();
 
   // Get the length of the header in number of bytes
   const std::size_t getHeaderLength()  const;
