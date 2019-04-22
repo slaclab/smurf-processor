@@ -279,27 +279,128 @@ const std::size_t SmurfPacket::getPacketLength()  const
 
 const uint8_t SmurfPacket::getVersion() const
 {
-  return getHeaderWord<uint8_t>(0);
+  return getHeaderWord<uint8_t>(headerVersionOffset);
 }
 
 const uint8_t SmurfPacket::getCrateID() const
 {
-  return getHeaderWord<uint8_t>(1);
+  return getHeaderWord<uint8_t>(headerCrateIDOffset);
 }
 
 const uint8_t SmurfPacket::getSlotNumber() const
 {
-  return getHeaderWord<uint8_t>(2);
+  return getHeaderWord<uint8_t>(headerSlotNumberOffset);
 }
 
 const uint8_t SmurfPacket::getTimingConfiguration() const
 {
-  return getHeaderWord<uint8_t>(3);
+  return getHeaderWord<uint8_t>(headerTimingConfigurationOffset);
 }
 
 const uint32_t SmurfPacket::getNumberChannels() const
 {
-  return getHeaderWord<uint32_t>(4);
+  return getHeaderWord<uint32_t>(headerNumberChannelOffset);
+}
+
+const uint64_t SmurfPacket::getUnixTime() const
+{
+  return getHeaderWord<uint64_t>(headerUnixTimeOffset);
+}
+
+const uint32_t SmurfPacket::getFluxRampIncrement() const
+{
+  return getHeaderWord<uint32_t>(headerFluxRampIncrementOffset);
+}
+
+const uint32_t SmurfPacket::getFluxRampOffset() const
+{
+  return getHeaderWord<uint32_t>(headerFluxRampOffsetOffset);
+}
+
+const uint32_t SmurfPacket::getCounter0() const
+{
+  return getHeaderWord<uint32_t>(headerCounter0Offset);
+}
+
+const uint32_t SmurfPacket::getCounter1() const
+{
+  return getHeaderWord<uint32_t>(headerCounter1Offset);
+}
+
+const uint64_t SmurfPacket::getCounter2() const
+{
+  return getHeaderWord<uint64_t>(headerCounter2Offset);
+}
+
+const uint32_t SmurfPacket::getAveragingResetBits() const
+{
+  return getHeaderWord<uint32_t>(headerAveragingResetBitsOffset);
+}
+
+const uint32_t SmurfPacket::getFrameCounter() const
+{
+  return getHeaderWord<uint32_t>(headerFrameCounterOffset);
+}
+
+const uint32_t SmurfPacket::getTESRelaySetting() const
+{
+  return getHeaderWord<uint32_t>(headerTESRelaySettingOffset);
+}
+
+const uint64_t SmurfPacket::getExternalTimeClock() const
+{
+  return getHeaderWord<uint64_t>(headerExternalTimeClockOffset);
+}
+
+const uint8_t SmurfPacket::getControlField() const
+{
+  return getHeaderWord<uint8_t>(headerControlFieldOffset);
+}
+
+const bool SmurfPacket::getClearAverageBit() const
+{
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x00);
+}
+const bool SmurfPacket::getDisableStreamBit() const
+{
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x01);
+}
+const bool SmurfPacket::getDisableFileWriteBit() const
+{
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x02);
+}
+const bool SmurfPacket::getReadConfigEachCycleBit() const
+{
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x04);
+}
+const uint8_t SmurfPacket::getTestMode() const
+{
+  return ((getHeaderWord<uint8_t>(headerControlFieldOffset) >> 4) & 0x0f);
+}
+
+const uint8_t SmurfPacket::getTestParameters() const
+{
+  return getHeaderWord<uint8_t>(headerTestParametersOffset);
+}
+
+const uint16_t SmurfPacket::getNumberRows() const
+{
+  return getHeaderWord<uint16_t>(headerNumberRowsOffset);
+}
+
+const uint16_t SmurfPacket::getNumberRowsReported() const
+{
+  return getHeaderWord<uint16_t>(headerNumberRowsReportedOffset);
+}
+
+const uint16_t SmurfPacket::getRowLength() const
+{
+  return getHeaderWord<uint16_t>(headerRowLengthOffset);
+}
+
+const uint16_t SmurfPacket::getDataRate() const
+{
+  return getHeaderWord<uint16_t>(headerDataRateOffset);
 }
 
 template <typename T>
