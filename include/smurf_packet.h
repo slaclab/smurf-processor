@@ -133,6 +133,12 @@ public:
   // Get the total length of the packet in number of bytes
   const std::size_t getPacketLength()  const;
 
+  // Get a copy of the header bufefr as an array of bytes
+  void getHeaderArray(uint8_t* h) const;
+
+  // Get a copy of the data buffer as an array of avgdata_t
+  void getDataArray(avgdata_t* d) const;
+
   // Header functions //
   const uint8_t  getVersion()                   const;  // Get protocol version
   const uint8_t  getCrateID()                   const;  // Get ATCA crate ID
@@ -162,23 +168,17 @@ public:
   const uint16_t getRowLength()                 const;  // Get MCE header value
   const uint16_t getDataRate()                  const;  // Get MCE header value
 
-  // Write the packet into a file
-  void writeToFile(uint fd) const;
-
   // Get a pointer to a SmurfHeader object, to access the header information
   SmurfHeader* getHeaderPtr();
 
   // Get a data value, at a specified index
   const avgdata_t getValue(std::size_t index) const;
 
-  // Get a byte from the header, at a specified index
+  // Get a raw byte from the header, at a specified index
   const uint8_t getHeaderByte(std::size_t index) const;
 
-  // Get a copy of the header bufefr as an array of bytes
-  void getHeaderArray(uint8_t* h) const;
-
-  // Get a copy of the data buffer as an array of avgdata_t
-  void getDataArray(avgdata_t* d) const;
+  // Write the packet into a file
+  void writeToFile(uint fd) const;
 
 protected:
   std::size_t            headerLength;  // Header length (number of bytes)
@@ -243,11 +243,40 @@ public:
   // Copy an array of avgdata_t's into the payload
   void copyData(avgdata_t* d);
 
+  // Header functions //
+  void setVersion();                  // Get protocol version
+  void setCrateID();                  // Get ATCA crate ID
+  void setSlotNumber();               // Get ATCA slot number
+  void setTimingConfiguration();      // Get timing configuration
+  void setNumberChannels();           // Get number of channel in this packet
+  void setTESBias(std::size_t index); // Get TES DAC values 16X 20 bit
+  void setUnixTime();                 // Get 64 bit unix time nanoseconds
+  void setFluxRampIncrement();        // Get signed 32 bit integer for increment
+  void setFluxRampOffset();           // Get signed 32 it integer for offset
+  void setCounter0();                 // Get 32 bit counter since last 1Hz marker
+  void setCounter1();                 // Get 32 bit counter since last external input
+  void setCounter2();                 // Get 64 bit timestamp
+  void setAveragingResetBits();       // Get up to 32 bits of average reset from timing system
+  void setFrameCounter();             // Get locally genreate frame counter 32 bit
+  void setTESRelaySetting();          // Get TES and flux ramp relays, 17bits in use now
+  void setExternalTimeClock();        // Get Syncword from mce for mce based systems (40 bit including header)
+  void setControlField();             // Get control field word
+  void setClearAverageBit();          // Get control field's clear average and unwrap bit (bit 0)
+  void setDisableStreamBit();         // Get control field's disable stream to MCE bit (bit 1)
+  void setDisableFileWriteBit();      // Get control field's disable file write (bit 2)
+  void setReadConfigEachCycleBit();   // Get control field's set to read configuration file each cycle bit (bit 3)
+  void setTestMode();                 // Get control field's test mode (bits 4-7)
+  void setTestParameters();           // Get test parameters
+  void setNumberRows();               // Get MCE header value (max 255) (defaluts to 33 if 0)
+  void setNumberRowsReported();       // Get MCE header value (defaults to numb rows if 0)
+  void setRowLength();                // Get MCE header value
+  void setDataRate();                 // Get MCE header value
+
+  // Set a raw byte in the header, at a specific index
+  void setHeaderByte(std::size_t index, uint8_t value);
+
   // Set a data value, at a specific index
   void setValue(std::size_t index, avgdata_t value);
-
-  // Set a byte on the header, at a specific index
-  void setHeaderByte(std::size_t index, uint8_t value);
 };
 
 #endif
