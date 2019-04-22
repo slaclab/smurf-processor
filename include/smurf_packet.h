@@ -185,6 +185,31 @@ private:
   // Get a word from the header
   template<typename T>
   const T getHeaderWord(std::size_t offset) const;
+
+  // Header word offsets (in bytes)
+  static const std::size_t headerVersionOffset              = 0;
+  static const std::size_t headerCrateIDOffset              = 1;
+  static const std::size_t headerSlotNumberOffset           = 2;
+  static const std::size_t headerTimingConfigurationOffset  = 3;
+  static const std::size_t headerNumberChannelOffset        = 4;
+  static const std::size_t headerTESDACOffset               = 8;
+  static const std::size_t headerUnixTimeOffset             = 48;
+  static const std::size_t headerFluxRampIncrementOffset    = 56;
+  static const std::size_t headerFluxRampOffsetOffset       = 60;
+  static const std::size_t headerCounter0Offset             = 64;
+  static const std::size_t headerCounter1Offset             = 68;
+  static const std::size_t headerCounter2Offset             = 72;
+  static const std::size_t headerAveragingResetBitsOffset   = 80;
+  static const std::size_t headerFrameCounterOffset         = 84;
+  static const std::size_t headerTESRelaySettingOffset      = 88;
+  static const std::size_t headerExternalTimeClockOffset    = 96;
+  static const std::size_t headerControlFieldOffset         = 104;
+  static const std::size_t headerTestParametersOffset       = 105;
+  static const std::size_t headerNumberRowsOffset           = 112;
+  static const std::size_t headerNumberRowsReportedOffset   = 114;
+  static const std::size_t headerRowLengthOffset            = 120;
+  static const std::size_t headerDataRateOffset             = 122;
+
 };
 
 #endif
