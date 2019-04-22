@@ -177,6 +177,11 @@ public:
   // Write the packet into a file
   void writeToFile(uint fd) const;
 
+private:
+  // Get a word from the header
+  template<typename T>
+  const T getHeaderWord(std::size_t offset) const;
+
 protected:
   std::size_t            headerLength;  // Header length (number of bytes)
   std::size_t            payloadLength; // Payload size (number of avgdata_t)
@@ -185,10 +190,6 @@ protected:
   std::vector<avgdata_t> payloadBuffer; // Payload buffer
   SmurfHeader            header;        // Packet header object
   TesBiasArray           tba;           // Tes Bias array object
-
-  // Get a word from the header
-  template<typename T>
-  const T getHeaderWord(std::size_t offset) const;
 
   // Header word offsets (in bytes)
   static const std::size_t headerVersionOffset              = 0;
