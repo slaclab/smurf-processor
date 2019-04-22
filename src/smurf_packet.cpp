@@ -303,7 +303,7 @@ const uint32_t SmurfPacket::getNumberChannels() const
   return getHeaderWord<uint32_t>(headerNumberChannelOffset);
 }
 
-const int32_t SmurfPacket::getTESDAC(std::size_t index) const
+const int32_t SmurfPacket::getTESBias(std::size_t index) const
 {
   return tba.getWord(index);
 }
