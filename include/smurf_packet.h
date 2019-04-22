@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/timeb.h>
 #include <vector>
+#include <stdexcept>
 
 #include "common.h"
 #include "tes_bias_array.h"
@@ -242,33 +243,33 @@ public:
   void copyData(avgdata_t* d);
 
   // Header functions //
-  void setVersion();                  // Get protocol version
-  void setCrateID();                  // Get ATCA crate ID
-  void setSlotNumber();               // Get ATCA slot number
-  void setTimingConfiguration();      // Get timing configuration
-  void setNumberChannels();           // Get number of channel in this packet
-  void setTESBias(std::size_t index); // Get TES DAC values 16X 20 bit
-  void setUnixTime();                 // Get 64 bit unix time nanoseconds
-  void setFluxRampIncrement();        // Get signed 32 bit integer for increment
-  void setFluxRampOffset();           // Get signed 32 it integer for offset
-  void setCounter0();                 // Get 32 bit counter since last 1Hz marker
-  void setCounter1();                 // Get 32 bit counter since last external input
-  void setCounter2();                 // Get 64 bit timestamp
-  void setAveragingResetBits();       // Get up to 32 bits of average reset from timing system
-  void setFrameCounter();             // Get locally genreate frame counter 32 bit
-  void setTESRelaySetting();          // Get TES and flux ramp relays, 17bits in use now
-  void setExternalTimeClock();        // Get Syncword from mce for mce based systems (40 bit including header)
-  void setControlField();             // Get control field word
-  void setClearAverageBit();          // Get control field's clear average and unwrap bit (bit 0)
-  void setDisableStreamBit();         // Get control field's disable stream to MCE bit (bit 1)
-  void setDisableFileWriteBit();      // Get control field's disable file write (bit 2)
-  void setReadConfigEachCycleBit();   // Get control field's set to read configuration file each cycle bit (bit 3)
-  void setTestMode();                 // Get control field's test mode (bits 4-7)
-  void setTestParameters();           // Get test parameters
-  void setNumberRows();               // Get MCE header value (max 255) (defaluts to 33 if 0)
-  void setNumberRowsReported();       // Get MCE header value (defaults to numb rows if 0)
-  void setRowLength();                // Get MCE header value
-  void setDataRate();                 // Get MCE header value
+  void setVersion(uint8_t value);                     // Get protocol version
+  void setCrateID(uint8_t value);                     // Get ATCA crate ID
+  void setSlotNumber(uint8_t value);                  // Get ATCA slot number
+  void setTimingConfiguration(uint8_t value);         // Get timing configuration
+  void setNumberChannels(uint32_t value);             // Get number of channel in this packet
+  void setTESBias(std::size_t index, int32_t value);  // Get TES DAC values 16X 20 bit
+  void setUnixTime(uint64_t value);                   // Get 64 bit unix time nanoseconds
+  void setFluxRampIncrement(uint32_t value);          // Get signed 32 bit integer for increment
+  void setFluxRampOffset(uint32_t value);             // Get signed 32 it integer for offset
+  void setCounter0(uint32_t value);                   // Get 32 bit counter since last 1Hz marker
+  void setCounter1(uint32_t value);                   // Get 32 bit counter since last external input
+  void setCounter2(uint64_t value);                   // Get 64 bit timestamp
+  void setAveragingResetBits(uint32_t value);         // Get up to 32 bits of average reset from timing system
+  void setFrameCounter(uint32_t value);               // Get locally genreate frame counter 32 bit
+  void setTESRelaySetting(uint32_t value);            // Get TES and flux ramp relays, 17bits in use now
+  void setExternalTimeClock(uint64_t value);          // Get Syncword from mce for mce based systems (40 bit including header)
+  void setControlField(uint8_t value);                // Get control field word
+  void setClearAverageBit(bool value);                // Get control field's clear average and unwrap bit (bit 0)
+  void setDisableStreamBit(bool value);               // Get control field's disable stream to MCE bit (bit 1)
+  void setDisableFileWriteBit(bool value);            // Get control field's disable file write (bit 2)
+  void setReadConfigEachCycleBit(bool value);         // Get control field's set to read configuration file each cycle bit (bit 3)
+  void setTestMode(uint8_t value);                    // Get control field's test mode (bits 4-7)
+  void setTestParameters(uint8_t value);              // Get test parameters
+  void setNumberRows(uint16_t value);                 // Get MCE header value (max 255) (defaluts to 33 if 0)
+  void setNumberRowsReported(uint16_t value);         // Get MCE header value (defaults to numb rows if 0)
+  void setRowLength(uint16_t value);                  // Get MCE header value
+  void setDataRate(uint16_t value);                   // Get MCE header value
 
   // Set a raw byte in the header, at a specific index
   void setHeaderByte(std::size_t index, uint8_t value);
@@ -280,6 +281,9 @@ private:
   // Get a word from the header
   template<typename T>
   void setHeaderWord(std::size_t offset, const T& value);
+
+  // Set bit number 'index' to 'value' in the word 'byte'
+  uint8_t setWordBit(uint8_t byte, std::size_t index, bool value);
 };
 
 #endif

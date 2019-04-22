@@ -471,20 +471,178 @@ void SmurfPacket::copyData(avgdata_t* d)
   memcpy(payloadBuffer.data(), d, payloadLength * sizeof(avgdata_t));
 }
 
-void SmurfPacket::setValue(std::size_t index, avgdata_t value)
+void SmurfPacket::setVersion(uint8_t value)
 {
-  payloadBuffer.at(index) = value;
+  setHeaderWord<uint8_t>(headerVersionOffset, value);
 }
+
+void SmurfPacket::setCrateID(uint8_t value)
+{
+  setHeaderWord<uint8_t>(headerCrateIDOffset, value);
+}
+
+void SmurfPacket::setSlotNumber(uint8_t value)
+{
+  setHeaderWord<uint8_t>(headerSlotNumberOffset, value);
+}
+
+void  SmurfPacket::setTimingConfiguration(uint8_t value)
+{
+  setHeaderWord<uint8_t>(headerTimingConfigurationOffset, value);
+}
+
+void SmurfPacket::setNumberChannels(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerNumberChannelOffset, value);
+}
+
+void  SmurfPacket::setTESBias(std::size_t index, int32_t value)
+{
+  tba.setWord(index, value);
+}
+
+void SmurfPacket::setUnixTime(uint64_t value)
+{
+  setHeaderWord<uint64_t>(headerUnixTimeOffset, value);
+}
+
+void SmurfPacket::setFluxRampIncrement(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerFluxRampIncrementOffset, value);
+}
+
+void SmurfPacket::setFluxRampOffset(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerFluxRampOffsetOffset, value);
+}
+
+void SmurfPacket::setCounter0(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerCounter0Offset, value);
+}
+
+void SmurfPacket::setCounter1(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerCounter1Offset, value);
+}
+
+void SmurfPacket::setCounter2(uint64_t value)
+{
+  setHeaderWord<uint64_t>(headerCounter2Offset, value);
+}
+
+void SmurfPacket::setAveragingResetBits(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerAveragingResetBitsOffset, value);
+}
+
+void SmurfPacket::setFrameCounter(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerFrameCounterOffset, value);
+}
+
+void SmurfPacket::setTESRelaySetting(uint32_t value)
+{
+  setHeaderWord<uint32_t>(headerTESRelaySettingOffset, value);
+}
+
+void SmurfPacket::setExternalTimeClock(uint64_t value)
+{
+  setHeaderWord<uint64_t>(headerExternalTimeClockOffset, value);
+}
+
+void SmurfPacket::setControlField(uint8_t value)
+{
+  setHeaderWord<uint8_t>(headerControlFieldOffset, value);
+}
+
+void SmurfPacket::setClearAverageBit(bool value)
+{
+  setHeaderWord<uint8_t>(headerControlFieldOffset, \
+    setWordBit(getControlField(), 0, value));
+}
+
+void SmurfPacket::setDisableStreamBit(bool value)
+{
+  setHeaderWord<uint8_t>(headerControlFieldOffset, \
+    setWordBit(getControlField(), 1, value));
+}
+
+void SmurfPacket::setDisableFileWriteBit(bool value)
+{
+  setHeaderWord<uint8_t>(headerControlFieldOffset, \
+    setWordBit(getControlField(), 2, value));
+}
+
+void SmurfPacket::setReadConfigEachCycleBit(bool value)
+{
+  setHeaderWord<uint8_t>(headerControlFieldOffset, \
+    setWordBit(getControlField(), 3, value));
+}
+
+void SmurfPacket::setTestMode(uint8_t value)
+{
+  uint8_t u8 = getControlField();
+
+  u8 &= 0x0f;
+  u8 |= ( (value << 4 ) & 0xf0 );
+
+  setHeaderWord<uint8_t>(headerControlFieldOffset, u8);
+}
+
+void SmurfPacket::setTestParameters(uint8_t value)
+{
+  setHeaderWord<uint8_t>(headerTestParametersOffset, value);
+}
+
+void SmurfPacket::setNumberRows(uint16_t value)
+{
+  setHeaderWord<uint16_t>(headerNumberRowsOffset, value);
+}
+
+void SmurfPacket::setNumberRowsReported(uint16_t value)
+{
+  setHeaderWord<uint16_t>(headerNumberRowsReportedOffset, value);
+}
+
+void SmurfPacket::setRowLength(uint16_t value)
+{
+  setHeaderWord<uint16_t>(headerRowLengthOffset, value);
+}
+
+void SmurfPacket::setDataRate(uint16_t value)
+{
+  setHeaderWord<uint16_t>(headerDataRateOffset, value);
+}
+
 
 void SmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
 {
   headerBuffer.at(index) = value;
 }
 
+void SmurfPacket::setValue(std::size_t index, avgdata_t value)
+{
+  payloadBuffer.at(index) = value;
+}
+
 template <typename T>
 void SmurfPacket::setHeaderWord(std::size_t offset, const T& value)
 {
   *(reinterpret_cast<T*>(&headerBuffer.at(offset))) = value;
+}
+
+uint8_t setWordBit(uint8_t byte, std::size_t index, bool value)
+{
+  if (index >= 8)
+    throw std::runtime_error("Trying to set a byte bit out range.");
+
+  if (value)
+    byte |= (0x01 << index);
+  else
+    byte &= ~(0x01 << index);
+
+  return byte;
 }
 
 ////////////////////////////////////////
