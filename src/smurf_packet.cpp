@@ -644,7 +644,7 @@ inline void SmurfPacket::setHeaderWord(std::size_t offset, const T& value)
   *(reinterpret_cast<T*>(&headerBuffer.at(offset))) = value;
 }
 
-inline uint8_t setWordBit(uint8_t byte, std::size_t index, bool value)
+inline uint8_t SmurfPacket::setWordBit(uint8_t byte, std::size_t index, bool value)
 {
   if (index >= 8)
     throw std::runtime_error("Trying to set a byte bit out range.");
