@@ -121,14 +121,8 @@ public:
   // Default constructor
   SmurfPacket_RO();
 
-  // Constructor using a raw array for the header data
-  SmurfPacket_RO(uint8_t* h);
-
-  // Constructor using a raw array for the header and payload data
-  SmurfPacket_RO(uint8_t* h, avgdata_t* d);
-
   // Destructor
-  ~SmurfPacket_RO();
+  virtual ~SmurfPacket_RO();
 
   // Get the length of the header in number of bytes
   const std::size_t getHeaderLength()  const;
@@ -168,12 +162,6 @@ public:
   const uint16_t getRowLength()                 const;  // Get MCE header value
   const uint16_t getDataRate()                  const;  // Get MCE header value
 
-  // Copy an array of bytes into the header
-  void copyHeader(uint8_t* h);
-
-  // Copy an array of avgdata_t's into the payload
-  void copyData(avgdata_t* d);
-
   // Write the packet into a file
   void writeToFile(uint fd) const;
 
@@ -183,14 +171,8 @@ public:
   // Get a data value, at a specified index
   const avgdata_t getValue(std::size_t index) const;
 
-  // Set a data value, at a specific index
-  void setValue(std::size_t index, avgdata_t value);
-
   // Get a byte from the header, at a specified index
   const uint8_t getHeaderByte(std::size_t index) const;
-
-  // Set a byte on the header, at a specific index
-  void setHeaderByte(std::size_t index, uint8_t value);
 
   // Get a copy of the header bufefr as an array of bytes
   void getHeaderArray(uint8_t* h) const;
@@ -198,7 +180,7 @@ public:
   // Get a copy of the data buffer as an array of avgdata_t
   void getDataArray(avgdata_t* d) const;
 
-private:
+protected:
   std::size_t            headerLength;  // Header length (number of bytes)
   std::size_t            payloadLength; // Payload size (number of avgdata_t)
   std::size_t            packetLength;  // Total packet length (number of bytes)
@@ -235,6 +217,37 @@ private:
   static const std::size_t headerRowLengthOffset            = 120;
   static const std::size_t headerDataRateOffset             = 122;
 
+};
+
+// SmurfPakcet Class
+// This class handler SMuRF packets.
+// This class gives read and write access to the packet content
+class SmurfPacket : public SmurfPacket_RO
+{
+public:
+  // Default constructor
+  SmurfPacket();
+
+  // Constructor using a raw array for the header data
+  SmurfPacket(uint8_t* h);
+
+  // Constructor using a raw array for the header and payload data
+  SmurfPacket(uint8_t* h, avgdata_t* d);
+
+  // Destructor
+  virtual ~SmurfPacket();
+
+  // Copy an array of bytes into the header
+  void copyHeader(uint8_t* h);
+
+  // Copy an array of avgdata_t's into the payload
+  void copyData(avgdata_t* d);
+
+  // Set a data value, at a specific index
+  void setValue(std::size_t index, avgdata_t value);
+
+  // Set a byte on the header, at a specific index
+  void setHeaderByte(std::size_t index, uint8_t value);
 };
 
 #endif

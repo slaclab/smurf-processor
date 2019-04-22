@@ -223,9 +223,9 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
 ////// - SmurfHeader definitions ///////
 ////////////////////////////////////////
 
-////////////////////////////////////////
+///////////////////////////////////////////
 ////// + SmurfPacket_RO definitions ///////
-////////////////////////////////////////
+///////////////////////////////////////////
 
 // Default constructor
 SmurfPacket_RO::SmurfPacket_RO()
@@ -242,20 +242,6 @@ SmurfPacket_RO::SmurfPacket_RO()
   std::cout << "Header length       = " << headerLength  << " bytes" << std::endl;
   std::cout << "Payload length      = " << payloadLength << " words" << std::endl;
   std::cout << "Total packet length = " << packetLength  << " bytes" << std::endl;
-}
-
-SmurfPacket_RO::SmurfPacket_RO(uint8_t* h)
-:
-  SmurfPacket_RO()
-{
-  copyHeader(h);
-}
-
-SmurfPacket_RO::SmurfPacket_RO(uint8_t* h, avgdata_t* d)
-:
-  SmurfPacket_RO(h)
-{
-  copyData(d);
 }
 
 SmurfPacket_RO::~SmurfPacket_RO()
@@ -415,16 +401,6 @@ const T SmurfPacket_RO::getHeaderWord(std::size_t offset) const
   return *(reinterpret_cast<const T*>(&headerBuffer.at(offset)));
 }
 
-void SmurfPacket_RO::copyHeader(uint8_t* h)
-{
-  memcpy(headerBuffer.data(), h, headerLength);
-}
-
-void SmurfPacket_RO::copyData(avgdata_t* d)
-{
-  memcpy(payloadBuffer.data(), d, payloadLength * sizeof(avgdata_t));
-}
-
 void SmurfPacket_RO::writeToFile(uint fd) const
 {
   write(fd, headerBuffer.data(), headerLength);
@@ -441,19 +417,9 @@ const avgdata_t SmurfPacket_RO::getValue(std::size_t index) const
   return payloadBuffer.at(index);
 }
 
-void SmurfPacket_RO::setValue(std::size_t index, avgdata_t value)
-{
-  payloadBuffer.at(index) = value;
-}
-
 const uint8_t SmurfPacket_RO::getHeaderByte(std::size_t index) const
 {
   return headerBuffer.at(index);
-}
-
-void SmurfPacket_RO::setHeaderByte(std::size_t index, uint8_t value)
-{
-  headerBuffer.at(index) = value;
 }
 
 void SmurfPacket_RO::getHeaderArray(uint8_t* h) const
@@ -466,8 +432,62 @@ void SmurfPacket_RO::getDataArray(avgdata_t* d) const
   memcpy(d, payloadBuffer.data(), payloadLength * sizeof(avgdata_t));
 }
 
-////////////////////////////////////////
+///////////////////////////////////////////
 ////// - SmurfPacket_RO definitions ///////
+///////////////////////////////////////////
+
+
+////////////////////////////////////////
+////// - SmurfPacket definitions ///////
+////////////////////////////////////////
+SmurfPacket::SmurfPacket()
+:
+  SmurfPacket_RO()
+{
+  std::cout << "SmurfPacket object created" << std::endl;
+}
+
+SmurfPacket::SmurfPacket(uint8_t* h)
+:
+  SmurfPacket()
+{
+  copyHeader(h);
+}
+
+SmurfPacket::SmurfPacket(uint8_t* h, avgdata_t* d)
+:
+  SmurfPacket(h)
+{
+  copyData(d);
+}
+
+SmurfPacket::~SmurfPacket()
+{
+  std::cout << "SmurfPacket object destroyed" << std::endl;
+}
+
+void SmurfPacket::copyHeader(uint8_t* h)
+{
+  memcpy(headerBuffer.data(), h, headerLength);
+}
+
+void SmurfPacket::copyData(avgdata_t* d)
+{
+  memcpy(payloadBuffer.data(), d, payloadLength * sizeof(avgdata_t));
+}
+
+void SmurfPacket::setValue(std::size_t index, avgdata_t value)
+{
+  payloadBuffer.at(index) = value;
+}
+
+void SmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
+{
+  headerBuffer.at(index) = value;
+}
+
+////////////////////////////////////////
+////// - SmurfPacket definitions ///////
 ////////////////////////////////////////
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
