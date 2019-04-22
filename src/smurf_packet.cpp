@@ -365,19 +365,19 @@ const uint8_t SmurfPacket::getControlField() const
 
 const bool SmurfPacket::getClearAverageBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x00);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x01);
 }
 const bool SmurfPacket::getDisableStreamBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x01);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x02);
 }
 const bool SmurfPacket::getDisableFileWriteBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x02);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x04);
 }
 const bool SmurfPacket::getReadConfigEachCycleBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x04);
+  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & 0x08);
 }
 const uint8_t SmurfPacket::getTestMode() const
 {
