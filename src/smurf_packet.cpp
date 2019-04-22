@@ -279,27 +279,33 @@ const std::size_t SmurfPacket::getPacketLength()  const
 
 const uint8_t SmurfPacket::getVersion() const
 {
-  return headerBuffer.at(0);
+  return getHeaderWord<uint8_t>(0);
 }
 
 const uint8_t SmurfPacket::getCrateID() const
 {
-  return headerBuffer.at(1);
+  return getHeaderWord<uint8_t>(1);
 }
 
 const uint8_t SmurfPacket::getSlotNumber() const
 {
-  return headerBuffer.at(2);
+  return getHeaderWord<uint8_t>(2);
 }
 
 const uint8_t SmurfPacket::getTimingConfiguration() const
 {
-  return headerBuffer.at(3);
+  return getHeaderWord<uint8_t>(3);
 }
 
 const uint32_t SmurfPacket::getNumberChannels() const
 {
-  return *(reinterpret_cast<const uint32_t*>(&headerBuffer.at(4)));
+  return getHeaderWord<uint32_t>(4);
+}
+
+template <typename T>
+const T SmurfPacket::getHeaderWord(std::size_t offset) const
+{
+  return *(reinterpret_cast<const T*>(&headerBuffer.at(offset)));
 }
 
 void SmurfPacket::copyHeader(uint8_t* h)

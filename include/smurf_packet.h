@@ -181,6 +181,10 @@ private:
   std::vector<uint8_t>   headerBuffer;  // Header buffer
   std::vector<avgdata_t> payloadBuffer; // Payload buffer
   SmurfHeader            header;        // Packet header object
+
+  // Get a word from the header
+  template<typename T>
+  const T getHeaderWord(std::size_t offset) const;
 };
 
 #endif
