@@ -235,7 +235,8 @@ SmurfPacket::SmurfPacket()
   packetLength(smurfheaderlength + smurfsamples * sizeof(avgdata_t)),
   headerBuffer(smurfheaderlength),
   payloadBuffer(smurfsamples),
-  header(headerBuffer.data())
+  header(headerBuffer.data()),
+  tba(&headerBuffer.at(headerTESDACOffset))
 {
   std::cout << "SmurfPacket object created:" << std::endl;
   std::cout << "Header length       = " << headerLength  << " bytes" << std::endl;
@@ -300,6 +301,11 @@ const uint8_t SmurfPacket::getTimingConfiguration() const
 const uint32_t SmurfPacket::getNumberChannels() const
 {
   return getHeaderWord<uint32_t>(headerNumberChannelOffset);
+}
+
+const int32_t SmurfPacket::getTESDAC(std::size_t index) const
+{
+  return tba.getWord(index);
 }
 
 const uint64_t SmurfPacket::getUnixTime() const

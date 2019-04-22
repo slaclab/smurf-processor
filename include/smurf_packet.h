@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "common.h"
+#include "tes_bias_array.h"
 
 #include "smurf2mce.h"
 
@@ -137,14 +138,13 @@ public:
   // Get the total length of the packet in number of bytes
   const std::size_t getPacketLength()  const;
 
-  // Header function //
-  const uint8_t  getVersion()             const;  // Get protocol version
-  const uint8_t  getCrateID()             const;  // Get ATCA crate ID
-  const uint8_t  getSlotNumber()          const;  // Get ATCA slot number
-  const uint8_t  getTimingConfiguration() const;  // Get timing configuration
-  const uint32_t getNumberChannels()      const;  // Get number of channel in this packet
-
-  const uint32_t getTESDAC(std::size_t index) const;  // Get TES DAC values 16X 20 bit
+  // Header functions //
+  const uint8_t  getVersion()                 const;  // Get protocol version
+  const uint8_t  getCrateID()                 const;  // Get ATCA crate ID
+  const uint8_t  getSlotNumber()              const;  // Get ATCA slot number
+  const uint8_t  getTimingConfiguration()     const;  // Get timing configuration
+  const uint32_t getNumberChannels()          const;  // Get number of channel in this packet
+  const int32_t  getTESDAC(std::size_t index) const;  // Get TES DAC values 16X 20 bit
   const uint64_t getUnixTime()                const;  // Get 64 bit unix time nanoseconds
   const uint32_t getFluxRampIncrement()       const;  // Get signed 32 bit integer for increment
   const uint32_t getFluxRampOffset()          const;  // Get signed 32 it integer for offset
@@ -204,6 +204,7 @@ private:
   std::vector<uint8_t>   headerBuffer;  // Header buffer
   std::vector<avgdata_t> payloadBuffer; // Payload buffer
   SmurfHeader            header;        // Packet header object
+  TesBiasArray           tba;           // Tes Bias array object
 
   // Get a word from the header
   template<typename T>
