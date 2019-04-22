@@ -183,6 +183,9 @@ private:
   template<typename T>
   const T getHeaderWord(std::size_t offset) const;
 
+  // Get the bit number 'index' of the word 'byte'
+  const bool getWordBit(uint8_t byte, std::size_t index) const;
+
 protected:
   std::size_t            headerLength;  // Header length (number of bytes)
   std::size_t            payloadLength; // Payload size (number of avgdata_t)

@@ -351,24 +351,24 @@ const uint8_t SmurfPacket_RO::getControlField() const
 
 const bool SmurfPacket_RO::getClearAverageBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
-    (0x01 << clearAvergaveBitOffset));
+  return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), clearAvergaveBitOffset);
 }
+
 const bool SmurfPacket_RO::getDisableStreamBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
-    (0x01 << disableStreamBitOffset));
+  return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), disableStreamBitOffset);
 }
+
 const bool SmurfPacket_RO::getDisableFileWriteBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
-    (0x01 << disableFileWriteBitOffset));
+  return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), disableFileWriteBitOffset);
 }
+
 const bool SmurfPacket_RO::getReadConfigEachCycleBit() const
 {
-  return (getHeaderWord<uint8_t>(headerControlFieldOffset) & \
-    (0x01 << readConfigEachCycleBitOffset));
+  return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), readConfigEachCycleBitOffset);
 }
+
 const uint8_t SmurfPacket_RO::getTestMode() const
 {
   return ((getHeaderWord<uint8_t>(headerControlFieldOffset) >> 4) & 0x0f);
@@ -403,6 +403,14 @@ template <typename T>
 const T SmurfPacket_RO::getHeaderWord(std::size_t offset) const
 {
   return *(reinterpret_cast<const T*>(&headerBuffer.at(offset)));
+}
+
+const bool SmurfPacket_RO::getWordBit(uint8_t byte, std::size_t index) const
+{
+  if (index >= 8)
+    throw std::runtime_error("Trying to get a bit with index > 8 from a byte");
+
+  return (byte & (0x01 << index));
 }
 
 void SmurfPacket_RO::writeToFile(uint fd) const
