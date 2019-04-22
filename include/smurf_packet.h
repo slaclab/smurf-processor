@@ -168,9 +168,6 @@ public:
   const uint16_t getRowLength()                 const;  // Get MCE header value
   const uint16_t getDataRate()                  const;  // Get MCE header value
 
-  // Get a pointer to a SmurfHeader object, to access the header information
-  SmurfHeader* getHeaderPtr();
-
   // Get a data value, at a specified index
   const avgdata_t getValue(std::size_t index) const;
 

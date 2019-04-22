@@ -407,11 +407,6 @@ void SmurfPacket_RO::writeToFile(uint fd) const
   write(fd, payloadBuffer.data(), payloadLength * sizeof(avgdata_t));
 }
 
-SmurfHeader* SmurfPacket_RO::getHeaderPtr()
-{
-  return &header;
-}
-
 const avgdata_t SmurfPacket_RO::getValue(std::size_t index) const
 {
   return payloadBuffer.at(index);
