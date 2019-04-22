@@ -275,6 +275,11 @@ public:
 
   // Set a data value, at a specific index
   void setValue(std::size_t index, avgdata_t value);
+
+private:
+  // Get a word from the header
+  template<typename T>
+  void setHeaderWord(std::size_t offset, const T& value);
 };
 
 #endif

@@ -481,6 +481,12 @@ void SmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
   headerBuffer.at(index) = value;
 }
 
+template <typename T>
+void SmurfPacket::setHeaderWord(std::size_t offset, const T& value)
+{
+  *(reinterpret_cast<T*>(&headerBuffer.at(offset))) = value;
+}
+
 ////////////////////////////////////////
 ////// - SmurfPacket definitions ///////
 ////////////////////////////////////////
