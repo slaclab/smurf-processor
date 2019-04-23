@@ -115,16 +115,10 @@ public:
 
 // SmurfPakcet Class
 // This class handler SMuRF packets.
-// This class gives only read access to the packet content
+// This class gives a read-only interface
 class SmurfPacket_RO
 {
 public:
-  // Default constructor
-  SmurfPacket_RO();
-
-  // Destructor
-  virtual ~SmurfPacket_RO();
-
   // Get the length of the header in number of bytes
   const std::size_t getHeaderLength()  const;
 
@@ -178,15 +172,15 @@ public:
   // Write the packet into a file
   void writeToFile(uint fd) const;
 
-private:
-  // Get a word from the header
-  template<typename T>
-  const T getHeaderWord(std::size_t offset) const;
-
-  // Get the bit number 'index' of the word 'byte'
-  const bool getWordBit(uint8_t byte, std::size_t index) const;
-
 protected:
+  // Prevent construction of SmurfPacket with RO interface.
+  // SmurfPacket must be created with a RW interface, and this class
+  // can be used to give read only access to the data.
+  SmurfPacket_RO();
+  SmurfPacket_RO(const SmurfPacket_RO&);
+  SmurfPacket_RO& operator=(const SmurfPacket_RO&);
+  virtual ~SmurfPacket_RO();
+
   std::size_t            headerLength;  // Header length (number of bytes)
   std::size_t            payloadLength; // Payload size (number of avgdata_t)
   std::size_t            packetLength;  // Total packet length (number of bytes)
@@ -225,11 +219,18 @@ protected:
   static const std::size_t disableFileWriteBitOffset        = 2;
   static const std::size_t readConfigEachCycleBitOffset     = 3;
 
+private:
+  // Get a word from the header
+  template<typename T>
+  const T getHeaderWord(std::size_t offset) const;
+
+  // Get the bit number 'index' of the word 'byte'
+  const bool getWordBit(uint8_t byte, std::size_t index) const;
 };
 
 // SmurfPakcet Class
 // This class handler SMuRF packets.
-// This class gives read and write access to the packet content
+// This class gives a full read-write interface
 class SmurfPacket : public SmurfPacket_RO
 {
 public:
