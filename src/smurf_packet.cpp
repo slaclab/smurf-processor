@@ -400,12 +400,12 @@ const uint16_t SmurfPacket_RO::getDataRate() const
 }
 
 template <typename T>
-inline const T SmurfPacket_RO::getHeaderWord(std::size_t offset) const
+const T SmurfPacket_RO::getHeaderWord(std::size_t offset) const
 {
   return *(reinterpret_cast<const T*>(&headerBuffer.at(offset)));
 }
 
-inline const bool SmurfPacket_RO::getWordBit(uint8_t byte, std::size_t index) const
+const bool SmurfPacket_RO::getWordBit(uint8_t byte, std::size_t index) const
 {
   if (index >= 8)
     throw std::runtime_error("Trying to get a bit with index > 8 from a byte");
@@ -639,12 +639,12 @@ void SmurfPacket::setValue(std::size_t index, avgdata_t value)
 }
 
 template <typename T>
-inline void SmurfPacket::setHeaderWord(std::size_t offset, const T& value)
+void SmurfPacket::setHeaderWord(std::size_t offset, const T& value)
 {
   *(reinterpret_cast<T*>(&headerBuffer.at(offset))) = value;
 }
 
-inline uint8_t SmurfPacket::setWordBit(uint8_t byte, std::size_t index, bool value)
+uint8_t SmurfPacket::setWordBit(uint8_t byte, std::size_t index, bool value)
 {
   if (index >= 8)
     throw std::runtime_error("Trying to set a byte bit out range.");
