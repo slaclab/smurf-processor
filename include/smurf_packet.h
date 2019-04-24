@@ -9,6 +9,7 @@
 #include <sys/timeb.h>
 #include <vector>
 #include <stdexcept>
+#include <memory>
 
 #include "common.h"
 #include "tes_bias_array.h"
@@ -113,10 +114,16 @@ public:
   void clear_average(); // clears aveage counters
 };
 
+
+class ISmurfPacket_RO;
+class ISmurfPacket;
+typedef std::shared_ptr<ISmurfPacket_RO>  SmurfPacket_RO;
+typedef std::shared_ptr<ISmurfPacket>     SmurfPacket;
+
 // SmurfPakcet Class
 // This class handler SMuRF packets.
 // This class gives a read-only interface
-class SmurfPacket_RO
+class ISmurfPacket_RO
 {
 public:
   // Get the length of the header in number of bytes
@@ -172,14 +179,17 @@ public:
   // Write the packet into a file
   void writeToFile(uint fd) const;
 
+  // Factory method, which return a smart pointer to a SmurfPacket object
+  static SmurfPacket_RO create(const SmurfPacket& sp);
+
 protected:
-  // Prevent construction of SmurfPacket with RO interface.
-  // SmurfPacket must be created with a RW interface, and this class
+  // Prevent construction of ISmurfPacket with RO interface.
+  // ISmurfPacket must be created with a RW interface, and this class
   // can be used to give read only access to the data.
-  SmurfPacket_RO();
-  SmurfPacket_RO(const SmurfPacket_RO&);
-  SmurfPacket_RO& operator=(const SmurfPacket_RO&);
-  virtual ~SmurfPacket_RO();
+  ISmurfPacket_RO();
+  ISmurfPacket_RO(const ISmurfPacket_RO&);
+  ISmurfPacket_RO& operator=(const ISmurfPacket_RO&);
+  virtual ~ISmurfPacket_RO();
 
   std::size_t            headerLength;  // Header length (number of bytes)
   std::size_t            payloadLength; // Payload size (number of avgdata_t)
@@ -231,20 +241,20 @@ private:
 // SmurfPakcet Class
 // This class handler SMuRF packets.
 // This class gives a full read-write interface
-class SmurfPacket : public SmurfPacket_RO
+class ISmurfPacket : public ISmurfPacket_RO
 {
 public:
   // Default constructor
-  SmurfPacket();
+  ISmurfPacket();
 
   // Constructor using a raw array for the header data
-  SmurfPacket(uint8_t* h);
+  ISmurfPacket(uint8_t* h);
 
   // Constructor using a raw array for the header and payload data
-  SmurfPacket(uint8_t* h, avgdata_t* d);
+  ISmurfPacket(uint8_t* h, avgdata_t* d);
 
   // Destructor
-  virtual ~SmurfPacket();
+  virtual ~ISmurfPacket();
 
   // Copy an array of bytes into the header
   void copyHeader(uint8_t* h);
@@ -286,6 +296,11 @@ public:
 
   // Set a data value, at a specific index
   void setValue(std::size_t index, avgdata_t value);
+
+  // Factory methods, which return smart pointer
+  static SmurfPacket create();
+  static SmurfPacket create(uint8_t* h);
+  static SmurfPacket create(uint8_t* h, avgdata_t* d);
 
 private:
   // Get a word from the header

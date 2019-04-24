@@ -224,11 +224,11 @@ uint SmurfHeader::average_control(int num_averages) // returns num averages when
 ////////////////////////////////////////
 
 ///////////////////////////////////////////
-////// + SmurfPacket_RO definitions ///////
+////// + ISmurfPacket_RO definitions ///////
 ///////////////////////////////////////////
 
 // Default constructor
-SmurfPacket_RO::SmurfPacket_RO()
+ISmurfPacket_RO::ISmurfPacket_RO()
 :
   headerLength(smurfheaderlength),
   payloadLength(smurfsamples),
@@ -238,174 +238,174 @@ SmurfPacket_RO::SmurfPacket_RO()
   header(headerBuffer.data()),
   tba(&headerBuffer.at(headerTESDACOffset))
 {
-  std::cout << "SmurfPacket_RO object created:" << std::endl;
+  std::cout << "ISmurfPacket_RO object created:" << std::endl;
   std::cout << "Header length       = " << headerLength  << " bytes" << std::endl;
   std::cout << "Payload length      = " << payloadLength << " words" << std::endl;
   std::cout << "Total packet length = " << packetLength  << " bytes" << std::endl;
 }
 
-SmurfPacket_RO::~SmurfPacket_RO()
+ISmurfPacket_RO::~ISmurfPacket_RO()
 {
-  std::cout << "SmurfPacket_RO object destroyed" << std::endl;
+  std::cout << "ISmurfPacket_RO object destroyed" << std::endl;
 }
 
-const std::size_t SmurfPacket_RO::getHeaderLength()  const
+const std::size_t ISmurfPacket_RO::getHeaderLength()  const
 {
   return headerLength;
 }
 
-const std::size_t SmurfPacket_RO::getPayloadLength() const
+const std::size_t ISmurfPacket_RO::getPayloadLength() const
 {
   return payloadLength;
 }
 
-const std::size_t SmurfPacket_RO::getPacketLength()  const
+const std::size_t ISmurfPacket_RO::getPacketLength()  const
 {
   return packetLength;
 }
 
-const uint8_t SmurfPacket_RO::getVersion() const
+const uint8_t ISmurfPacket_RO::getVersion() const
 {
   return getHeaderWord<uint8_t>(headerVersionOffset);
 }
 
-const uint8_t SmurfPacket_RO::getCrateID() const
+const uint8_t ISmurfPacket_RO::getCrateID() const
 {
   return getHeaderWord<uint8_t>(headerCrateIDOffset);
 }
 
-const uint8_t SmurfPacket_RO::getSlotNumber() const
+const uint8_t ISmurfPacket_RO::getSlotNumber() const
 {
   return getHeaderWord<uint8_t>(headerSlotNumberOffset);
 }
 
-const uint8_t SmurfPacket_RO::getTimingConfiguration() const
+const uint8_t ISmurfPacket_RO::getTimingConfiguration() const
 {
   return getHeaderWord<uint8_t>(headerTimingConfigurationOffset);
 }
 
-const uint32_t SmurfPacket_RO::getNumberChannels() const
+const uint32_t ISmurfPacket_RO::getNumberChannels() const
 {
   return getHeaderWord<uint32_t>(headerNumberChannelOffset);
 }
 
-const int32_t SmurfPacket_RO::getTESBias(std::size_t index) const
+const int32_t ISmurfPacket_RO::getTESBias(std::size_t index) const
 {
   return tba.getWord(index);
 }
 
-const uint64_t SmurfPacket_RO::getUnixTime() const
+const uint64_t ISmurfPacket_RO::getUnixTime() const
 {
   return getHeaderWord<uint64_t>(headerUnixTimeOffset);
 }
 
-const uint32_t SmurfPacket_RO::getFluxRampIncrement() const
+const uint32_t ISmurfPacket_RO::getFluxRampIncrement() const
 {
   return getHeaderWord<uint32_t>(headerFluxRampIncrementOffset);
 }
 
-const uint32_t SmurfPacket_RO::getFluxRampOffset() const
+const uint32_t ISmurfPacket_RO::getFluxRampOffset() const
 {
   return getHeaderWord<uint32_t>(headerFluxRampOffsetOffset);
 }
 
-const uint32_t SmurfPacket_RO::getCounter0() const
+const uint32_t ISmurfPacket_RO::getCounter0() const
 {
   return getHeaderWord<uint32_t>(headerCounter0Offset);
 }
 
-const uint32_t SmurfPacket_RO::getCounter1() const
+const uint32_t ISmurfPacket_RO::getCounter1() const
 {
   return getHeaderWord<uint32_t>(headerCounter1Offset);
 }
 
-const uint64_t SmurfPacket_RO::getCounter2() const
+const uint64_t ISmurfPacket_RO::getCounter2() const
 {
   return getHeaderWord<uint64_t>(headerCounter2Offset);
 }
 
-const uint32_t SmurfPacket_RO::getAveragingResetBits() const
+const uint32_t ISmurfPacket_RO::getAveragingResetBits() const
 {
   return getHeaderWord<uint32_t>(headerAveragingResetBitsOffset);
 }
 
-const uint32_t SmurfPacket_RO::getFrameCounter() const
+const uint32_t ISmurfPacket_RO::getFrameCounter() const
 {
   return getHeaderWord<uint32_t>(headerFrameCounterOffset);
 }
 
-const uint32_t SmurfPacket_RO::getTESRelaySetting() const
+const uint32_t ISmurfPacket_RO::getTESRelaySetting() const
 {
   return getHeaderWord<uint32_t>(headerTESRelaySettingOffset);
 }
 
-const uint64_t SmurfPacket_RO::getExternalTimeClock() const
+const uint64_t ISmurfPacket_RO::getExternalTimeClock() const
 {
   return getHeaderWord<uint64_t>(headerExternalTimeClockOffset);
 }
 
-const uint8_t SmurfPacket_RO::getControlField() const
+const uint8_t ISmurfPacket_RO::getControlField() const
 {
   return getHeaderWord<uint8_t>(headerControlFieldOffset);
 }
 
-const bool SmurfPacket_RO::getClearAverageBit() const
+const bool ISmurfPacket_RO::getClearAverageBit() const
 {
   return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), clearAvergaveBitOffset);
 }
 
-const bool SmurfPacket_RO::getDisableStreamBit() const
+const bool ISmurfPacket_RO::getDisableStreamBit() const
 {
   return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), disableStreamBitOffset);
 }
 
-const bool SmurfPacket_RO::getDisableFileWriteBit() const
+const bool ISmurfPacket_RO::getDisableFileWriteBit() const
 {
   return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), disableFileWriteBitOffset);
 }
 
-const bool SmurfPacket_RO::getReadConfigEachCycleBit() const
+const bool ISmurfPacket_RO::getReadConfigEachCycleBit() const
 {
   return getWordBit(getHeaderWord<uint8_t>(headerControlFieldOffset), readConfigEachCycleBitOffset);
 }
 
-const uint8_t SmurfPacket_RO::getTestMode() const
+const uint8_t ISmurfPacket_RO::getTestMode() const
 {
   return ((getHeaderWord<uint8_t>(headerControlFieldOffset) >> 4) & 0x0f);
 }
 
-const uint8_t SmurfPacket_RO::getTestParameters() const
+const uint8_t ISmurfPacket_RO::getTestParameters() const
 {
   return getHeaderWord<uint8_t>(headerTestParametersOffset);
 }
 
-const uint16_t SmurfPacket_RO::getNumberRows() const
+const uint16_t ISmurfPacket_RO::getNumberRows() const
 {
   return getHeaderWord<uint16_t>(headerNumberRowsOffset);
 }
 
-const uint16_t SmurfPacket_RO::getNumberRowsReported() const
+const uint16_t ISmurfPacket_RO::getNumberRowsReported() const
 {
   return getHeaderWord<uint16_t>(headerNumberRowsReportedOffset);
 }
 
-const uint16_t SmurfPacket_RO::getRowLength() const
+const uint16_t ISmurfPacket_RO::getRowLength() const
 {
   return getHeaderWord<uint16_t>(headerRowLengthOffset);
 }
 
-const uint16_t SmurfPacket_RO::getDataRate() const
+const uint16_t ISmurfPacket_RO::getDataRate() const
 {
   return getHeaderWord<uint16_t>(headerDataRateOffset);
 }
 
 template <typename T>
-const T SmurfPacket_RO::getHeaderWord(std::size_t offset) const
+const T ISmurfPacket_RO::getHeaderWord(std::size_t offset) const
 {
   return *(reinterpret_cast<const T*>(&headerBuffer.at(offset)));
 }
 
-const bool SmurfPacket_RO::getWordBit(uint8_t byte, std::size_t index) const
+const bool ISmurfPacket_RO::getWordBit(uint8_t byte, std::size_t index) const
 {
   if (index >= 8)
     throw std::runtime_error("Trying to get a bit with index > 8 from a byte");
@@ -413,186 +413,192 @@ const bool SmurfPacket_RO::getWordBit(uint8_t byte, std::size_t index) const
   return (byte & (0x01 << index));
 }
 
-void SmurfPacket_RO::writeToFile(uint fd) const
+void ISmurfPacket_RO::writeToFile(uint fd) const
 {
   write(fd, headerBuffer.data(), headerLength);
   write(fd, payloadBuffer.data(), payloadLength * sizeof(avgdata_t));
 }
 
-const avgdata_t SmurfPacket_RO::getValue(std::size_t index) const
+const avgdata_t ISmurfPacket_RO::getValue(std::size_t index) const
 {
   return payloadBuffer.at(index);
 }
 
-const uint8_t SmurfPacket_RO::getHeaderByte(std::size_t index) const
+const uint8_t ISmurfPacket_RO::getHeaderByte(std::size_t index) const
 {
   return headerBuffer.at(index);
 }
 
-void SmurfPacket_RO::getHeaderArray(uint8_t* h) const
+void ISmurfPacket_RO::getHeaderArray(uint8_t* h) const
 {
   memcpy(h, headerBuffer.data(), headerLength);
 }
 
-void SmurfPacket_RO::getDataArray(avgdata_t* d) const
+void ISmurfPacket_RO::getDataArray(avgdata_t* d) const
 {
   memcpy(d, payloadBuffer.data(), payloadLength * sizeof(avgdata_t));
 }
 
-///////////////////////////////////////////
-////// - SmurfPacket_RO definitions ///////
-///////////////////////////////////////////
-
-
-////////////////////////////////////////
-////// - SmurfPacket definitions ///////
-////////////////////////////////////////
-SmurfPacket::SmurfPacket()
-:
-  SmurfPacket_RO()
+SmurfPacket_RO ISmurfPacket_RO::create(const SmurfPacket& sp)
 {
-  std::cout << "SmurfPacket object created" << std::endl;
+  return sp;
+}
+///////////////////////////////////////////
+////// - ISmurfPacket_RO definitions ///////
+///////////////////////////////////////////
+
+
+////////////////////////////////////////
+////// - ISmurfPacket definitions ///////
+////////////////////////////////////////
+ISmurfPacket::ISmurfPacket()
+:
+  ISmurfPacket_RO()
+{
+  std::cout << "ISmurfPacket() object created" << std::endl;
 }
 
-SmurfPacket::SmurfPacket(uint8_t* h)
+ISmurfPacket::ISmurfPacket(uint8_t* h)
 :
-  SmurfPacket()
+  ISmurfPacket()
 {
+  std::cout << "ISmurfPacket(uint8_t* h) object created" << std::endl;
   copyHeader(h);
 }
 
-SmurfPacket::SmurfPacket(uint8_t* h, avgdata_t* d)
+ISmurfPacket::ISmurfPacket(uint8_t* h, avgdata_t* d)
 :
-  SmurfPacket(h)
+  ISmurfPacket(h)
 {
+  std::cout << "ISmurfPacket(uint8_t* h, avgdata_t* d) object created" << std::endl;
   copyData(d);
 }
 
-SmurfPacket::~SmurfPacket()
+ISmurfPacket::~ISmurfPacket()
 {
-  std::cout << "SmurfPacket object destroyed" << std::endl;
+  std::cout << "ISmurfPacket object destroyed" << std::endl;
 }
 
-void SmurfPacket::copyHeader(uint8_t* h)
+void ISmurfPacket::copyHeader(uint8_t* h)
 {
   memcpy(headerBuffer.data(), h, headerLength);
 }
 
-void SmurfPacket::copyData(avgdata_t* d)
+void ISmurfPacket::copyData(avgdata_t* d)
 {
   memcpy(payloadBuffer.data(), d, payloadLength * sizeof(avgdata_t));
 }
 
-void SmurfPacket::setVersion(uint8_t value)
+void ISmurfPacket::setVersion(uint8_t value)
 {
   setHeaderWord<uint8_t>(headerVersionOffset, value);
 }
 
-void SmurfPacket::setCrateID(uint8_t value)
+void ISmurfPacket::setCrateID(uint8_t value)
 {
   setHeaderWord<uint8_t>(headerCrateIDOffset, value);
 }
 
-void SmurfPacket::setSlotNumber(uint8_t value)
+void ISmurfPacket::setSlotNumber(uint8_t value)
 {
   setHeaderWord<uint8_t>(headerSlotNumberOffset, value);
 }
 
-void  SmurfPacket::setTimingConfiguration(uint8_t value)
+void  ISmurfPacket::setTimingConfiguration(uint8_t value)
 {
   setHeaderWord<uint8_t>(headerTimingConfigurationOffset, value);
 }
 
-void SmurfPacket::setNumberChannels(uint32_t value)
+void ISmurfPacket::setNumberChannels(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerNumberChannelOffset, value);
 }
 
-void  SmurfPacket::setTESBias(std::size_t index, int32_t value)
+void  ISmurfPacket::setTESBias(std::size_t index, int32_t value)
 {
   tba.setWord(index, value);
 }
 
-void SmurfPacket::setUnixTime(uint64_t value)
+void ISmurfPacket::setUnixTime(uint64_t value)
 {
   setHeaderWord<uint64_t>(headerUnixTimeOffset, value);
 }
 
-void SmurfPacket::setFluxRampIncrement(uint32_t value)
+void ISmurfPacket::setFluxRampIncrement(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerFluxRampIncrementOffset, value);
 }
 
-void SmurfPacket::setFluxRampOffset(uint32_t value)
+void ISmurfPacket::setFluxRampOffset(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerFluxRampOffsetOffset, value);
 }
 
-void SmurfPacket::setCounter0(uint32_t value)
+void ISmurfPacket::setCounter0(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerCounter0Offset, value);
 }
 
-void SmurfPacket::setCounter1(uint32_t value)
+void ISmurfPacket::setCounter1(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerCounter1Offset, value);
 }
 
-void SmurfPacket::setCounter2(uint64_t value)
+void ISmurfPacket::setCounter2(uint64_t value)
 {
   setHeaderWord<uint64_t>(headerCounter2Offset, value);
 }
 
-void SmurfPacket::setAveragingResetBits(uint32_t value)
+void ISmurfPacket::setAveragingResetBits(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerAveragingResetBitsOffset, value);
 }
 
-void SmurfPacket::setFrameCounter(uint32_t value)
+void ISmurfPacket::setFrameCounter(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerFrameCounterOffset, value);
 }
 
-void SmurfPacket::setTESRelaySetting(uint32_t value)
+void ISmurfPacket::setTESRelaySetting(uint32_t value)
 {
   setHeaderWord<uint32_t>(headerTESRelaySettingOffset, value);
 }
 
-void SmurfPacket::setExternalTimeClock(uint64_t value)
+void ISmurfPacket::setExternalTimeClock(uint64_t value)
 {
   setHeaderWord<uint64_t>(headerExternalTimeClockOffset, value);
 }
 
-void SmurfPacket::setControlField(uint8_t value)
+void ISmurfPacket::setControlField(uint8_t value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, value);
 }
 
-void SmurfPacket::setClearAverageBit(bool value)
+void ISmurfPacket::setClearAverageBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
     setWordBit(getControlField(), clearAvergaveBitOffset, value));
 }
 
-void SmurfPacket::setDisableStreamBit(bool value)
+void ISmurfPacket::setDisableStreamBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
     setWordBit(getControlField(), disableStreamBitOffset, value));
 }
 
-void SmurfPacket::setDisableFileWriteBit(bool value)
+void ISmurfPacket::setDisableFileWriteBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
     setWordBit(getControlField(), disableFileWriteBitOffset, value));
 }
 
-void SmurfPacket::setReadConfigEachCycleBit(bool value)
+void ISmurfPacket::setReadConfigEachCycleBit(bool value)
 {
   setHeaderWord<uint8_t>(headerControlFieldOffset, \
     setWordBit(getControlField(), readConfigEachCycleBitOffset, value));
 }
 
-void SmurfPacket::setTestMode(uint8_t value)
+void ISmurfPacket::setTestMode(uint8_t value)
 {
   uint8_t u8 = getControlField();
 
@@ -602,49 +608,49 @@ void SmurfPacket::setTestMode(uint8_t value)
   setHeaderWord<uint8_t>(headerControlFieldOffset, u8);
 }
 
-void SmurfPacket::setTestParameters(uint8_t value)
+void ISmurfPacket::setTestParameters(uint8_t value)
 {
   setHeaderWord<uint8_t>(headerTestParametersOffset, value);
 }
 
-void SmurfPacket::setNumberRows(uint16_t value)
+void ISmurfPacket::setNumberRows(uint16_t value)
 {
   setHeaderWord<uint16_t>(headerNumberRowsOffset, value);
 }
 
-void SmurfPacket::setNumberRowsReported(uint16_t value)
+void ISmurfPacket::setNumberRowsReported(uint16_t value)
 {
   setHeaderWord<uint16_t>(headerNumberRowsReportedOffset, value);
 }
 
-void SmurfPacket::setRowLength(uint16_t value)
+void ISmurfPacket::setRowLength(uint16_t value)
 {
   setHeaderWord<uint16_t>(headerRowLengthOffset, value);
 }
 
-void SmurfPacket::setDataRate(uint16_t value)
+void ISmurfPacket::setDataRate(uint16_t value)
 {
   setHeaderWord<uint16_t>(headerDataRateOffset, value);
 }
 
 
-void SmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
+void ISmurfPacket::setHeaderByte(std::size_t index, uint8_t value)
 {
   headerBuffer.at(index) = value;
 }
 
-void SmurfPacket::setValue(std::size_t index, avgdata_t value)
+void ISmurfPacket::setValue(std::size_t index, avgdata_t value)
 {
   payloadBuffer.at(index) = value;
 }
 
 template <typename T>
-void SmurfPacket::setHeaderWord(std::size_t offset, const T& value)
+void ISmurfPacket::setHeaderWord(std::size_t offset, const T& value)
 {
   *(reinterpret_cast<T*>(&headerBuffer.at(offset))) = value;
 }
 
-uint8_t SmurfPacket::setWordBit(uint8_t byte, std::size_t index, bool value)
+uint8_t ISmurfPacket::setWordBit(uint8_t byte, std::size_t index, bool value)
 {
   if (index >= 8)
     throw std::runtime_error("Trying to set a byte bit out range.");
@@ -657,8 +663,23 @@ uint8_t SmurfPacket::setWordBit(uint8_t byte, std::size_t index, bool value)
   return byte;
 }
 
+SmurfPacket ISmurfPacket::create()
+{
+  return std::make_shared<ISmurfPacket>();
+}
+
+SmurfPacket ISmurfPacket::create(uint8_t* h)
+{
+  return std::make_shared<ISmurfPacket>(h);
+}
+
+SmurfPacket ISmurfPacket::create(uint8_t* h, avgdata_t* d)
+{
+  return std::make_shared<ISmurfPacket>(h,d);
+}
+
 ////////////////////////////////////////
-////// - SmurfPacket definitions ///////
+////// - ISmurfPacket definitions ///////
 ////////////////////////////////////////
 
 uint64_t pull_bit_field(uint8_t *ptr, uint offset, uint width)
