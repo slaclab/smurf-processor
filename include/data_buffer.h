@@ -6,28 +6,19 @@
 #include <condition_variable>
 #include <mutex>
 
-// Buffer of SMuRF packets
-template <typename T>
+#include "smurf_packet.h"
+
 class DataBuffer
 {
 public:
-    DataBuffer(std::size_t d, std::size_t s);
+    DataBuffer(std::size_t s);
+    ~DataBuffer();
 
-    virtual ~DataBuffer();
+    SmurfPacket    getWritePtr();
+    SmurfPacket_RO getReadPtr();
 
-    // Get a pointer to the next empty cell in the buffer, ready to accept a
-    // new data packet.
-    T* getWritePtr();
-
-    // Get a pointer to the next available data packet, ready to be processed.
-    T* getReadPtr();
-
-    // Call after a new packet is fully written into the buffer. The writing pointer will be move forward
-    // to the next empty cell in the buffer.
     void doneWriting();
 
-    // Call after a packet is fully processed. The reading pointer will be move forward to the
-    // next cell in the buffer.
     void doneReading();
 
     const bool               isEmpty() const;
@@ -43,11 +34,11 @@ public:
     void printStatistic() const;
 
 private:
-    std::size_t depth;
     std::size_t size;
-    std::vector< std::vector<T> > data;
-    typename std::vector< std::vector<T> >::iterator readPtr;
-    typename std::vector< std::vector<T> >::iterator writePtr;
+    std::vector<SmurfPacket> data;
+    typedef std::vector<SmurfPacket>::iterator dataIt;
+    typename std::vector<SmurfPacket>::iterator readPtr;
+    typename std::vector<SmurfPacket>::iterator writePtr;
     bool full;
     bool empty;
     int writeCnt;
@@ -56,6 +47,8 @@ private:
     int ROFCnt;
     std::mutex              mutex;
     std::condition_variable dataReady;
+
+
 };
 
 #endif

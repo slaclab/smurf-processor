@@ -1,34 +1,32 @@
 
 #include "data_buffer.h"
 
-template <typename T>
-DataBuffer<T>::DataBuffer(std::size_t d, std::size_t s)
+DataBuffer::DataBuffer(std::size_t s)
 :
-depth    ( d                    ),
-size     ( s                    ),
-data     ( d, std::vector<T>(s) ),
-readPtr  ( data.begin()         ),
-writePtr ( data.begin()         ),
-full     ( false                ),
-empty    ( true                 ),
-writeCnt ( 0                    ),
-readCnt  ( 0                    ),
-WOFCnt   ( 0                    ),
-ROFCnt   ( 0                    )
+size     ( s     ),
+full     ( false ),
+empty    ( true  ),
+writeCnt ( 0     ),
+readCnt  ( 0     ),
+WOFCnt   ( 0     ),
+ROFCnt   ( 0     )
 {
-    printf("DataBuffer created: %zu buffer of %zu bytes each\n", depth, size);
+    for (std::size_t i(0); i < size; ++i)
+        data.push_back(ISmurfPacket::create());
+
+    writePtr = data.begin();
+    readPtr = data.begin();
+
+    printf("DataBuffer created of size %zu", size);
+    printf("DataBuffeV2.size =  %zu\n", data.size());
 };
 
-template <typename T>
-DataBuffer<T>::~DataBuffer()
+DataBuffer::~DataBuffer()
 {
     printf("DataBuffer destroyed\n");
 };
 
-// Get a pointer to the next empty cell in the buffer, ready to accept a
-// new data packet.
-template <typename T>
-T* DataBuffer<T>::getWritePtr()
+SmurfPacket DataBuffer::getWritePtr()
 {
     // Verify if the buffer is full
     if (full)
@@ -39,13 +37,12 @@ T* DataBuffer<T>::getWritePtr()
     }
     else
     {
-        return &(*writePtr->begin());
+        return *writePtr;
     }
 };
 
 // Get a pointer to the next available data packet, ready to be processed.
-template <typename T>
-T* DataBuffer<T>::getReadPtr()
+SmurfPacket_RO DataBuffer::getReadPtr()
 {
     // Verify is the buffer is empty
     if (empty)
@@ -56,14 +53,13 @@ T* DataBuffer<T>::getReadPtr()
     }
     else
     {
-        return &(*readPtr->begin());
+        return *readPtr;
     }
 };
 
 // Call after a new packet is fully written into the buffer. The writing pointer will be move forward
 // to the next empty cell in the buffer.
-template <typename T>
-void DataBuffer<T>::doneWriting()
+void DataBuffer::doneWriting()
 {
     // Move the iterator forward.
     ++writePtr;
@@ -90,8 +86,7 @@ void DataBuffer<T>::doneWriting()
 
 // Call after a packet is fully processed. The reading pointer will be move forward to the
 // next cell in the buffer.
-template <typename T>
-void DataBuffer<T>::doneReading()
+void DataBuffer::doneReading()
 {
     // Move the iterator forward.
     ++readPtr;
@@ -112,56 +107,47 @@ void DataBuffer<T>::doneReading()
     ++readCnt;
 };
 
-template <typename T>
-const bool DataBuffer<T>::isEmpty() const
+const bool DataBuffer::isEmpty() const
 {
     return empty;
 };
 
-template <typename T>
-const bool DataBuffer<T>::isFull() const
+const bool DataBuffer::isFull() const
 {
     return full;
 };
 
-template <typename T>
-const int DataBuffer<T>::getROFCnt() const
+const int DataBuffer::getROFCnt() const
 {
     return ROFCnt;
 };
 
-template <typename T>
-const int DataBuffer<T>::getWOFCnt() const
+const int DataBuffer::getWOFCnt() const
 {
     return WOFCnt;
 };
 
-template <typename T>
-void DataBuffer<T>::clearOFCnts()
+void DataBuffer::clearOFCnts()
 {
     ROFCnt = 0; WOFCnt =0;
 };
 
-template <typename T>
-const std::size_t DataBuffer<T>::getSize() const
+const std::size_t DataBuffer::getSize() const
 {
     return size;
 };
 
-template <typename T>
-std::mutex* DataBuffer<T>::getMutex()
+std::mutex* DataBuffer::getMutex()
 {
     return &mutex;
 };
 
-template <typename T>
-std::condition_variable* DataBuffer<T>::getDataReady()
+std::condition_variable* DataBuffer::getDataReady()
 {
     return &dataReady;
 };
 
-template <typename T>
-void DataBuffer<T>::printStatistic() const
+void DataBuffer::printStatistic() const
 {
     std::cout << "------------------------------"                                << std::endl;
     std::cout << "Data Buffer statistics:"                                       << std::endl;
@@ -175,5 +161,3 @@ void DataBuffer<T>::printStatistic() const
     std::cout << "Buffer 'full' flag              : " << std::boolalpha << full  << std::endl;
     std::cout << "------------------------------"                                << std::endl;
 };
-
-template class DataBuffer<uint8_t>;

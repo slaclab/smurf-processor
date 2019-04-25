@@ -22,10 +22,6 @@
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
 
-// Data type of the SMuRF packet buffer
-typedef uint8_t                     smurf_tx_data_t;    // TX buffer elements pointer-to type
-typedef DataBuffer<smurf_tx_data_t> smurf_tx_buffer_t;  // TX buffer type
-
 // SmurfProcessor "acceptframe" is called by python for each smurf frame
 // Smurf2mce definition should be in smurftcp.h, but doesn't work, not sure why
 class SmurfProcessor : public rogue::interfaces::stream::Slave
@@ -97,10 +93,10 @@ public:
 
   // This method is intended to be used to take SMuRF packet and send them to other
   // system.
-  // This method is called whenever a new SMuRF packet is ready, and a pointer to it is
-  // passed.
+  // This method is called whenever a new SMuRF packet is ready, and a SmurfPacket_RO object
+  // (which is a smart pointer to a read-only interface to a Smurf packer object) is passed.
   // It must be overwritten by the user application
-  virtual void transmit(smurf_tx_data_t* data) {};
+  virtual void transmit(SmurfPacket_RO sp) {};
 
   // Print statistic about the transmit methods
   void printTransmitStatistic() const;
@@ -115,7 +111,7 @@ private:
   //! Thread background
   void runThread();
 
-  smurf_tx_buffer_t   txBuffer;           // Buffer for SMuRF packet passed to the transmit thread.
+  DataBuffer          txBuffer;           // Buffer for SMuRF packet passed to the transmit thread.
   boost::atomic<bool> runTxThread;        // Flag to indicate the TX thread to stop its loops
   std::thread         transmitterThread;  // Thread where the SMuRF packet transmission will run
   int                 txPacketLossCnt;    // How many SMuRF packets could not be send to the transmit method

@@ -20,7 +20,7 @@
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
-txBuffer          ( 10, smurfheaderlength + smurfsamples * sizeof(avgdata_t) ),
+txBuffer          ( 10                                                       ),
 runTxThread       ( true                                                     ),
 transmitterThread ( std::thread( &SmurfProcessor::transmitter, this )        ),
 txPacketLossCnt   ( 0                                                        )
@@ -274,10 +274,10 @@ void SmurfProcessor::runThread()
           if ( ! txBuffer.isFull() )
           {
             // Add the packet into the buffer
-            smurf_tx_data_t* smurfPackage = txBuffer.getWritePtr();
+            SmurfPacket sp = txBuffer.getWritePtr();
 
-            memcpy(smurfPackage, H->header, smurfheaderlength);
-            memcpy(smurfPackage+smurfheaderlength, average_samples, smurfsamples * sizeof(avgdata_t));
+            sp->copyHeader(H->header);
+            sp->copyData(average_samples);
 
             // Mark the writing operation as done.
             txBuffer.doneWriting();
