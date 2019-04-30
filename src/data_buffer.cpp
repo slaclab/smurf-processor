@@ -57,8 +57,7 @@ SmurfPacket_RO DataBuffer::getReadPtr()
     }
 };
 
-// Call after a new packet is fully written into the buffer. The writing pointer will be move forward
-// to the next empty cell in the buffer.
+
 void DataBuffer::doneWriting()
 {
     // Move the iterator forward.
@@ -84,8 +83,6 @@ void DataBuffer::doneWriting()
     dataReady.notify_all();
 };
 
-// Call after a packet is fully processed. The reading pointer will be move forward to the
-// next cell in the buffer.
 void DataBuffer::doneReading()
 {
     // Move the iterator forward.
