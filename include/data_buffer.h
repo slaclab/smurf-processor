@@ -36,9 +36,9 @@ public:
 private:
     std::size_t size;
     std::vector<SmurfPacket> data;
-    typedef std::vector<SmurfPacket>::iterator dataIt;
-    dataIt readPtr;
-    dataIt writePtr;
+
+    std::vector<SmurfPacket>::iterator readPtr;
+    std::vector<SmurfPacket>::iterator writePtr;
     bool full;
     bool empty;
     int writeCnt;
