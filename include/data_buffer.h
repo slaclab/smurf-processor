@@ -68,8 +68,6 @@ private:
     int ROFCnt;                                     // Read overflow counter
     std::mutex              mutex;                  // Buffer mutex
     std::condition_variable dataReady;              // New data ready conditional variable
-
-
 };
 
 #endif
