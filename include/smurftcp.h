@@ -109,7 +109,7 @@ class SmurfDataFile // writes data file to disk
   uint fd; // file pointer
 
   SmurfDataFile(void);
-  uint write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, int name_mode,  bool disable);
+  uint write_file(SmurfPacket_RO packet, SmurfConfig *config);
   // writes to file, creates new if needded. return frames written, 0 new.
 };
 
