@@ -97,6 +97,12 @@ pktWriterThread      ( std::thread( &SmurfProcessor::pktWriter, this )     )
   thread_ = new boost::thread(&SmurfProcessor::runThread, this);
 
   initialized = true;
+
+  // Set thread names
+  if( pthread_setname_np( pktTransmitterThread.native_handle(), "pktTransmitter" ) )
+    perror( "pthread_setname_np failed for pktTransmitterThread" );
+  if( pthread_setname_np( pktWriterThread.native_handle(), "pktWriter" ) )
+    perror( "pthread_setname_np failed for pktWriterThread" );
 }
 
 // This function does most of the work. Runs every smurf frame
