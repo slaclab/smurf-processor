@@ -20,11 +20,12 @@
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
-txBuffer           ( 10, 2                                             ),
-runTxThread        ( true                                              ),
-transmitterThread  ( std::thread( &SmurfProcessor::transmitter, this ) ),
-pktReaderIndexTx   ( 0                                                 ),
-pktReaderIndexFile ( 1                                                 )
+txBuffer             ( 10, 2                                               ),
+runTxThread          ( true                                                ),
+pktReaderIndexTx     ( 0                                                   ),
+pktReaderIndexFile   ( 1                                                   ),
+pktTransmitterThread ( std::thread( &SmurfProcessor::pktTansmitter, this ) ),
+pktWriterThread      ( std::thread( &SmurfProcessor::pktWriter, this )     )
 {
   rxCount = 0;
   rxBytes = 0;
@@ -281,14 +282,8 @@ void SmurfProcessor::runThread()
         }
         catch (std::runtime_error &e)
         {
-          std::cout << "SmurfReceiver: Exception caught when writing the data buffer: " << e.what() << std::endl;
+          std::cout << "runThread: Exception caught when writing the data buffer: " << e.what() << std::endl;
         }
-
-        // Write the packet to file
-        D->write_file(txBuffer.getReadPtr(pktReaderIndexFile), C);
-
-        // Tell the buffer we are done reading this area
-        txBuffer.doneReading(pktReaderIndexFile);
       }
 
       // tcpbuf   = NULL;  // returns location to put data (8 bytes beyond tcp start)
@@ -360,7 +355,7 @@ void SmurfProcessor::frameToBuffer( ris::FramePtr frame, uint8_t * const buffer)
   }
 }
 
-void SmurfProcessor::transmitter()
+void SmurfProcessor::pktTansmitter()
 {
   std::cout << "Transmitter thread started..." << std::endl;
 
@@ -385,14 +380,53 @@ void SmurfProcessor::transmitter()
       }
       catch (std::runtime_error &e)
       {
-        std::cout << "SmurfReceiver: Exception caught when reading the data buffer: " << e.what() << std::endl;
+        std::cout << "pktTansmitter: Exception caught when reading the data buffer: " << e.what() << std::endl;
       }
     }
 
     // Check if we should stop the loop
     if (!runTxThread)
     {
-      std::cout << "Transmitter interrupted." << std::endl;
+      std::cout << "pktTansmitter interrupted." << std::endl;
+      return;
+    }
+  }
+}
+
+void SmurfProcessor::pktWriter()
+{
+  std::cout << "File writer thread started..." << std::endl;
+
+  // Infinite loop
+  for(;;)
+  {
+    // Check the status of the data buffer
+    if ( txBuffer.isEmpty(pktReaderIndexFile) )
+    {
+      // If the buffer is empty, wait until new data is ready, with a 10s timeout
+      std::unique_lock<std::mutex> lock(*txBuffer.getMutex());
+      txBuffer.getDataReady()->wait_for( lock, std::chrono::seconds(10) );
+    }
+    else
+    {
+      try
+      {
+        // Write the packet to file
+        D->write_file(txBuffer.getReadPtr(pktReaderIndexFile), C);
+
+        // Tell the buffer we are done reading this area
+        txBuffer.doneReading(pktReaderIndexFile);
+      }
+      catch (std::runtime_error &e)
+      {
+        std::cout << "pktWriter: Exception caught when reading the data buffer: " << e.what() << std::endl;
+      }
+    }
+
+    // Check if we should stop the loop
+    if (!runTxThread)
+    {
+      std::cout << "pktWriter interrupted." << std::endl;
       return;
     }
   }

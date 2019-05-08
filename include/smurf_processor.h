@@ -88,8 +88,13 @@ public:
   };
 
 
-  // Transmit thread. Here is where the method 'transmit' is called.
-  void transmitter();
+  // Transmit method. Will run in the pktTransmitterThread thread.
+  // Here is where the method 'transmit' is called.
+  void pktTansmitter();
+
+  // File writer method. Will run in the pktWriterThread thread.
+  // Here is where new SMuRF packet will be written to files.
+  void pktWriter();
 
   // This method is intended to be used to take SMuRF packet and send them to other
   // system.
@@ -111,11 +116,12 @@ private:
   //! Thread background
   void runThread();
 
-  DataBuffer          txBuffer;           // Buffer for SMuRF packet passed to the transmit thread.
-  boost::atomic<bool> runTxThread;        // Flag to indicate the TX thread to stop its loops
-  std::thread         transmitterThread;  // Thread where the SMuRF packet transmission will run
-  const size_t        pktReaderIndexTx;   // Data buffer reader index for the transmitter
-  const size_t        pktReaderIndexFile; // Data buffer reader index for the file writer
+  DataBuffer          txBuffer;             // Buffer for SMuRF packet passed to the transmit thread.
+  boost::atomic<bool> runTxThread;          // Flag to indicate the TX thread to stop its loops
+  const size_t        pktReaderIndexTx;     // Data buffer reader index for the transmitter
+  const size_t        pktReaderIndexFile;   // Data buffer reader index for the file writer
+  std::thread         pktTransmitterThread; // Thread where the SMuRF packet transmission will run
+  std::thread         pktWriterThread;      // Thread where the SMuRF packet file writer will run
 };
 
 #endif
