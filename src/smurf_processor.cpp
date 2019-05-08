@@ -360,7 +360,7 @@ void SmurfProcessor::frameToBuffer( ris::FramePtr frame, uint8_t * const buffer)
   }
 }
 
-void SmurfProcessor:: transmitter()
+void SmurfProcessor::transmitter()
 {
   std::cout << "Transmitter thread started..." << std::endl;
 
