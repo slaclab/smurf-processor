@@ -114,7 +114,6 @@ private:
   DataBuffer          txBuffer;           // Buffer for SMuRF packet passed to the transmit thread.
   boost::atomic<bool> runTxThread;        // Flag to indicate the TX thread to stop its loops
   std::thread         transmitterThread;  // Thread where the SMuRF packet transmission will run
-  int                 txPacketLossCnt;    // How many SMuRF packets could not be send to the transmit method
   const size_t        pktReaderIndexTx;   // Data buffer reader index for the transmitter
   const size_t        pktReaderIndexFile; // Data buffer reader index for the file writer
 };

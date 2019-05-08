@@ -23,7 +23,6 @@ SmurfProcessor::SmurfProcessor()
 txBuffer           ( 10, 2                                             ),
 runTxThread        ( true                                              ),
 transmitterThread  ( std::thread( &SmurfProcessor::transmitter, this ) ),
-txPacketLossCnt    ( 0                                                 ),
 pktReaderIndexTx   ( 0                                                 ),
 pktReaderIndexFile ( 1                                                 )
 {
@@ -401,12 +400,7 @@ void SmurfProcessor:: transmitter()
 
 void SmurfProcessor::printTransmitStatistic() const
 {
-  std::cout << "=============================="             << std::endl;
-  std::cout << "SMuRF Transmission statistics:"             << std::endl;
-  std::cout << "=============================="             << std::endl;
-  std::cout << "Package loss counter : " << txPacketLossCnt << std::endl;
   txBuffer.printStatistic();
-  std::cout << "=============================="             << std::endl;
 }
 
 SmurfProcessor::~SmurfProcessor() // destructor
