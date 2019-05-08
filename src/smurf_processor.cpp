@@ -20,10 +20,12 @@
 
 SmurfProcessor::SmurfProcessor()
 : ris::Slave(),
-txBuffer          ( 10, smurfheaderlength + smurfsamples * sizeof(avgdata_t) ),
-runTxThread       ( true                                                     ),
-transmitterThread ( std::thread( &SmurfProcessor::transmitter, this )        ),
-txPacketLossCnt   ( 0                                                        )
+txBuffer             ( 10, 2                                               ),
+runTxThread          ( true                                                ),
+pktReaderIndexTx     ( 0                                                   ),
+pktReaderIndexFile   ( 1                                                   ),
+pktTransmitterThread ( std::thread( &SmurfProcessor::pktTansmitter, this ) ),
+pktWriterThread      ( std::thread( &SmurfProcessor::pktWriter, this )     )
 {
   rxCount = 0;
   rxBytes = 0;
@@ -95,6 +97,12 @@ txPacketLossCnt   ( 0                                                        )
   thread_ = new boost::thread(&SmurfProcessor::runThread, this);
 
   initialized = true;
+
+  // Set thread names
+  if( pthread_setname_np( pktTransmitterThread.native_handle(), "pktTransmitter" ) )
+    perror( "pthread_setname_np failed for pktTransmitterThread" );
+  if( pthread_setname_np( pktWriterThread.native_handle(), "pktWriter" ) )
+    perror( "pthread_setname_np failed for pktWriterThread" );
 }
 
 // This function does most of the work. Runs every smurf frame
@@ -270,31 +278,18 @@ void SmurfProcessor::runThread()
         // Add a SMuRF packet in the TX buffer so it can be processed by the transmit method
         try
         {
-          // Check if there is room in the buffer
-          if ( ! txBuffer.isFull() )
-          {
-            // Add the packet into the buffer
-            smurf_tx_data_t* smurfPackage = txBuffer.getWritePtr();
+          // Add the packet into the buffer
+          SmurfPacket sp = txBuffer.getWritePtr();  // Get write pointer to buffer area
+          sp->copyHeader(H->header);                // Write the header content
+          sp->copyData(average_samples);            // Write the data content
 
-            memcpy(smurfPackage, H->header, smurfheaderlength);
-            memcpy(smurfPackage+smurfheaderlength, average_samples, smurfsamples * sizeof(avgdata_t));
-
-            // Mark the writing operation as done.
-            txBuffer.doneWriting();
-          }
-          else
-          {
-            // Increase the loss counter is we couldn't add a new packet into the buffer
-            ++txPacketLossCnt;
-          }
+          // Mark the writing operation as done.
+          txBuffer.doneWriting();
         }
         catch (std::runtime_error &e)
         {
-          std::cout << "SmurfReceiver: Exception caught when writing the data buffer: " << e.what() << std::endl;
+          std::cout << "runThread: Exception caught when writing the data buffer: " << e.what() << std::endl;
         }
-
-        D->write_file(H->header, smurfheaderlength, average_samples, smurfsamples, C->data_frames,
-                      C->data_file_name, C->file_name_extend, H->disable_file_write());
       }
 
       // tcpbuf   = NULL;  // returns location to put data (8 bytes beyond tcp start)
@@ -366,7 +361,7 @@ void SmurfProcessor::frameToBuffer( ris::FramePtr frame, uint8_t * const buffer)
   }
 }
 
-void SmurfProcessor::transmitter()
+void SmurfProcessor::pktTansmitter()
 {
   std::cout << "Transmitter thread started..." << std::endl;
 
@@ -374,7 +369,7 @@ void SmurfProcessor::transmitter()
   for(;;)
   {
     // Check the status of the data buffer
-    if ( txBuffer.isEmpty() )
+    if ( txBuffer.isEmpty(pktReaderIndexTx) )
     {
       // If the buffer is empty, wait until new data is ready, with a 10s timeout
       std::unique_lock<std::mutex> lock(*txBuffer.getMutex());
@@ -382,23 +377,62 @@ void SmurfProcessor::transmitter()
     }
     else
     {
-      // Process new data available in the buffer
-      // std::cout << "   +++ transmitter waking up, new data is ready... +++" << std::endl;
       try
       {
-        transmit(txBuffer.getReadPtr());
-        txBuffer.doneReading();
+        // Call processing method passing a read pointer to the buffer area
+        transmit(txBuffer.getReadPtr(pktReaderIndexTx));
+        // Tell the buffer we are done reading this packet
+        txBuffer.doneReading(pktReaderIndexTx);
       }
       catch (std::runtime_error &e)
       {
-        std::cout << "SmurfReceiver: Exception caught when reading the data buffer: " << e.what() << std::endl;
+        std::cout << "pktTansmitter: Exception caught when reading the data buffer: " << e.what() << std::endl;
       }
     }
 
     // Check if we should stop the loop
     if (!runTxThread)
     {
-      std::cout << "Transmitter interrupted." << std::endl;
+      std::cout << "pktTansmitter interrupted." << std::endl;
+      return;
+    }
+  }
+}
+
+void SmurfProcessor::pktWriter()
+{
+  std::cout << "File writer thread started..." << std::endl;
+
+  // Infinite loop
+  for(;;)
+  {
+    // Check the status of the data buffer
+    if ( txBuffer.isEmpty(pktReaderIndexFile) )
+    {
+      // If the buffer is empty, wait until new data is ready, with a 10s timeout
+      std::unique_lock<std::mutex> lock(*txBuffer.getMutex());
+      txBuffer.getDataReady()->wait_for( lock, std::chrono::seconds(10) );
+    }
+    else
+    {
+      try
+      {
+        // Write the packet to file
+        D->write_file(txBuffer.getReadPtr(pktReaderIndexFile), C);
+
+        // Tell the buffer we are done reading this area
+        txBuffer.doneReading(pktReaderIndexFile);
+      }
+      catch (std::runtime_error &e)
+      {
+        std::cout << "pktWriter: Exception caught when reading the data buffer: " << e.what() << std::endl;
+      }
+    }
+
+    // Check if we should stop the loop
+    if (!runTxThread)
+    {
+      std::cout << "pktWriter interrupted." << std::endl;
       return;
     }
   }
@@ -406,12 +440,7 @@ void SmurfProcessor::transmitter()
 
 void SmurfProcessor::printTransmitStatistic() const
 {
-  std::cout << "=============================="             << std::endl;
-  std::cout << "SMuRF Transmission statistics:"             << std::endl;
-  std::cout << "=============================="             << std::endl;
-  std::cout << "Package loss counter : " << txPacketLossCnt << std::endl;
   txBuffer.printStatistic();
-  std::cout << "=============================="             << std::endl;
 }
 
 SmurfProcessor::~SmurfProcessor() // destructor
@@ -629,11 +658,11 @@ SmurfDataFile::SmurfDataFile(void) : open_(false), part_(0)
   fd = 0; // shows that we don't have a pointer yet
 }
 
-uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *data, uint data_words, uint frames_to_write, char *fname, int name_mode,  bool disable)
+uint SmurfDataFile::write_file(SmurfPacket_RO packet, SmurfConfig *config)
 {
   time_t tx;
   char tmp[100]; // for strings
-  if(disable)
+  if(packet->getDisableFileWriteBit())
   {
     part_ = 0;
 
@@ -648,9 +677,9 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
     return(frame_counter);
   }
 
-  if ( (name_mode==0) && (0 != strcmp(fname, filename))) // name has changed.
+  if ( (config->file_name_extend==0) && (0 != strcmp(config->data_file_name, filename))) // name has changed.
   {
-    printf("file name has changed from %s to %s \n", filename, fname);
+    printf("file name has changed from %s to %s \n", filename, config->data_file_name);
     if(fd)
       close(fd); // close existing file if its open
 
@@ -660,9 +689,9 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
   if(!fd) // need to open a file
   {
     memset(filename, 0, 1024); // zero for now
-    strcat(filename, fname); // add file name
+    strcat(filename, config->data_file_name); // add file name
 
-    if (name_mode)
+    if (config->file_name_extend)
     {
       tx = time(NULL);
       sprintf(tmp, ".part_%05u", part_);  // LAZY - need to use a real time converter.
@@ -683,13 +712,12 @@ uint SmurfDataFile::write_file(uint8_t *header, uint header_bytes, avgdata_t *da
       printf("opened file %s  fd = %d \n", filename, fd);
   }
 
-  memcpy(frame, header, header_bytes);
-  // memcpy(frame + h_num_channels_offset, &data_words, 4); // UGLY horrible kludge, need to fix.
-  memcpy(frame+header_bytes, data, data_words * sizeof(avgdata_t));
-  write(fd, frame, header_bytes + data_words * sizeof(avgdata_t));
+  // Write packet to file
+  packet->writeToFile(fd);
+
   frame_counter++;
 
-  if(frame_counter >= frames_to_write)
+  if(frame_counter >= config->data_frames)
   {
     if(fd)
       close(fd);

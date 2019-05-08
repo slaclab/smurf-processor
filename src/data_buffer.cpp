@@ -1,69 +1,68 @@
 
 #include "data_buffer.h"
 
-template <typename T>
-DataBuffer<T>::DataBuffer(std::size_t d, std::size_t s)
+DataBuffer::DataBuffer(std::size_t bufSize, std::size_t numReaders)
 :
-depth    ( d                    ),
-size     ( s                    ),
-data     ( d, std::vector<T>(s) ),
-readPtr  ( data.begin()         ),
-writePtr ( data.begin()         ),
-full     ( false                ),
-empty    ( true                 ),
-writeCnt ( 0                    ),
-readCnt  ( 0                    ),
-WOFCnt   ( 0                    ),
-ROFCnt   ( 0                    )
+size          ( bufSize           ),
+numberReaders ( numReaders        ),
+full          ( numReaders, false ),
+empty         ( numReaders, true  ),
+writeCnt      ( 0                 ),
+readCnt       ( numReaders, 0     ),
+OWCnt         ( numReaders, 0     ),
+ROFCnt        ( numReaders, 0     )
 {
-    printf("DataBuffer created: %zu buffer of %zu bytes each\n", depth, size);
+    for (std::size_t i(0); i < size; ++i)
+        data.push_back(ISmurfPacket::create());
+
+    writePtr = data.begin();
+
+    for (std::size_t i(0); i < numberReaders; ++i)
+        readPtr.push_back(data.begin());
+
+    printf("DataBuffer created of size %zu, and number of readers %zu", size, numberReaders);
+    printf("DataBuffeV2.size =  %zu\n", data.size());
 };
 
-template <typename T>
-DataBuffer<T>::~DataBuffer()
+DataBuffer::~DataBuffer()
 {
     printf("DataBuffer destroyed\n");
 };
 
-// Get a pointer to the next empty cell in the buffer, ready to accept a
-// new data packet.
-template <typename T>
-T* DataBuffer<T>::getWritePtr()
+SmurfPacket DataBuffer::getWritePtr()
 {
-    // Verify if the buffer is full
-    if (full)
+
+    // If a reader's buffer is full, update its overwrite counter and move it
+    // read pointer forward
+    for(std::size_t i(0); i < numberReaders; ++i)
     {
-        // Increase the write overflow counter and throw exception
-        ++WOFCnt;
-        throw std::runtime_error("Trying to write when the buffer is full");
+        if (full.at(i))
+        {
+            ++OWCnt.at(i);
+            ++readPtr.at(i);
+        }
     }
-    else
-    {
-        return &(*writePtr->begin());
-    }
+
+    return *writePtr;
 };
 
-// Get a pointer to the next available data packet, ready to be processed.
-template <typename T>
-T* DataBuffer<T>::getReadPtr()
+SmurfPacket_RO DataBuffer::getReadPtr(std::size_t i)
 {
     // Verify is the buffer is empty
-    if (empty)
+    if (empty.at(i))
     {
         // Increase the read overflow counter and throw exception
-        ++ROFCnt;
+        ++ROFCnt.at(i);
         throw std::runtime_error("Trying to read when the buffer is empty");
     }
     else
     {
-        return &(*readPtr->begin());
+        return *readPtr.at(i);
     }
 };
 
-// Call after a new packet is fully written into the buffer. The writing pointer will be move forward
-// to the next empty cell in the buffer.
-template <typename T>
-void DataBuffer<T>::doneWriting()
+
+void DataBuffer::doneWriting()
 {
     // Move the iterator forward.
     ++writePtr;
@@ -73,12 +72,15 @@ void DataBuffer<T>::doneWriting()
     if (writePtr == data.end())
         writePtr = data.begin();
 
-    // Verify if the buffer is full.
-    if (writePtr == readPtr)
-        full = true;
+    // Verify if the buffer is full for each reader.
+    for (std::size_t i(0); i < numberReaders; ++i)
+    {
+        if (writePtr == readPtr.at(i))
+            full.at(i) = true;
+    }
 
     // The buffer is not empty after writing new data into it.
-    empty = false;
+    std::fill(empty.begin(), empty.end(), false);
 
     // Update write counter
     ++writeCnt;
@@ -88,92 +90,97 @@ void DataBuffer<T>::doneWriting()
     dataReady.notify_all();
 };
 
-// Call after a packet is fully processed. The reading pointer will be move forward to the
-// next cell in the buffer.
-template <typename T>
-void DataBuffer<T>::doneReading()
+void DataBuffer::doneReading(std::size_t i)
 {
     // Move the iterator forward.
-    ++readPtr;
+    ++readPtr.at(i);
 
     // Verify is we arrived to the end of the buffer.
     // If so, move the iterator back to the start.
-    if (readPtr == data.end())
-        readPtr = data.begin();
+    if (readPtr.at(i) == data.end())
+        readPtr.at(i) = data.begin();
 
-    // Verify if the buffer is empty.
-    if (readPtr == writePtr)
-        empty = true;
+    // Verify if the buffer is empty for each reader.
+    if (readPtr.at(i) == writePtr)
+        empty.at(i) = true;
 
-    // The buffer is not full after reading data from it.
-    full = false;
+    // The buffer is not full after reading data from it for that reader.
+    full.at(i) = false;
 
     // Update read counter
-    ++readCnt;
+    ++readCnt.at(i);
 };
 
-template <typename T>
-const bool DataBuffer<T>::isEmpty() const
+const bool DataBuffer::isEmpty(std::size_t i) const
 {
-    return empty;
+    return empty.at(i);
 };
 
-template <typename T>
-const bool DataBuffer<T>::isFull() const
+const bool DataBuffer::isFull() const
 {
-    return full;
+    return ( std::find(full.begin(), full.end(), true) != full.end() );
 };
 
-template <typename T>
-const int DataBuffer<T>::getROFCnt() const
+const std::size_t DataBuffer::getROFCnt(std::size_t i) const
 {
-    return ROFCnt;
+    return ROFCnt.at(i);
 };
 
-template <typename T>
-const int DataBuffer<T>::getWOFCnt() const
+const std::size_t DataBuffer::getOWCnt(std::size_t i) const
 {
-    return WOFCnt;
+    return OWCnt.at(i);
 };
 
-template <typename T>
-void DataBuffer<T>::clearOFCnts()
+void DataBuffer::clearCnts()
 {
-    ROFCnt = 0; WOFCnt =0;
+    std::fill(ROFCnt.begin(), ROFCnt.end(), 0);
+    std::fill(OWCnt.begin(), OWCnt.end(), 0);
 };
 
-template <typename T>
-const std::size_t DataBuffer<T>::getSize() const
+const std::size_t DataBuffer::getSize() const
 {
     return size;
 };
 
-template <typename T>
-std::mutex* DataBuffer<T>::getMutex()
+const std::size_t DataBuffer::getNumReaders() const
+{
+    return numberReaders;
+}
+
+std::mutex* DataBuffer::getMutex()
 {
     return &mutex;
 };
 
-template <typename T>
-std::condition_variable* DataBuffer<T>::getDataReady()
+std::condition_variable* DataBuffer::getDataReady()
 {
     return &dataReady;
 };
 
-template <typename T>
-void DataBuffer<T>::printStatistic() const
+void DataBuffer::printStatistic() const
 {
     std::cout << "------------------------------"                                << std::endl;
     std::cout << "Data Buffer statistics:"                                       << std::endl;
     std::cout << "------------------------------"                                << std::endl;
     std::cout << "Buffer size                     : " << size                    << std::endl;
     std::cout << "Total write operations          : " << writeCnt                << std::endl;
-    std::cout << "Total read operations           : " << readCnt                 << std::endl;
-    std::cout << "Total write attempts while full : " << WOFCnt                  << std::endl;
-    std::cout << "Total read attempts while empty : " << ROFCnt                  << std::endl;
-    std::cout << "Buffer 'empty' flag             : " << std::boolalpha << empty << std::endl;
-    std::cout << "Buffer 'full' flag              : " << std::boolalpha << full  << std::endl;
-    std::cout << "------------------------------"                                << std::endl;
-};
 
-template class DataBuffer<uint8_t>;
+    std::cout << "Total read operations           : ";
+    std::copy(readCnt.begin(), readCnt.end(), std::ostream_iterator<int>(std::cout, ", "));
+    std::cout << std::endl;
+
+    std::cout << "Total Overwrites                : ";
+    std::copy(OWCnt.begin(), OWCnt.end(), std::ostream_iterator<int>(std::cout, ", "));
+    std::cout << std::endl;
+
+    std::cout << "Total read attempts while empty : ";
+    std::copy(ROFCnt.begin(), ROFCnt.end(), std::ostream_iterator<int>(std::cout, ", "));
+    std::cout << std::endl;
+
+    std::cout << "Buffer 'empty' flag             : " << std::boolalpha;
+    std::copy(empty.begin(), empty.end(), std::ostream_iterator<bool>(std::cout, ", "));
+    std::cout << std::endl;
+
+    std::cout << "Buffer 'full' flag              : " << std::boolalpha << isFull()  << std::endl;
+    std::cout << "------------------------------"                                    << std::endl;
+};
