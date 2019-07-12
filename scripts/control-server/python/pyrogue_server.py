@@ -565,7 +565,7 @@ class PcieCard():
     exepction condition.
     """
 
-    def __init__(self, comm_type, link, ip_addr='', dev='/dev/datadev_0'):
+    def __init__(self, comm_type, link, ip_addr='', dev):
 
         print("Setting up the RSSI PCIe card...")
 
@@ -987,7 +987,7 @@ if __name__ == "__main__":
         import pyrogue.gui
 
     # The PCIeCard object will take care of setting up the PCIe card (if present)
-    with PcieCard(link=pcie_rssi_link, comm_type=comm_type, ip_addr=ip_addr):
+    with PcieCard(link=pcie_rssi_link, comm_type=comm_type, ip_addr=ip_addr, dev=pcie_dev):
 
         # Start pyRogue server
         server = LocalServer(
