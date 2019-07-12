@@ -35,13 +35,16 @@ PIDFILE = '/tmp/smurf.pid'
 
 # Print the usage message
 def usage(name):
-    print("Usage: {} [-a|--addr IP_address] [-d|--defaults config_file]".format(name),\
-        " [-s|--server] [-p|--pyro group_name] [-e|--epics prefix]",\
-        " [-n|--nopoll] [-b|--stream-size byte_size] [-f|--stream-type data_type]",\
-        " [-c|--commType comm_type] [-l|--pcie-rssi-link index] [-b|--stream-size data_size]"\
-        " [-f|--stream-type data_type] [-u|--dump-pvs file_name] [--disable-bay0]"\
-        " [--disable-bay1] [--disable-gc] [-w|--windows-title title] [--pcie-dev pice_device]"\
-        " [-h|--help]")
+    # Number of space of the string "Usage: {name} ". Use to align the following lines.
+    num_spaces=len(name) + 8
+
+    print("Usage: {} [-a|--addr IP_address] [-d|--defaults config_file]".format(name))
+    print("{s: <{c}}[-s|--server] [-p|--pyro group_name] [-e|--epics prefix]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-n|--nopoll] [-b|--stream-size byte_size] [-f|--stream-type data_type]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-c|--commType comm_type] [-l|--pcie-rssi-link index] [-b|--stream-size data_size]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-f|--stream-type data_type] [-u|--dump-pvs file_name] [--disable-bay0]".format(s='', c=num_spaces))
+    print("{s: <{c}}[--disable-bay1] [--disable-gc] [-w|--windows-title title] [--pcie-dev pice_device]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-h|--help]".format(s='', c=num_spaces))
     print("")
     print("    -h|--help                  : Show this message")
     print("    -a|--addr IP_address       : FPGA IP address. Required when"\
