@@ -31,11 +31,6 @@ import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 import Smurf
 
-import gc
-gc.disable()
-print("GARBAGE COLLECTION DISABLED")
-
-
 PIDFILE = '/tmp/smurf.pid'
 
 # Print the usage message
@@ -69,6 +64,8 @@ def usage(name):
         "devices for Bay0")
     print("    --disable-bay1             : Disable the instantiation of the"\
         "devices for Bay1")
+    printf("   --disable-gc               : Disable python's garbage collection"\
+        "(enabled by default)")
     print("")
     print("Examples:")
     print("    {} -a IP_address                            :".format(name),\
@@ -813,6 +810,7 @@ if __name__ == "__main__":
     pcie_dev=Path("/dev/datadev_0")
     disable_bay0=False
     disable_bay1=False
+    disable_gc=False
 
     # Read Arguments
     try:
@@ -820,7 +818,7 @@ if __name__ == "__main__":
             "ha:sp:e:d:nb:f:c:l:u:",
             ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
             "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
-            "disable-bay0", "disable-bay1"])
+            "disable-bay0", "disable-bay1", "--disable-gc"])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
@@ -868,6 +866,14 @@ if __name__ == "__main__":
             disable_bay0=True
         elif opt in ("--disable-bay1"):
             disable_bay1=True
+        elif opt in ("--disable-gc"):
+            disable_gc=True
+
+    # Disable garbage collection if requested
+    if disable_gc:
+        import gc
+        gc.disable()
+        print("GARBAGE COLLECTION DISABLED")
 
     # kill/save here so we get the epics_prefix tag from the above option parsing
     kill_old_process()
