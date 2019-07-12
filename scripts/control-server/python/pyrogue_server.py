@@ -265,13 +265,12 @@ class LocalServer(pyrogue.Root):
 
             # Our receiver
             self.smurf2mce_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
-            data_fifo = self.smurf2mce_fifo
             self.smurf_processor = Smurf.SmurfProcessor()
             self.smurf_processor.setDebug( False )
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.Application(0xC1), data_fifo) # new
-            pyrogue.streamConnect(fpga.stream.application(0xC1), data_fifo)
-            pyrogue.streamConnect(data_fifo, self.smurf_processor)
+            pyrogue.streamConnect(fpga.stream.application(0xC1), self.smurf2mce_fifo)
+            pyrogue.streamConnect(self.smurf2mce_fifo, self.smurf2mce)
             #pyrogue.streamTap(fpga.stream.application(0xC1), rx)
 
             # Run control for streaming interfaces
