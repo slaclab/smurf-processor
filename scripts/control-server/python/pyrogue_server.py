@@ -581,7 +581,7 @@ class PcieCard():
     exepction condition.
     """
 
-    def __init__(self, comm_type, link, ip_addr='', dev):
+    def __init__(self, comm_type, link, ip_addr, dev):
 
         print("Setting up the RSSI PCIe card...")
 
