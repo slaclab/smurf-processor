@@ -224,7 +224,7 @@ class LocalServer(pyrogue.Root):
     """
     def __init__(self, ip_addr, config_file, server_mode, group_name, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
-        pv_dump_file, disable_bay0, disable_bay1):
+        pv_dump_file, disable_bay0, disable_bay1, disable_gc):
 
         try:
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
@@ -379,10 +379,13 @@ class LocalServer(pyrogue.Root):
                 description='Set default configuration',
                 function=self.set_defaults_cmd))
 
-            self.add(pyrogue.LocalCommand(
-                name='runGarbageCollection',
-                description='runGarbageCollection',
-                function=self.run_garbage_collection))
+            # If Garbage collection was disable, add this local variable to allow users
+            # to manually run the garbage collection.
+            if disable_gc:
+                self.add(pyrogue.LocalCommand(
+                    name='runGarbageCollection',
+                    description='runGarbageCollection',
+                    function=self.run_garbage_collection))
 
             self.add(pyrogue.LocalVariable(
                 name='smurfProcessorDebug',
@@ -952,7 +955,8 @@ if __name__ == "__main__":
             stream_pv_type=stream_pv_type,
             pv_dump_file=pv_dump_file,
             disable_bay0=disable_bay0,
-            disable_bay1=disable_bay1)
+            disable_bay1=disable_bay1,
+            disable_gc=disable_gc)
 
     # Stop server
     server.stop()
