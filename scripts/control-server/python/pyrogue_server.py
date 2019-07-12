@@ -311,6 +311,8 @@ class LocalServer(pyrogue.Root):
                         self.data_buffers.append(DataBuffer(size=stream_pv_size, data_type=stream_pv_type))
                         data_buffer = self.data_buffers[i]
 
+                        stream_fifo._setSlave(data_buffer)
+
                         #pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
 
                         # Variable to read the stream data
