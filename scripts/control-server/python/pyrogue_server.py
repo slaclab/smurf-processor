@@ -622,11 +622,11 @@ class PcieCard():
                 local_mac_addr = self.pcie.Core.EthLane[0].EthConfig.LocalMac.get()
 
             valid_local_ip_addr = True
-            loal_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
-            if loal_ip_addr == "0.0.0.0":
+            local_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
+            if local_ip_addr == "0.0.0.0":
                 valid_local_ip_addr = False
                 self.pcie.Core.EthLane[0].EthConfig.LocalIp.set("10.0.3.99")
-                loal_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
+                local_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
 
 
             # If the IP was not defined, read the one from the register space.
