@@ -447,8 +447,10 @@ class LocalServer(pyrogue.Root):
                     print("Enabling stream data on PVs (buffer size = {} points, data type = {})"\
                         .format(stream_pv_size,stream_pv_type))
 
+                    self.stream_fifos  = []
+                    self.stream_slaves = []
                     for i in range(8):
-                        stream_slave = self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type)
+                        self.stream_slaves.append(self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type))
 
                         # Calculate number of bytes needed on the fifo
                         if '16' in stream_pv_type:
@@ -456,9 +458,9 @@ class LocalServer(pyrogue.Root):
                         else:
                             fifo_size = stream_pv_size * 4
 
-                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size, 0) # chnages
-                        stream_fifo._setSlave(stream_slave)
-                        pyrogue.streamTap(fpga.stream.application(0x80+i), stream_fifo)
+                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 0)) # chnages
+                        self.stream_fifos[i]._setSlave(self.stream_slaves[i])
+                        pyrogue.streamTap(fpga.stream.application(0x80+i), self.stream_fifos[i])
 
             self.epics.start()
 
