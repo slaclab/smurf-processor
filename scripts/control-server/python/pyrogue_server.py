@@ -235,7 +235,7 @@ class LocalServer(pyrogue.Root):
     """
     def __init__(self, ip_addr, config_file, server_mode, group_name, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
-        pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title):
+        pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title, pcie_dev):
 
         try:
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
@@ -1006,7 +1006,8 @@ if __name__ == "__main__":
             disable_bay0=disable_bay0,
             disable_bay1=disable_bay1,
             disable_gc=disable_gc,
-            windows_title=windows_title)
+            windows_title=windows_title,
+            pcie_dev=pcie_dev)
 
     # Stop server
     server.stop()
