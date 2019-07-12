@@ -612,6 +612,23 @@ class PcieCard():
             self.pcie.add(fpga.Core(memBase=memMap))
             self.pcie.start(pollEn='False',initRead='True')
 
+            # Verify if the PCIe card is configured with a MAC and IP address.
+            # If not, load default values before it can be used.
+            valid_local_mac_addr = True
+            local_mac_addr = self.pcie.Core.EthLane[0].EthConfig.LocalMac.get()
+            if local_mac_addr == "00:00:00:00:00:00":
+                valid_local_mac_addr = False
+                self.pcie.Core.EthLane[0].EthConfig.LocalMac.set("08:00:56:00:45:50")
+                local_mac_addr = self.pcie.Core.EthLane[0].EthConfig.LocalMac.get()
+
+            valid_local_ip_addr = True
+            loal_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
+            if loal_ip_addr == "0.0.0.0":
+                valid_local_ip_addr = False
+                self.pcie.Core.EthLane[0].EthConfig.LocalIp.set("10.0.3.99")
+                loal_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
+
+
             # If the IP was not defined, read the one from the register space.
             # Note: this could be the case only the PCIe is in used.
             if not ip_addr:
@@ -636,6 +653,12 @@ class PcieCard():
 
         # Show IP address and link when the PCIe is in use
         if self.use_pcie:
+            print("  - Valid MAC address                      : {}".format(
+                "Yes" if valid_local_mac_addr else "No. A default address was loaded"))
+            print("  - Valid IP address                       : {}".format(
+                "Yes" if valid_local_ip_addr else "No. A default address was loaded"))
+            print("  - Local MAC address:                     : {}".format(local_mac_addr))
+            print("  - Local IP address:                      : {}".format(local_ip_addr))
             print("  - Using IP address                       : {}".format(self.ip_addr))
             print("  - Using RSSI link number                 : {}".format(self.link))
 
