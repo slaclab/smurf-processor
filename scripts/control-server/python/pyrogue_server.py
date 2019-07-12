@@ -264,7 +264,8 @@ class LocalServer(pyrogue.Root):
                 # stm_interface_writer.getChannel(i))
 
             # Our receiver
-            data_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
+            self.smurf2mce_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
+            data_fifo = self.smurf2mce_fifo
             self.smurf_processor = Smurf.SmurfProcessor()
             self.smurf_processor.setDebug( False )
             #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
@@ -292,6 +293,8 @@ class LocalServer(pyrogue.Root):
 
                     # Add data streams (0-7) to local variables so they are expose as PVs
                     # Also add PVs to select the data format
+                    self.stream_fifos = []
+                    self.data_buffers = []
                     for i in range(8):
 
                         # Calculate number of bytes needed on the fifo
@@ -302,9 +305,11 @@ class LocalServer(pyrogue.Root):
 
                         # Setup a FIFO tapped to the steram data and a Slave data buffer
                         # Local variables will talk to the data buffer directly.
-                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size, 0)
-                        data_buffer = DataBuffer(size=stream_pv_size, data_type=stream_pv_type)
-                        stream_fifo._setSlave(data_buffer)
+                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 0))
+                        stream_fifo = self.stream_fifos[i]
+
+                        self.data_buffers.append(DataBuffer(size=stream_pv_size, data_type=stream_pv_type))
+                        data_buffer = self.data_buffers[i]
 
                         #pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
 
