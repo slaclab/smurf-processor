@@ -65,6 +65,10 @@ def usage(name):
         "UInt32 or Int32). Default is UInt16. (Must be used with -e and -b)")
     print("    -u|--dump-pvs file_name    : Dump the PV list to \"file_name\".",\
         "(Must be used with -e)")
+    print("    --disable-bay0             : Disable the instantiation of the"\
+        "devices for Bay0")
+    print("    --disable-bay1             : Disable the instantiation of the"\
+        "devices for Bay1")
     print("")
     print("Examples:")
     print("    {} -a IP_address                            :".format(name),\
@@ -223,7 +227,7 @@ class LocalServer(pyrogue.Root):
     """
     def __init__(self, ip_addr, config_file, server_mode, group_name, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
-        pv_dump_file):
+        pv_dump_file, disable_bay0, disable_bay1):
 
         try:
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
@@ -243,7 +247,9 @@ class LocalServer(pyrogue.Root):
             # Instantiate Fpga top level
             fpga = FpgaTopLevel(ipAddr=ip_addr,
                 commType=comm_type,
-                pcieRssiLink=pcie_rssi_link)
+                pcieRssiLink=pcie_rssi_link,
+                disableBay0=disable_bay0,
+                disableBay1=disable_bay1)
 
             # Add devices
             self.add(fpga)
@@ -797,13 +803,16 @@ if __name__ == "__main__":
     pcie_rssi_link=None
     pv_dump_file= ""
     pcie_dev=Path("/dev/datadev_0")
+    disable_bay0=False
+    disable_bay1=False
 
     # Read Arguments
     try:
         opts, _ = getopt.getopt(sys.argv[1:],
             "ha:sp:e:d:nb:f:c:l:u:",
             ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
-            "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs="])
+            "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
+            "disable-bay0", "disable-bay1"])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
@@ -847,6 +856,10 @@ if __name__ == "__main__":
             pcie_rssi_link = int(arg)
         elif opt in ("-u", "--dump-pvs"):   # Dump PV file
             pv_dump_file = arg
+        elif opt in ("--disable-bay0"):
+            disable_bay0=True
+        elif opt in ("--disable-bay1"):
+            disable_bay1=True
 
     # kill/save here so we get the epics_prefix tag from the above option parsing
     kill_old_process()
@@ -923,7 +936,9 @@ if __name__ == "__main__":
             pcie_rssi_link=pcie_rssi_link,
             stream_pv_size=stream_pv_size,
             stream_pv_type=stream_pv_type,
-            pv_dump_file=pv_dump_file)
+            pv_dump_file=pv_dump_file,
+            disable_bay0=disable_bay0,
+            disable_bay1=disable_bay1)
 
     # Stop server
     server.stop()
