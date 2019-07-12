@@ -457,7 +457,7 @@ class LocalServer(pyrogue.Root):
                         else:
                             fifo_size = stream_pv_size * 4
 
-                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 0)) # chnages
+                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 1)) # chnages
                         self.stream_fifos[i]._setSlave(self.stream_slaves[i])
                         pyrogue.streamTap(fpga.stream.application(0x80+i), self.stream_fifos[i])
 
