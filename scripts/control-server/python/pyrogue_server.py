@@ -50,7 +50,7 @@ def usage(name):
         "a GUI (Must be used with -p and/or -e)")
     print("    -n|--nopoll                : Disable all polling")
     print("    -c|--commType comm_type    : Communication type with the FPGA",\
-        "(default to \"eth-rssi-non-interleaved\"")
+        "(defaults to \"eth-rssi-non-interleaved\"")
     print("    -l|--pcie-rssi-link index  : PCIe RSSI link (only needed with"\
         "PCIe). Supported values are 0 to 5")
     print("    -b|--stream-size data_size : Expose the stream data as EPICS",\
@@ -69,6 +69,8 @@ def usage(name):
     print("    -w|--windows-title title   : Set the GUI windows title. If not"\
         "specified, the default windows title will be the name of this script."\
         "This value will be ignored when running in server mode.")
+    print("    --pcie-dev pice_device     : Set the PCIe card device name"\
+        "(defaults to '/dev/datadev_0')")
     print("")
     print("Examples:")
     print("    {} -a IP_address                            :".format(name),\
@@ -847,7 +849,7 @@ if __name__ == "__main__":
     comm_type_valid_types = ["eth-rssi-non-interleaved", "eth-rssi-interleaved", "pcie-rssi-interleaved"]
     pcie_rssi_link=None
     pv_dump_file= ""
-    pcie_dev=Path("/dev/datadev_0")
+    pcie_dev="/dev/datadev_0"
     disable_bay0=False
     disable_bay1=False
     disable_gc=False
@@ -859,7 +861,7 @@ if __name__ == "__main__":
             "ha:sp:e:d:nb:f:c:l:u:w:",
             ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
             "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
-            "disable-bay0", "disable-bay1", "disable-gc", "windows-title="])
+            "disable-bay0", "disable-bay1", "disable-gc", "windows-title=", "pcie-dev="])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
@@ -911,7 +913,8 @@ if __name__ == "__main__":
             disable_gc = True
         elif opt in ("-w", "--windows-title"):
             windows_title = arg
-
+        elif opt in ("--pcie-dev"):
+            pcie_dev = arg
 
     # Disable garbage collection if requested
     if disable_gc:
