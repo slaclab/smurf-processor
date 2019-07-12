@@ -42,6 +42,7 @@ def usage(name):
         " [-f|--stream-type data_type] [-u|--dump-pvs file_name] [--disable-bay0]"\
         " [--disable-bay1] [--disable-gc] [-w|--windows-title title] [--pcie-dev pice_device]"\
         " [-h|--help]")
+    print("")
     print("    -h|--help                  : Show this message")
     print("    -a|--addr IP_address       : FPGA IP address")
     print("    -d|--defaults config_file  : Default configuration file")
