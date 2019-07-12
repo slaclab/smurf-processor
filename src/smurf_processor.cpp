@@ -133,6 +133,12 @@ void SmurfProcessor::runThread()
   // printf("Connecting to %s\n", endpoint);
   // socket.connect(endpoint);
 
+  // Variables used to count lost frames
+  uint32_t    prevFrameNumber  = 0;
+  uint32_t    frameNumber      = 0;
+  std::size_t frameNumberDelta = 0;
+  bool        firstFrame       = true;
+
   try
   {
     while(1)
@@ -149,6 +155,23 @@ void SmurfProcessor::runThread()
       d = (smurf_t*) (buffer+smurfheaderlength); // pointer to data
       p =  (smurf_t*) (buffer_last+smurfheaderlength);  // pointer to previous data set
       // V->run(H);
+
+      // Check if we are missing frames
+      prevFrameNumber = frameNumber;            // Previous frame number
+      frameNumber     = H->get_frame_counter(); // Current frame number
+
+      // Don't compare the first frame
+      if (firstFrame)
+      {
+        firstFrame = false;
+      }
+      else
+      {
+        // If we are missing frame, add the number of missing frames to the counter
+        frameNumberDelta = frameNumber - prevFrameNumber - 1;
+        if ( frameNumberDelta )
+          frameLossCnt += frameNumberDelta;
+      }
 
       if(H->get_test_mode())
         T->gen_test_smurf_data(d, H->get_test_mode(), H->get_syncword(), H->get_test_parameter());   // are we using test data, use pointer to data

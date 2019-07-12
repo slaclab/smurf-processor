@@ -434,7 +434,21 @@ class LocalServer(pyrogue.Root):
                 localSet=lambda value: self.smurf_processor.setDebug(value),
                 hidden=False))
 
+            # Lost frame counter from smurf2mce
+            self.add(pyrogue.LocalVariable(
+                name='frameLossCnt',
+                description='Lost frame Counter',
+                mode='RO',
+                value=0,
+                localGet=self.smurf2mce.getFrameLossCnt,
+                pollInterval=1,
+                hidden=False))
 
+            # Command to clear the lost frame counter on smurf2mce
+            self.add(pyrogue.LocalCommand(
+                name='clearFrameLossCnt',
+                description='Clear the lost frame counter',
+                function=self.smurf2mce.clearFrameLossCnt))
 
             # Start the root
             if group_name:
