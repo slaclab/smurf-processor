@@ -66,6 +66,9 @@ def usage(name):
         "devices for Bay1")
     print("   --disable-gc               : Disable python's garbage collection"\
         "(enabled by default)")
+    print("    -w|--windows-title title   : Set the GUI windows title. If not"\
+        "specified, the default windows title will be the name of this script."\
+        "This value will be ignored when running in server mode.")
     print("")
     print("Examples:")
     print("    {} -a IP_address                            :".format(name),\
@@ -77,8 +80,9 @@ def usage(name):
     print("")
 
 # Cretae gui interface
-def create_gui(root):
+def create_gui(root, title=""):
     app_top = pyrogue.gui.application(sys.argv)
+    app_top.setApplicationName(title)
     gui_top = pyrogue.gui.GuiTop(group='GuiTop')
     gui_top.addTree(root)
     print("Starting GUI...\n")
@@ -224,7 +228,7 @@ class LocalServer(pyrogue.Root):
     """
     def __init__(self, ip_addr, config_file, server_mode, group_name, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
-        pv_dump_file, disable_bay0, disable_bay1, disable_gc):
+        pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title):
 
         try:
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
@@ -488,7 +492,7 @@ class LocalServer(pyrogue.Root):
 
         # If no in server Mode, start the GUI
         if not server_mode:
-            create_gui(self)
+            create_gui(self, title=windows_title)
         else:
             # Stop the server when Crtl+C is pressed
             print("")
@@ -814,14 +818,15 @@ if __name__ == "__main__":
     disable_bay0=False
     disable_bay1=False
     disable_gc=False
+    windows_title=""
 
     # Read Arguments
     try:
         opts, _ = getopt.getopt(sys.argv[1:],
-            "ha:sp:e:d:nb:f:c:l:u:",
+            "ha:sp:e:d:nb:f:c:l:u:w:",
             ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
             "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
-            "disable-bay0", "disable-bay1", "disable-gc"])
+            "disable-bay0", "disable-bay1", "disable-gc", "windows-title="])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
@@ -866,11 +871,14 @@ if __name__ == "__main__":
         elif opt in ("-u", "--dump-pvs"):   # Dump PV file
             pv_dump_file = arg
         elif opt in ("--disable-bay0"):
-            disable_bay0=True
+            disable_bay0 = True
         elif opt in ("--disable-bay1"):
-            disable_bay1=True
+            disable_bay1 = True
         elif opt in ("--disable-gc"):
-            disable_gc=True
+            disable_gc = True
+        elif opt in ("-w", "--windows-title"):
+            windows_title = arg
+
 
     # Disable garbage collection if requested
     if disable_gc:
@@ -956,7 +964,8 @@ if __name__ == "__main__":
             pv_dump_file=pv_dump_file,
             disable_bay0=disable_bay0,
             disable_bay1=disable_bay1,
-            disable_gc=disable_gc)
+            disable_gc=disable_gc,
+            windows_title=windows_title)
 
     # Stop server
     server.stop()
