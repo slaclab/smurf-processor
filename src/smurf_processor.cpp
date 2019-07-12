@@ -365,8 +365,8 @@ void SmurfProcessor::acceptFrame ( ris::FramePtr frame )
 {
   rogue::GilRelease noGil;
 
-  if ( queue_.busy() )
-    return;
+  if ( queue_.busy() || frame->getError() || (frame->getFlags() & 0x100) )
+    return;  //don't copy data or process
 
   queue_.push(frame);
 
