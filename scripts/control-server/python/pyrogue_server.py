@@ -64,7 +64,7 @@ def usage(name):
         "devices for Bay0")
     print("    --disable-bay1             : Disable the instantiation of the"\
         "devices for Bay1")
-    printf("   --disable-gc               : Disable python's garbage collection"\
+    print("   --disable-gc               : Disable python's garbage collection"\
         "(enabled by default)")
     print("")
     print("Examples:")
@@ -818,7 +818,7 @@ if __name__ == "__main__":
             "ha:sp:e:d:nb:f:c:l:u:",
             ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
             "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
-            "disable-bay0", "disable-bay1", "--disable-gc"])
+            "disable-bay0", "disable-bay1", "disable-gc"])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
