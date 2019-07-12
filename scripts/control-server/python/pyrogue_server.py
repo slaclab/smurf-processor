@@ -35,7 +35,7 @@ PIDFILE = '/tmp/smurf.pid'
 
 # Print the usage message
 def usage(name):
-    print("Usage: {} -a|--addr IP_address [-d|--defaults config_file]".format(name),\
+    print("Usage: {} [-a|--addr IP_address] [-d|--defaults config_file]".format(name),\
         " [-s|--server] [-p|--pyro group_name] [-e|--epics prefix]",\
         " [-n|--nopoll] [-b|--stream-size byte_size] [-f|--stream-type data_type]",\
         " [-c|--commType comm_type] [-l|--pcie-rssi-link index] [-b|--stream-size data_size]"\
@@ -44,7 +44,8 @@ def usage(name):
         " [-h|--help]")
     print("")
     print("    -h|--help                  : Show this message")
-    print("    -a|--addr IP_address       : FPGA IP address")
+    print("    -a|--addr IP_address       : FPGA IP address. Required when"\
+        "the communication type is based on Ethernet.")
     print("    -d|--defaults config_file  : Default configuration file")
     print("    -p|--pyro group_name       : Start a Pyro4 server with",\
         "group name \"group_name\"")
