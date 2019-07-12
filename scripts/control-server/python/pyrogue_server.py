@@ -267,12 +267,22 @@ class LocalServer(pyrogue.Root):
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
+
                 # DDR streams
                 pyrogue.streamConnect(fpga.stream.application(0x80 + i),
-                 stm_data_writer.getChannel(i))
-                # Streaming interface streams
-                #pyrogue.streamConnect(fpga.stream.application(0xC0 + i),  # new commended out
-                # stm_interface_writer.getChannel(i))
+                    stm_data_writer.getChannel(i))
+
+                ## Streaming interface streams
+
+                # We have already connected TDEST 0xC1 to the smurf2mce receiver,
+                # so we need to tapping it to the data writer.
+                if i == 1:
+                    pyrogue.streamTap(fpga.stream.application(0xC0 + i),
+                        stm_interface_writer.getChannel(i))
+                # The rest of channels are connected directly to the data writer.
+                else:
+                    pyrogue.streamConnect(fpga.stream.application(0xC0 + i),
+                        stm_interface_writer.getChannel(i))
 
             # Run control for streaming interfaces
             self.add(pyrogue.RunControl(
