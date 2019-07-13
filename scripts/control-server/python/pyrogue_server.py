@@ -72,7 +72,7 @@ def usage(name):
         "devices for Bay0")
     print("    --disable-bay1             : Disable the instantiation of the"\
         "devices for Bay1")
-    print("   --disable-gc               : Disable python's garbage collection"\
+    print("   --disable-gc                : Disable python's garbage collection"\
         "(enabled by default)")
     print("    -w|--windows-title title   : Set the GUI windows title. If not"\
         "specified, the default windows title will be the name of this script."\
@@ -280,26 +280,26 @@ class LocalServer(pyrogue.Root):
                     self.ddr_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0x80 + i), True))
                     self.streaming_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0xC0 + i), True))
 
-            # Our smurf2mce receiver
+            # Our smurf_processor receiver
             # The data stream comes from TDEST 0xC1
             # We use a FIFO between the stream data and the receiver:
-            # Stream -> FIFO -> smurf2mce receiver
-            self.smurf2mce = MceTransmit.Smurf2MCE()
-            self.smurf2mce.setDebug( False )
-            self.smurf2mce_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
-            pyrogue.streamConnect(self.streaming_streams[1], self.smurf2mce_fifo)
-            pyrogue.streamConnect(self.smurf2mce_fifo, self.smurf2mce)
+            # Stream -> FIFO -> smurf_processor receiver
+            self.smurf_processor = Smurf.SmurfProcessor()
+            self.smurf_processor.setDebug( False )
+            self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
+            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
+            pyrogue.streamConnect(self.smurf_processor_fifo, self.smurf_processor)
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
 
-                # DDR streams
+                ## DDR streams
                 pyrogue.streamConnect(self.ddr_streams[i],
                     stm_data_writer.getChannel(i))
 
                 ## Streaming interface streams
 
-                # We have already connected TDEST 0xC1 to the smurf2mce receiver,
+                # We have already connected TDEST 0xC1 to the smurf_processor receiver,
                 # so we need to tapping it to the data writer.
                 if i == 1:
                     pyrogue.streamTap(self.streaming_streams[i],
@@ -434,21 +434,21 @@ class LocalServer(pyrogue.Root):
                 localSet=lambda value: self.smurf_processor.setDebug(value),
                 hidden=False))
 
-            # Lost frame counter from smurf2mce
+            # Lost frame counter from smurf_processor
             self.add(pyrogue.LocalVariable(
                 name='frameLossCnt',
                 description='Lost frame Counter',
                 mode='RO',
                 value=0,
-                localGet=self.smurf2mce.getFrameLossCnt,
+                localGet=self.smurf_processor.getFrameLossCnt,
                 pollInterval=1,
                 hidden=False))
 
-            # Command to clear the lost frame counter on smurf2mce
+            # Command to clear the lost frame counter on smurf_processor
             self.add(pyrogue.LocalCommand(
                 name='clearFrameLossCnt',
                 description='Clear the lost frame counter',
-                function=self.smurf2mce.clearFrameLossCnt))
+                function=self.smurf_processor.clearFrameLossCnt))
 
             # Start the root
             if group_name:

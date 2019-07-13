@@ -82,8 +82,8 @@ public:
       .def("getBytes", &SmurfProcessor::getBytes)
       .def("getLast",  &SmurfProcessor::getLast)
       .def("setDebug",  &SmurfProcessor::setDebug)
-      .def("getFrameLossCnt", &Smurf2MCE::getFrameLossCnt)
-      .def("clearFrameLossCnt", &Smurf2MCE::clearFrameLossCnt)
+      .def("getFrameLossCnt", &SmurfProcessor::getFrameLossCnt)
+      .def("clearFrameLossCnt", &SmurfProcessor::clearFrameLossCnt)
       .def("printTransmitStatistic", &SmurfProcessor::printTransmitStatistic)
     ;
 
