@@ -67,4 +67,4 @@ The test mode selected by bits 4-7 are
 
 ### SMuRF packet payload
 
-The payload contains 528 32-bit averaged data points.
+The payload contains 32-bit averaged data points. The number of points is defined in the header's `Number of channels of data` word.
