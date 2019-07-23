@@ -31,21 +31,24 @@ import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 import Smurf
 
-import gc
-gc.disable()
-print("GARBAGE COLLECTION DISABLED")
-
-
 PIDFILE = '/tmp/smurf.pid'
 
 # Print the usage message
 def usage(name):
-    print("Usage: {} -a|--addr IP_address [-d|--defaults config_file]".format(name),\
-        " [-s|--server] [-p|--pyro group_name] [-e|--epics prefix]",\
-        " [-n|--nopoll] [-b|--stream-size byte_size] [-f|--stream-type data_type]",\
-        " [-c|--commType comm_type] [-l|--slot slot_number] [-h|--help]")
+    # Number of space of the string "Usage: {name} ". Use to align the following lines.
+    num_spaces=len(name) + 8
+
+    print("Usage: {} [-a|--addr IP_address] [-d|--defaults config_file]".format(name))
+    print("{s: <{c}}[-s|--server] [-p|--pyro group_name] [-e|--epics prefix]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-n|--nopoll] [-b|--stream-size byte_size] [-f|--stream-type data_type]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-c|--commType comm_type] [-l|--pcie-rssi-link index] [-b|--stream-size data_size]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-f|--stream-type data_type] [-u|--dump-pvs file_name] [--disable-bay0]".format(s='', c=num_spaces))
+    print("{s: <{c}}[--disable-bay1] [--disable-gc] [-w|--windows-title title] [--pcie-dev pice_device]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-h|--help]".format(s='', c=num_spaces))
+    print("")
     print("    -h|--help                  : Show this message")
-    print("    -a|--addr IP_address       : FPGA IP address")
+    print("    -a|--addr IP_address       : FPGA IP address. Required when"\
+        "the communication type is based on Ethernet.")
     print("    -d|--defaults config_file  : Default configuration file")
     print("    -p|--pyro group_name       : Start a Pyro4 server with",\
         "group name \"group_name\"")
@@ -55,7 +58,7 @@ def usage(name):
         "a GUI (Must be used with -p and/or -e)")
     print("    -n|--nopoll                : Disable all polling")
     print("    -c|--commType comm_type    : Communication type with the FPGA",\
-        "(default to \"eth-rssi-non-interleaved\"")
+        "(defaults to \"eth-rssi-non-interleaved\"")
     print("    -l|--pcie-rssi-link index  : PCIe RSSI link (only needed with"\
         "PCIe). Supported values are 0 to 5")
     print("    -b|--stream-size data_size : Expose the stream data as EPICS",\
@@ -65,6 +68,17 @@ def usage(name):
         "UInt32 or Int32). Default is UInt16. (Must be used with -e and -b)")
     print("    -u|--dump-pvs file_name    : Dump the PV list to \"file_name\".",\
         "(Must be used with -e)")
+    print("    --disable-bay0             : Disable the instantiation of the"\
+        "devices for Bay0")
+    print("    --disable-bay1             : Disable the instantiation of the"\
+        "devices for Bay1")
+    print("    --disable-gc               : Disable python's garbage collection"\
+        "(enabled by default)")
+    print("    -w|--windows-title title   : Set the GUI windows title. If not"\
+        "specified, the default windows title will be the name of this script."\
+        "This value will be ignored when running in server mode.")
+    print("    --pcie-dev pice_device     : Set the PCIe card device name"\
+        "(defaults to '/dev/datadev_0')")
     print("")
     print("Examples:")
     print("    {} -a IP_address                            :".format(name),\
@@ -76,8 +90,9 @@ def usage(name):
     print("")
 
 # Cretae gui interface
-def create_gui(root):
+def create_gui(root, title=""):
     app_top = pyrogue.gui.application(sys.argv)
+    app_top.setApplicationName(title)
     gui_top = pyrogue.gui.GuiTop(group='GuiTop')
     gui_top.addTree(root)
     print("Starting GUI...\n")
@@ -223,7 +238,7 @@ class LocalServer(pyrogue.Root):
     """
     def __init__(self, ip_addr, config_file, server_mode, group_name, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
-        pv_dump_file):
+        pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title, pcie_dev):
 
         try:
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
@@ -243,29 +258,56 @@ class LocalServer(pyrogue.Root):
             # Instantiate Fpga top level
             fpga = FpgaTopLevel(ipAddr=ip_addr,
                 commType=comm_type,
-                pcieRssiLink=pcie_rssi_link)
+                pcieRssiLink=pcie_rssi_link,
+                disableBay0=disable_bay0,
+                disableBay1=disable_bay1)
 
             # Add devices
             self.add(fpga)
 
-            # Add data streams (0-7) to file channels (0-7)
-            for i in range(8):
-                # DDR streams
-                pyrogue.streamConnect(fpga.stream.application(0x80 + i),
-                 stm_data_writer.getChannel(i))
-                # Streaming interface streams
-                #pyrogue.streamConnect(fpga.stream.application(0xC0 + i),  # new commended out
-                # stm_interface_writer.getChannel(i))
+            # Create stream interfaces
+            self.ddr_streams = []       # DDR streams
+            self.streaming_streams = [] # Streaming interface streams
 
-            # Our receiver
-            data_fifo = rogue.interfaces.stream.Fifo(1000,0,1)    # new
+            # If the packetizer is being used, the FpgaTopLevel class will defined a 'stream' interface exposing it.
+            # Otherwise, we are using DMA engine without packetizer. Create the stream interface accordingly.
+            if hasattr(fpga, 'stream'):
+                for i in range(8):
+                    self.ddr_streams.append(fpga.stream.application(0x80 + i))
+                    self.streaming_streams.append(fpga.stream.application(0xC0 + i))
+            else:
+                for i in range(8):
+                    self.ddr_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0x80 + i), True))
+                    self.streaming_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0xC0 + i), True))
+
+            # Our smurf_processor receiver
+            # The data stream comes from TDEST 0xC1
+            # We use a FIFO between the stream data and the receiver:
+            # Stream -> FIFO -> smurf_processor receiver
             self.smurf_processor = Smurf.SmurfProcessor()
             self.smurf_processor.setDebug( False )
-            #pyrogue.streamConnect(base.FpgaTopLevel.stream.application(0xC1), data_fifo) # new
-            #pyrogue.streamConnect(base.FpgaTopLevel.stream.Application(0xC1), data_fifo) # new
-            pyrogue.streamConnect(fpga.stream.application(0xC1), data_fifo)
-            pyrogue.streamConnect(data_fifo, self.smurf_processor)
-            #pyrogue.streamTap(fpga.stream.application(0xC1), rx)
+            self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
+            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
+            pyrogue.streamConnect(self.smurf_processor_fifo, self.smurf_processor)
+
+            # Add data streams (0-7) to file channels (0-7)
+            for i in range(8):
+
+                ## DDR streams
+                pyrogue.streamConnect(self.ddr_streams[i],
+                    stm_data_writer.getChannel(i))
+
+                ## Streaming interface streams
+
+                # We have already connected TDEST 0xC1 to the smurf_processor receiver,
+                # so we need to tapping it to the data writer.
+                if i == 1:
+                    pyrogue.streamTap(self.streaming_streams[i],
+                        stm_interface_writer.getChannel(i))
+                # The rest of channels are connected directly to the data writer.
+                else:
+                    pyrogue.streamConnect(self.streaming_streams[i],
+                        stm_interface_writer.getChannel(i))
 
             # Run control for streaming interfaces
             self.add(pyrogue.RunControl(
@@ -286,6 +328,8 @@ class LocalServer(pyrogue.Root):
 
                     # Add data streams (0-7) to local variables so they are expose as PVs
                     # Also add PVs to select the data format
+                    self.stream_fifos = []
+                    self.data_buffers = []
                     for i in range(8):
 
                         # Calculate number of bytes needed on the fifo
@@ -296,8 +340,12 @@ class LocalServer(pyrogue.Root):
 
                         # Setup a FIFO tapped to the steram data and a Slave data buffer
                         # Local variables will talk to the data buffer directly.
-                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size, 0)
-                        data_buffer = DataBuffer(size=stream_pv_size, data_type=stream_pv_type)
+                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 0))
+                        stream_fifo = self.stream_fifos[i]
+
+                        self.data_buffers.append(DataBuffer(size=stream_pv_size, data_type=stream_pv_type))
+                        data_buffer = self.data_buffers[i]
+
                         stream_fifo._setSlave(data_buffer)
 
                         #pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
@@ -370,10 +418,13 @@ class LocalServer(pyrogue.Root):
                 description='Set default configuration',
                 function=self.set_defaults_cmd))
 
-            self.add(pyrogue.LocalCommand(
-                name='runGarbageCollection',
-                description='runGarbageCollection',
-                function=self.run_garbage_collection))
+            # If Garbage collection was disable, add this local variable to allow users
+            # to manually run the garbage collection.
+            if disable_gc:
+                self.add(pyrogue.LocalCommand(
+                    name='runGarbageCollection',
+                    description='runGarbageCollection',
+                    function=self.run_garbage_collection))
 
             self.add(pyrogue.LocalVariable(
                 name='smurfProcessorDebug',
@@ -383,7 +434,21 @@ class LocalServer(pyrogue.Root):
                 localSet=lambda value: self.smurf_processor.setDebug(value),
                 hidden=False))
 
+            # Lost frame counter from smurf_processor
+            self.add(pyrogue.LocalVariable(
+                name='frameLossCnt',
+                description='Lost frame Counter',
+                mode='RO',
+                value=0,
+                localGet=self.smurf_processor.getFrameLossCnt,
+                pollInterval=1,
+                hidden=False))
 
+            # Command to clear the lost frame counter on smurf_processor
+            self.add(pyrogue.LocalCommand(
+                name='clearFrameLossCnt',
+                description='Clear the lost frame counter',
+                function=self.smurf_processor.clearFrameLossCnt))
 
             # Start the root
             if group_name:
@@ -434,8 +499,10 @@ class LocalServer(pyrogue.Root):
                     print("Enabling stream data on PVs (buffer size = {} points, data type = {})"\
                         .format(stream_pv_size,stream_pv_type))
 
+                    self.stream_fifos  = []
+                    self.stream_slaves = []
                     for i in range(8):
-                        stream_slave = self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type)
+                        self.stream_slaves.append(self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type))
 
                         # Calculate number of bytes needed on the fifo
                         if '16' in stream_pv_type:
@@ -443,9 +510,9 @@ class LocalServer(pyrogue.Root):
                         else:
                             fifo_size = stream_pv_size * 4
 
-                        stream_fifo = rogue.interfaces.stream.Fifo(0, fifo_size, 0) # chnages
-                        stream_fifo._setSlave(stream_slave)
-                        pyrogue.streamTap(fpga.stream.application(0x80+i), stream_fifo)
+                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(1000, fifo_size, True)) # changes
+                        self.stream_fifos[i]._setSlave(self.stream_slaves[i])
+                        pyrogue.streamTap(self.ddr_streams[i], self.stream_fifos[i])
 
             self.epics.start()
 
@@ -474,7 +541,7 @@ class LocalServer(pyrogue.Root):
 
         # If no in server Mode, start the GUI
         if not server_mode:
-            create_gui(self)
+            create_gui(self, title=windows_title)
         else:
             # Stop the server when Crtl+C is pressed
             print("")
@@ -531,7 +598,7 @@ class PcieCard():
     exepction condition.
     """
 
-    def __init__(self, comm_type, link, ip_addr='', dev='/dev/datadev_0'):
+    def __init__(self, comm_type, link, ip_addr, dev):
 
         print("Setting up the RSSI PCIe card...")
 
@@ -584,6 +651,23 @@ class PcieCard():
             self.pcie.add(fpga.Core(memBase=memMap))
             self.pcie.start(pollEn='False',initRead='True')
 
+            # Verify if the PCIe card is configured with a MAC and IP address.
+            # If not, load default values before it can be used.
+            valid_local_mac_addr = True
+            local_mac_addr = self.pcie.Core.EthLane[0].EthConfig.LocalMac.get()
+            if local_mac_addr == "00:00:00:00:00:00":
+                valid_local_mac_addr = False
+                self.pcie.Core.EthLane[0].EthConfig.LocalMac.set("08:00:56:00:45:50")
+                local_mac_addr = self.pcie.Core.EthLane[0].EthConfig.LocalMac.get()
+
+            valid_local_ip_addr = True
+            local_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
+            if local_ip_addr == "0.0.0.0":
+                valid_local_ip_addr = False
+                self.pcie.Core.EthLane[0].EthConfig.LocalIp.set("10.0.3.99")
+                local_ip_addr = self.pcie.Core.EthLane[0].EthConfig.LocalIp.get()
+
+
             # If the IP was not defined, read the one from the register space.
             # Note: this could be the case only the PCIe is in used.
             if not ip_addr:
@@ -608,6 +692,12 @@ class PcieCard():
 
         # Show IP address and link when the PCIe is in use
         if self.use_pcie:
+            print("  - Valid MAC address                      : {}".format(
+                "Yes" if valid_local_mac_addr else "No. A default address was loaded"))
+            print("  - Valid IP address                       : {}".format(
+                "Yes" if valid_local_ip_addr else "No. A default address was loaded"))
+            print("  - Local MAC address:                     : {}".format(local_mac_addr))
+            print("  - Local IP address:                      : {}".format(local_ip_addr))
             print("  - Using IP address                       : {}".format(self.ip_addr))
             print("  - Using RSSI link number                 : {}".format(self.link))
 
@@ -796,14 +886,19 @@ if __name__ == "__main__":
     comm_type_valid_types = ["eth-rssi-non-interleaved", "eth-rssi-interleaved", "pcie-rssi-interleaved"]
     pcie_rssi_link=None
     pv_dump_file= ""
-    pcie_dev=Path("/dev/datadev_0")
+    pcie_dev="/dev/datadev_0"
+    disable_bay0=False
+    disable_bay1=False
+    disable_gc=False
+    windows_title=""
 
     # Read Arguments
     try:
         opts, _ = getopt.getopt(sys.argv[1:],
-            "ha:sp:e:d:nb:f:c:l:u:",
+            "ha:sp:e:d:nb:f:c:l:u:w:",
             ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
-            "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs="])
+            "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
+            "disable-bay0", "disable-bay1", "disable-gc", "windows-title=", "pcie-dev="])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
@@ -847,6 +942,22 @@ if __name__ == "__main__":
             pcie_rssi_link = int(arg)
         elif opt in ("-u", "--dump-pvs"):   # Dump PV file
             pv_dump_file = arg
+        elif opt in ("--disable-bay0"):
+            disable_bay0 = True
+        elif opt in ("--disable-bay1"):
+            disable_bay1 = True
+        elif opt in ("--disable-gc"):
+            disable_gc = True
+        elif opt in ("-w", "--windows-title"):
+            windows_title = arg
+        elif opt in ("--pcie-dev"):
+            pcie_dev = arg
+
+    # Disable garbage collection if requested
+    if disable_gc:
+        import gc
+        gc.disable()
+        print("GARBAGE COLLECTION DISABLED")
 
     # kill/save here so we get the epics_prefix tag from the above option parsing
     kill_old_process()
@@ -909,7 +1020,7 @@ if __name__ == "__main__":
         import pyrogue.gui
 
     # The PCIeCard object will take care of setting up the PCIe card (if present)
-    with PcieCard(link=pcie_rssi_link, comm_type=comm_type, ip_addr=ip_addr):
+    with PcieCard(link=pcie_rssi_link, comm_type=comm_type, ip_addr=ip_addr, dev=pcie_dev):
 
         # Start pyRogue server
         server = LocalServer(
@@ -923,7 +1034,12 @@ if __name__ == "__main__":
             pcie_rssi_link=pcie_rssi_link,
             stream_pv_size=stream_pv_size,
             stream_pv_type=stream_pv_type,
-            pv_dump_file=pv_dump_file)
+            pv_dump_file=pv_dump_file,
+            disable_bay0=disable_bay0,
+            disable_bay1=disable_bay1,
+            disable_gc=disable_gc,
+            windows_title=windows_title,
+            pcie_dev=pcie_dev)
 
     # Stop server
     server.stop()
