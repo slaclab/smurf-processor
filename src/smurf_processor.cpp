@@ -25,7 +25,10 @@ runTxThread          ( true                                                ),
 pktReaderIndexTx     ( 0                                                   ),
 pktReaderIndexFile   ( 1                                                   ),
 pktTransmitterThread ( std::thread( &SmurfProcessor::pktTansmitter, this ) ),
-pktWriterThread      ( std::thread( &SmurfProcessor::pktWriter, this )     )
+pktWriterThread      ( std::thread( &SmurfProcessor::pktWriter, this )     ),
+frameLossCnt         ( 0                                                   ),
+frameRxCnt           ( 0                                                   ),
+frameOutOrderCnt     ( 0                                                   )
 {
   rxCount = 0;
   rxBytes = 0;
@@ -167,11 +170,21 @@ void SmurfProcessor::runThread()
       }
       else
       {
+        // Discard out-of-order frames
+        if ( frameNumber < prevFrameNumber )
+        {
+          ++frameOutOrderCnt;
+          continue;
+        }
+
         // If we are missing frame, add the number of missing frames to the counter
         frameNumberDelta = frameNumber - prevFrameNumber - 1;
         if ( frameNumberDelta )
           frameLossCnt += frameNumberDelta;
       }
+
+      // Update the received frame counter
+      ++frameRxCnt;
 
       if(H->get_test_mode())
         T->gen_test_smurf_data(d, H->get_test_mode(), H->get_syncword(), H->get_test_parameter());   // are we using test data, use pointer to data
@@ -490,6 +503,13 @@ SmurfProcessor::~SmurfProcessor() // destructor
 // {
 //   mce_header[offset] = value & 0xffffffff; // just write value.
 // }
+
+void SmurfProcessor::clearFrameCnt()
+{
+  frameLossCnt     = 0;
+  frameRxCnt       = 0;
+  frameOutOrderCnt = 0;
+}
 
 // Reads and interprest the smurf.cfg file.
 SmurfConfig::SmurfConfig(void)
