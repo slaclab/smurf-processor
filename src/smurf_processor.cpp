@@ -337,9 +337,9 @@ void SmurfProcessor::read_mask(char *filename)  // ugly, hard coded file name. f
 
   fp = fopen("mask.txt", "r");
 
-  if(fp==0)
+  if(fp == NULL)
   {
-    printf("unable to open mask file \n");
+    printf("unable to open mask file\n");
     return;
   }
 
@@ -533,7 +533,7 @@ bool SmurfConfig::read_config_file(void)
   if(!( fp = fopen(filename,"r")))
     return(false); // open config file
 
-  printf("reading config file \n");
+  printf("reading config file\n");
 
   do
   {
@@ -803,11 +803,13 @@ SmurfValidCheck::SmurfValidCheck() // just creates  all variables.
 
   if(!(fp = fopen("frame_jump_log.txt", "w")))
   {
-    printf("unable to oen frame jump log file frame_jump_log.txt");
+    printf("unable to open frame jump log file frame_jump_log.txt\n");
   }
-
-  fprintf(fp, "Frame Jump file \n");
-  fclose(fp);
+  else
+  {
+    fprintf(fp, "Frame Jump file \n");
+    fclose(fp);
+  }
 }
 
 
@@ -834,7 +836,7 @@ void SmurfValidCheck::run(SmurfHeader *H)
 
     if(!(fp = fopen("frame_jump_log.txt", "a")))
     {
-      printf("unable to oen frame jump log file frame_jump_log.txt");
+      printf("unable to open frame jump log file frame_jump_log.txt\n");
     }
     else
     {
@@ -861,19 +863,20 @@ void SmurfValidCheck::run(SmurfHeader *H)
 
     if(!(fp = fopen("frame_jump_log.txt", "a")))
     {
-      printf("unable to oen frame jump log file frame_jump_log.txt");
+      printf("unable to open frame jump log file frame_jump_log.txt\n");
     }
-
-    // fprintf(fp, "Frame jump at syncbox = %u, timingsystem time = %lu seconds \n", Syncbox->current, Timingsystem->current/1000000000);
-    // fprintf(fp, "syncbox delta (~200Hz) = %4u \n ", Syncbox->delta);
-    // fprintf(fp, "timing system delta = %10u us \n", Timingsystem->delta/1000);
-    // fprintf(fp, "Unix time delta = %10u us \n", Unix_time->delta/1000);
-    // fprintf(fp, "counter_delta(480KHz) = %6u\n ", Counter_1hz->delta);
-    // fprintf(fp, "smurf_frame_delta = %4u \n", Smurf_frame->delta);
-    // fprintf(fp, "smurf2mce delay = %u us, \n\n", Smurf2mce->delta/1000);
-    fprintf(fp, "%10" PRIu64 ", %2" PRIu64 ", %4" PRIu64 ", %" PRIu64 " %6" PRIu64 " %6" PRIu64 " \n", Syncbox->current, Syncbox->delta, Smurf_frame->delta, Timingsystem->delta/1000, Unix_time->delta/1000, Smurf2mce->delta/1000);
-
-    fclose(fp);
+    else
+    {
+      // fprintf(fp, "Frame jump at syncbox = %u, timingsystem time = %lu seconds \n", Syncbox->current, Timingsystem->current/1000000000);
+      // fprintf(fp, "syncbox delta (~200Hz) = %4u \n ", Syncbox->delta);
+      // fprintf(fp, "timing system delta = %10u us \n", Timingsystem->delta/1000);
+      // fprintf(fp, "Unix time delta = %10u us \n", Unix_time->delta/1000);
+      // fprintf(fp, "counter_delta(480KHz) = %6u\n ", Counter_1hz->delta);
+      // fprintf(fp, "smurf_frame_delta = %4u \n", Smurf_frame->delta);
+      // fprintf(fp, "smurf2mce delay = %u us, \n\n", Smurf2mce->delta/1000);
+      fprintf(fp, "%10" PRIu64 ", %2" PRIu64 ", %4" PRIu64 ", %" PRIu64 " %6" PRIu64 " %6" PRIu64 " \n", Syncbox->current, Syncbox->delta, Smurf_frame->delta, Timingsystem->delta/1000, Unix_time->delta/1000, Smurf2mce->delta/1000);
+      fclose(fp);
+    }
   }
 }
 
