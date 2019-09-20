@@ -1,1 +1,0 @@
-export PYTHONPATH=/usr/local/controls/Applications/smurf/cmb_Det/smurf-pcie/smurf-pcie/firmware/submodules/axi-pcie-core/python/:/usr/local/controls/Applications/smurf/cmb_Det/smurf-pcie/smurf-pcie/software/python/:${PYTHONPATH}
