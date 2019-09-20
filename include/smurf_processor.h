@@ -28,12 +28,14 @@ class SmurfProcessor : public rogue::interfaces::stream::Slave
 {
 public:
   uint32_t rxCount, rxBytes, rxLast;
-  uint32_t    getCount()            { return rxCount;         } // Total frames
-  uint32_t    getBytes()            { return rxBytes;         } // Total Bytes
-  uint32_t    getLast()             { return rxLast;          } // Last frame size
-  void        setDebug(bool debug)  { debug_ = debug; return; } // Last frame size
-  std::size_t getFrameLossCnt()     { return frameLossCnt;    } // Get the lost frame counter
-  void        clearFrameLossCnt()   { frameLossCnt = 0;       } // Clear the lost frame
+  uint32_t    getCount()            { return rxCount;          } // Total frames
+  uint32_t    getBytes()            { return rxBytes;          } // Total Bytes
+  uint32_t    getLast()             { return rxLast;           } // Last frame size
+  void        setDebug(bool debug)  { debug_ = debug; return;  } // Last frame size
+  std::size_t getFrameRxCnt()       { return frameRxCnt;       } // Get the received frame counter
+  std::size_t getFrameLossCnt()     { return frameLossCnt;     } // Get the lost frame counter
+  std::size_t getFrameOutOrderCnt() { return frameOutOrderCnt; } // Get the lost frame counter
+  void        clearFrameCnt();                                   // Clear the lost frame
 
   bool initialized;
   uint internal_counter, fast_internal_counter;  // first is mce frames, second is smurf frames
@@ -78,12 +80,14 @@ public:
   static void setup_python()
   {
     bp::class_<SmurfProcessor, boost::shared_ptr<SmurfProcessor>, bp::bases<ris::Slave>, boost::noncopyable >("SmurfProcessor",bp::init<>())
-      .def("getCount", &SmurfProcessor::getCount)
-      .def("getBytes", &SmurfProcessor::getBytes)
-      .def("getLast",  &SmurfProcessor::getLast)
-      .def("setDebug",  &SmurfProcessor::setDebug)
-      .def("getFrameLossCnt", &SmurfProcessor::getFrameLossCnt)
-      .def("clearFrameLossCnt", &SmurfProcessor::clearFrameLossCnt)
+      .def("getCount",               &SmurfProcessor::getCount)
+      .def("getBytes",               &SmurfProcessor::getBytes)
+      .def("getLast",                &SmurfProcessor::getLast)
+      .def("setDebug",               &SmurfProcessor::setDebug)
+      .def("getFrameRxCnt",          &SmurfProcessor::getFrameRxCnt)
+      .def("getFrameLossCnt",        &SmurfProcessor::getFrameLossCnt)
+      .def("getFrameOutOrderCnt",    &SmurfProcessor::getFrameOutOrderCnt)
+      .def("clearFrameCnt",          &SmurfProcessor::clearFrameCnt)
       .def("printTransmitStatistic", &SmurfProcessor::printTransmitStatistic)
     ;
 
@@ -125,7 +129,9 @@ private:
   const size_t        pktReaderIndexFile;   // Data buffer reader index for the file writer
   std::thread         pktTransmitterThread; // Thread where the SMuRF packet transmission will run
   std::thread         pktWriterThread;      // Thread where the SMuRF packet file writer will run
+  std::size_t         frameRxCnt;           // Received frame counter
   std::size_t         frameLossCnt;         // Lost frame counter
+  std::size_t         frameOutOrderCnt;     // Counts the number of times we received an out-of-order frame
 };
 
 #endif
