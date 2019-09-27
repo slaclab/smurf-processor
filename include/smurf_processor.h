@@ -18,6 +18,7 @@
 #include "common.h"
 #include "data_buffer.h"
 #include "smurf_packet.h"
+#include "tes_bias_array.h"
 
 namespace bp = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -36,6 +37,7 @@ public:
   std::size_t getFrameLossCnt()     { return frameLossCnt;     } // Get the lost frame counter
   std::size_t getFrameOutOrderCnt() { return frameOutOrderCnt; } // Get the lost frame counter
   void        clearFrameCnt();                                   // Clear the lost frame
+  void        setTesBias(std::size_t index, int32_t value);      // Receive the TesBias from pyrogue
 
   bool initialized;
   uint internal_counter, fast_internal_counter;  // first is mce frames, second is smurf frames
@@ -89,6 +91,7 @@ public:
       .def("getFrameOutOrderCnt",    &SmurfProcessor::getFrameOutOrderCnt)
       .def("clearFrameCnt",          &SmurfProcessor::clearFrameCnt)
       .def("printTransmitStatistic", &SmurfProcessor::printTransmitStatistic)
+      .def("setTesBias",             &SmurfProcessor::setTesBias)
     ;
 
     bp::implicitly_convertible<boost::shared_ptr<SmurfProcessor>, ris::SlavePtr>();
@@ -132,6 +135,10 @@ private:
   std::size_t         frameRxCnt;           // Received frame counter
   std::size_t         frameLossCnt;         // Lost frame counter
   std::size_t         frameOutOrderCnt;     // Counts the number of times we received an out-of-order frame
+
+  // TesBias values
+  std::array<uint8_t, TesBiasBufferSize> tesBias;   // Array to hold the TesBias values
+  TesBiasArray                           tba;       // Object to access the Tesbias array
 };
 
 #endif

@@ -28,7 +28,9 @@ pktTransmitterThread ( std::thread( &SmurfProcessor::pktTansmitter, this ) ),
 pktWriterThread      ( std::thread( &SmurfProcessor::pktWriter, this )     ),
 frameLossCnt         ( 0                                                   ),
 frameRxCnt           ( 0                                                   ),
-frameOutOrderCnt     ( 0                                                   )
+frameOutOrderCnt     ( 0                                                   ),
+tesBias(),
+tba(tesBias.data())
 {
   rxCount = 0;
   rxBytes = 0;
@@ -185,6 +187,12 @@ void SmurfProcessor::runThread()
 
       // Update the received frame counter
       ++frameRxCnt;
+
+      // Copy TES bias data into Smurf header. Hold mutex while reading the data
+      {
+        std::lock_guard<std::mutex> lock(*tba.getMutex());
+        H->put_field(h_tes_dac_offset,  h_tes_dac_width, tesBias.data());
+      }
 
       if(H->get_test_mode())
         T->gen_test_smurf_data(d, H->get_test_mode(), H->get_syncword(), H->get_test_parameter());   // are we using test data, use pointer to data
@@ -509,6 +517,15 @@ void SmurfProcessor::clearFrameCnt()
   frameLossCnt     = 0;
   frameRxCnt       = 0;
   frameOutOrderCnt = 0;
+}
+
+// Receive the TesBias from pyrogue
+void SmurfProcessor::setTesBias(std::size_t index, int32_t value)
+{
+  // Hold the mutex while the data tesBias array is being written to.
+  std::lock_guard<std::mutex> lock(*tba.getMutex());
+
+  tba.setWord(index, value);
 }
 
 // Reads and interprest the smurf.cfg file.

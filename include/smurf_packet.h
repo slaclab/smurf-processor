@@ -24,6 +24,9 @@ const int h_version_width = 1; // bytes of version word
 const int h_num_channels_offset = 4; // normally 528 channels
 const int h_num_channels_width = 4;  // 32 bit number
 
+const int h_tes_dac_offset = 8; // TES DAC 0-15
+const int h_tes_dac_width = 40; // 16x 20-bit
+
 const int h_unix_time_offset = 48; // offset to 64 bit unix time
 const int h_unix_time_width = 8;   // 64 bit timing word
 
