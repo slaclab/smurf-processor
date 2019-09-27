@@ -30,7 +30,7 @@ frameLossCnt         ( 0                                                   ),
 frameRxCnt           ( 0                                                   ),
 frameOutOrderCnt     ( 0                                                   ),
 tesBias(),
-tba(tesBias.data(), TesBiasCount)
+tba(tesBias.data())
 {
   rxCount = 0;
   rxBytes = 0;
