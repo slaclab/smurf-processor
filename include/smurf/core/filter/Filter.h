@@ -1,5 +1,5 @@
-#ifndef _SMURF_CORE_FILTER_FILTER_H_
-#define _SMURF_CORE_FILTER_FILTER_H_
+#ifndef _SMURF_CORE_FILTER_H_
+#define _SMURF_CORE_FILTER_H_
 
 /**
  *-----------------------------------------------------------------------------

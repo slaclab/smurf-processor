@@ -26,5 +26,14 @@ namespace bp  = boost::python;
 
 void smurf::setup_module()
 {
+    // map the IO namespace to a sub-module
+    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core"))));
+
+    // make "from mypackage import class1" work
+    bp::scope().attr("core") = module;
+
+    // set the current scope to the new sub-module
+    bp::scope io_scope = module;
+
    smurf::core::setup_module();
 }

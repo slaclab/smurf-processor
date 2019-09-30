@@ -27,5 +27,14 @@ namespace scf = smurf::core::filter;
 
 void scf::setup_module()
 {
+    // map the IO namespace to a sub-module
+    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.filter"))));
+
+    // make "from mypackage import class1" work
+    bp::scope().attr("filter") = module;
+
+    // set the current scope to the new sub-module
+    bp::scope io_scope = module;
+
     scf::Filter::setup_python();
 }

@@ -27,5 +27,14 @@ namespace scr = smurf::core::reorderer;
 
 void scr::setup_module()
 {
+    // map the IO namespace to a sub-module
+    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.reorderer"))));
+
+    // make "from mypackage import class1" work
+    bp::scope().attr("reorderer") = module;
+
+    // set the current scope to the new sub-module
+    bp::scope io_scope = module;
+
     scr::Reorderer::setup_python();
 }

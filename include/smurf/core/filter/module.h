@@ -1,5 +1,5 @@
-#ifndef _SMURF_FILTER_MODULE_H_
-#define _SMURF_FILTER_MODULE_H_
+#ifndef _SMURF_CORE_FILTER_MODULE_H_
+#define _SMURF_CORE_FILTER_MODULE_H_
 /**
  *-----------------------------------------------------------------------------
  * Title      : Python Module

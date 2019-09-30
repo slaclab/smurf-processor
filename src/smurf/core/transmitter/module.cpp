@@ -27,5 +27,14 @@ namespace sct = smurf::core::transmitter;
 
 void sct::setup_module()
 {
+    // map the IO namespace to a sub-module
+    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.transmitter"))));
+
+    // make "from mypackage import class1" work
+    bp::scope().attr("transmitter") = module;
+
+    // set the current scope to the new sub-module
+    bp::scope io_scope = module;
+
     sct::Transmitter::setup_python();
 }
