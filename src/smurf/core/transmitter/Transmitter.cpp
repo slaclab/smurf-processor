@@ -25,18 +25,27 @@ namespace bp  = boost::python;
 namespace sct = smurf::core::transmitter;
 
 sct::Transmitter::Transmitter()
+:
+    ris::Slave()
 {
     std::cout << "Transmitter created" << std::endl;
 }
 
 sct::TransmitterPtr sct::Transmitter::create()
 {
-    return std::make_shared<Transmitter>();
+    return boost::make_shared<Transmitter>();
 }
 
 // Setup Class in python
 void sct::Transmitter::setup_python()
 {
-    bp::class_<sct::Transmitter, sct::TransmitterPtr, boost::noncopyable >("Transmitter",bp::init<>())
+    bp::class_<sct::Transmitter, sct::TransmitterPtr, bp::bases<ris::Slave>, boost::noncopyable >("Transmitter",bp::init<>())
     ;
+    bp::implicitly_convertible< sct::TransmitterPtr, ris::SlavePtr >();
+}
+
+void sct::Transmitter::acceptFrame(ris::FramePtr frame)
+{
+    std::cout << "    Transmitter. Frame received..." << std::endl;
+    std::cout << "    Size = " << frame->getPayload() << std::endl;
 }

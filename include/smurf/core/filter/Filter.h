@@ -37,11 +37,10 @@ namespace smurf
     {
         namespace filter
         {
-
             class Filter;
             typedef boost::shared_ptr<Filter> FilterPtr;
 
-            class Filter : public ris::Slave
+            class Filter : public ris::Slave, public ris::Master
             {
             public:
                 Filter(std::size_t s);

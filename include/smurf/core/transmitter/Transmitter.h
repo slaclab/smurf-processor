@@ -25,6 +25,11 @@
 #include <rogue/interfaces/stream/Master.h>
 #include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
+#include <rogue/interfaces/stream/FrameLock.h>
+#include <rogue/interfaces/stream/FrameIterator.h>
+
+namespace bp  = boost::python;
+namespace ris = rogue::interfaces::stream;
 
 namespace smurf
 {
@@ -33,9 +38,9 @@ namespace smurf
         namespace transmitter
         {
             class Transmitter;
-            typedef std::shared_ptr<Transmitter> TransmitterPtr;
+            typedef boost::shared_ptr<Transmitter> TransmitterPtr;
 
-            class Transmitter
+            class Transmitter : public ris::Slave
             {
             public:
                 Transmitter();
@@ -44,6 +49,8 @@ namespace smurf
                 static TransmitterPtr create();
 
                 static void setup_python();
+
+                void acceptFrame(ris::FramePtr frame);
             };
         }
     }

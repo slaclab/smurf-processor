@@ -25,6 +25,8 @@ namespace scf = smurf::core::filter;
 
 scf::Filter::Filter(std::size_t s)
 :
+    ris::Slave(),
+    ris::Master(),
     size(s)
 {
     std::cout << "Filter of size " << size << " created" << std::endl;
@@ -37,13 +39,16 @@ scf::FilterPtr scf::Filter::create(std::size_t s)
 
 void scf::Filter::setup_python()
 {
-    bp::class_<scf::Filter, scf::FilterPtr, bp::bases<ris::Slave>, boost::noncopyable >("Filter",bp::init<std::size_t>())
+    bp::class_<scf::Filter, scf::FilterPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("Filter",bp::init<std::size_t>())
     ;
-    boost::python::implicitly_convertible< scf::FilterPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< scf::FilterPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< scf::FilterPtr, ris::MasterPtr >();
 }
 
 void scf::Filter::acceptFrame(ris::FramePtr frame)
 {
     std::cout << "  Filter. Frame received..." << std::endl;
     std::cout << "  Size = " << frame->getPayload() << std::endl;
+
+    sendFrame(frame);
 }
