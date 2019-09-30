@@ -30,7 +30,10 @@ import re
 import pyrogue
 import pyrogue.utilities.fileio
 import rogue.interfaces.stream
-import Smurf
+
+import pysmurf.core.filter
+import pysmurf.core.reorderer
+import pysmurf.core.transmitter
 
 PIDFILE = '/tmp/smurf.pid'
 
@@ -285,11 +288,17 @@ class LocalServer(pyrogue.Root):
             # The data stream comes from TDEST 0xC1
             # We use a FIFO between the stream data and the receiver:
             # Stream -> FIFO -> smurf_processor receiver
-            self.smurf_processor = Smurf.SmurfProcessor()
-            self.smurf_processor.setDebug( False )
-            self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
-            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
-            pyrogue.streamConnect(self.smurf_processor_fifo, self.smurf_processor)
+            # self.smurf_processor = Smurf.SmurfProcessor()
+            # self.smurf_processor.setDebug( False )
+            # self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
+            # pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
+            # pyrogue.streamConnect(self.smurf_processor_fifo, self.smurf_processor)
+            self.smurf_reorderer = pysmurf.core.reorderer(name="Reorderer")
+            self.smurf_filter = pysmurf.core.filter.Filter(name="Filter", size=10)
+            self.smurf_transmitter = pysmurf.core.transmitter.tTransmitter(name="Transmitter")
+            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_reorderer)
+            pyrogue.streamConnect(self.smurf_reorderer, self.smurf_filter)
+            pyrogue.streamConnect(self.smurf_filter, self.smurf_transmitter)
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
