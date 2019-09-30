@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 2.8)
 include(InstallRequiredSystemLibraries)
 
 # Project name
-project (Smurf)
+project (smurf)
 
 # C/C++
 enable_language(CXX)
@@ -55,18 +55,20 @@ include_directories(${PROJECT_SOURCE_DIR}/include/)
 
 # Create rogue python library
 AUX_SOURCE_DIRECTORY(src SRC_FILES)
-add_library(Smurf SHARED ${SRC_FILES})
+add_library(smurf SHARED ${SRC_FILES})
 
 # Set output to TOP/lib, remove lib prefix
-set_target_properties(Smurf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set_target_properties(Smurf PROPERTIES PREFIX "")
+set_target_properties(smurf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set_target_properties(smurf PROPERTIES PREFIX "")
 
 # Link to rogue core
-TARGET_LINK_LIBRARIES(Smurf LINK_PUBLIC ${ROGUE_LIBRARIES})
+TARGET_LINK_LIBRARIES(smurf LINK_PUBLIC ${ROGUE_LIBRARIES})
 
 # Setup configuration file
 set(CONF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
-set(CONF_LIBRARIES    ${PROJECT_SOURCE_DIR}/lib/Smurf.so)
+set(CONF_LIBRARIES    ${PROJECT_SOURCE_DIR}/lib/smurf.so)
 
 # Create the config file
-configure_file(SmurfConfig.cmake.in ${PROJECT_SOURCE_DIR}/lib/SmurfConfig.cmake @ONLY)
+configure_file(smurfConfig.cmake.in ${PROJECT_SOURCE_DIR}/lib/smurfConfig.cmake @ONLY)
+
+add_subdirectory(src)
