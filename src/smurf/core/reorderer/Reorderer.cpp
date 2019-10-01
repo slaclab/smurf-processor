@@ -98,17 +98,23 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
     // Update the last frame size
     frameSize = frame->getPayload();
 
-    std::cout << "Frame number = " << frameNumber << std::endl;
 
-    for (std::size_t r{1}; r <= 0; ++r)
-            std::cout << "Iterating order. r = " << r << std::endl;
+    // Request a new frame
     ris::FramePtr newFrame = reqFrame(128, true);
+
+    // Iterator to the input frame
+    ris::FrameIterator itIn = frame->beginRead();
+
+    // Iterator to the output frame
     ris::FrameIterator itOut = newFrame->beginWrite();
 
+    // Copy the header from the input frame to the output frame.
     for (std::size_t i{0}; i < 128; ++i)
-            *(itOut+1) = *(it+1);
+            *(itOut+1) = *(itIn+1);
 
+    // Set the frame size
     newFrame->setPayload(128);
 
+    // Send the frame
     sendFrame(newFrame);
 }
