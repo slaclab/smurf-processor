@@ -21,7 +21,7 @@
 #include <boost/python.hpp>
 #include "smurf/core/module.h"
 #include "smurf/core/mappers/module.h"
-#include "smurf/core/filter/module.h"
+#include "smurf/core/filters/module.h"
 #include "smurf/core/transmitter/module.h"
 #include "smurf/core/counters/module.h"
 
@@ -32,7 +32,7 @@ namespace sc = smurf::core;
 void sc::setup_module()
 {
    sc::mappers::setup_module();
-   sc::filter::setup_module();
+   sc::filters::setup_module();
    sc::transmitter::setup_module();
    sc::counters::setup_module();
 }

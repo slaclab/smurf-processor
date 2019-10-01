@@ -1,15 +1,15 @@
-#ifndef _SMURF_CORE_FILTER_H_
-#define _SMURF_CORE_FILTER_H_
+#ifndef _SMURF_CORE_FILTERS_H_
+#define _SMURF_CORE_FILTERS_H_
 
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Data Filter
+ * Title         : SMuRF Data GeneralAnalogFilter
  * ----------------------------------------------------------------------------
- * File          : Filter.h
+ * File          : GeneralAnalogFilter.h
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *    SMuRF Data Filter Class.
+ *    SMuRF Data GeneralAnalogFilter Class.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -35,18 +35,18 @@ namespace smurf
 {
     namespace core
     {
-        namespace filter
+        namespace filters
         {
-            class Filter;
-            typedef boost::shared_ptr<Filter> FilterPtr;
+            class GeneralAnalogFilter;
+            typedef boost::shared_ptr<GeneralAnalogFilter> GeneralAnalogFilterPtr;
 
-            class Filter : public ris::Slave, public ris::Master
+            class GeneralAnalogFilter : public ris::Slave, public ris::Master
             {
             public:
-                Filter(std::size_t s);
-                ~Filter() {};
+                GeneralAnalogFilter(std::size_t s);
+                ~GeneralAnalogFilter() {};
 
-                static FilterPtr create(std::size_t s);
+                static GeneralAnalogFilterPtr create(std::size_t s);
 
                 static void setup_python();
 

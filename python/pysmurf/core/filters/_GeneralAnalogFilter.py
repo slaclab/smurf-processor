@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #-----------------------------------------------------------------------------
-# Title      : PySMuRF Python Package Directory File
+# Title      : PySMuRF Data GeneralAnalogFilter
 #-----------------------------------------------------------------------------
 # File       : __init__.py
 # Created    : 2019-09-30
 #-----------------------------------------------------------------------------
 # Description:
-#    Mark this directory as python package directory.
+#    SMuRF Data GeneralAnalogFilter Python Package
 #-----------------------------------------------------------------------------
 # This file is part of the smurf software platform. It is subject to
 # the license terms in the LICENSE.txt file found in the top-level directory
@@ -17,4 +17,21 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
-from pysmurf.core.filter._Filter import *
+import pyrogue
+import smurf
+
+class GeneralAnalogFilter(pyrogue.Device):
+    """
+    SMuRF Data GeneralAnalogFilter Python Wrapper.
+    """
+    def __init__(self, size, name, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data GeneralAnalogFilter', **kwargs)
+        self._filter = smurf.core.filters.GeneralAnalogFilter(size)
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._filter
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
+    def _getStreamMaster(self):
+        return self._filter

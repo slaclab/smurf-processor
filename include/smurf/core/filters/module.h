@@ -1,12 +1,14 @@
+#ifndef _SMURF_CORE_FILTERS_MODULE_H_
+#define _SMURF_CORE_FILTERS_MODULE_H_
 /**
  *-----------------------------------------------------------------------------
- * Title      : SMuRF Data Filter
+ * Title      : Python Module
  * ----------------------------------------------------------------------------
- * File       : Filter.cpp
- * Created    : 2019-09-27
+ * File       : module.h
+ * Created    : 2016-09-27
  * ----------------------------------------------------------------------------
  * Description:
- *   SMuRF Data Filter Class.
+ * Python module setup
  * ----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -18,23 +20,15 @@
  * ----------------------------------------------------------------------------
 **/
 
-#include <boost/python.hpp>
-#include "smurf/core/filter/module.h"
-#include "smurf/core/filter/Filter.h"
-
-namespace bp  = boost::python;
-namespace scf = smurf::core::filter;
-
-void scf::setup_module()
+namespace smurf
 {
-    // map the IO namespace to a sub-module
-    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.filter"))));
-
-    // make "from mypackage import class1" work
-    bp::scope().attr("filter") = module;
-
-    // set the current scope to the new sub-module
-    bp::scope io_scope = module;
-
-    scf::Filter::setup_python();
+    namespace core
+    {
+        namespace filters
+        {
+            void setup_module();
+        }
+    }
 }
+
+#endif

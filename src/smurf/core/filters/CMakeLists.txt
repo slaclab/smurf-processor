@@ -13,5 +13,5 @@
 # contained in the LICENSE.txt file.
 # ----------------------------------------------------------------------------
 
-target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Filter.cpp")
+target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/GeneralAnalogFilter.cpp")
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/module.cpp")

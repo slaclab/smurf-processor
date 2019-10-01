@@ -13,7 +13,7 @@
 # contained in the LICENSE.txt file.
 # ----------------------------------------------------------------------------
 
-add_subdirectory(filter)
+add_subdirectory(filters)
 add_subdirectory(mappers)
 add_subdirectory(transmitter)
 add_subdirectory(counters)

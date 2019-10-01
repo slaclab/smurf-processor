@@ -1,12 +1,12 @@
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Data Filter
+ * Title         : SMuRF Data GeneralAnalogFilter
  * ----------------------------------------------------------------------------
- * File          : Filter.cpp
+ * File          : GeneralAnalogFilter.cpp
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *   SMuRF Data Filter Class.
+ *   SMuRF Data GeneralAnalogFilter Class.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -19,35 +19,35 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/filter/Filter.h"
+#include "smurf/core/filters/GeneralAnalogFilter.h"
 
-namespace scf = smurf::core::filter;
+namespace scf = smurf::core::filters;
 
-scf::Filter::Filter(std::size_t s)
+scf::GeneralAnalogFilter::GeneralAnalogFilter(std::size_t s)
 :
     ris::Slave(),
     ris::Master(),
     size(s)
 {
-    std::cout << "Filter of size " << size << " created" << std::endl;
+    std::cout << "GeneralAnalogFilter of size " << size << " created" << std::endl;
 }
 
-scf::FilterPtr scf::Filter::create(std::size_t s)
+scf::GeneralAnalogFilterPtr scf::GeneralAnalogFilter::create(std::size_t s)
 {
-    return boost::make_shared<Filter>(s);
+    return boost::make_shared<GeneralAnalogFilter>(s);
 }
 
-void scf::Filter::setup_python()
+void scf::GeneralAnalogFilter::setup_python()
 {
-    bp::class_<scf::Filter, scf::FilterPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("Filter",bp::init<std::size_t>())
+    bp::class_<scf::GeneralAnalogFilter, scf::GeneralAnalogFilterPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("GeneralAnalogFilter",bp::init<std::size_t>())
     ;
-    bp::implicitly_convertible< scf::FilterPtr, ris::SlavePtr >();
-    bp::implicitly_convertible< scf::FilterPtr, ris::MasterPtr >();
+    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::MasterPtr >();
 }
 
-void scf::Filter::acceptFrame(ris::FramePtr frame)
+void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
 {
-    std::cout << "  Filter. Frame received..." << std::endl;
+    std::cout << "  GeneralAnalogFilter. Frame received..." << std::endl;
     std::cout << "  Size = " << frame->getPayload() << std::endl;
 
     sendFrame(frame);
