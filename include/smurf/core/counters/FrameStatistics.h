@@ -1,5 +1,5 @@
-#ifndef _SMURF_CORE_FrameStatistics_H_
-#define _SMURF_CORE_FrameStatistics_H_
+#ifndef _SMURF_CORE_COUNTERS_FRAMESTATISTICS_H_
+#define _SMURF_CORE_COUNTERS_FRAMESTATISTICS_H_
 
 /**
  *-----------------------------------------------------------------------------

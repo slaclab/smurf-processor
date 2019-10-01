@@ -1,5 +1,5 @@
-#ifndef _SMURF_CORE_REORDERER_MODULE_H_
-#define _SMURF_CORE_REORDERER_MODULE_H_
+#ifndef _SMURF_CORE_MAPPERS_MODULE_H_
+#define _SMURF_CORE_MAPPERS_MODULE_H_
 /**
  *-----------------------------------------------------------------------------
  * Title      : Python Module

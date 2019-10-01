@@ -1,5 +1,5 @@
-#ifndef _SMURF_CORE_REORDERER_H_
-#define _SMURF_CORE_REORDERER_H_
+#ifndef _SMURF_CORE_MAPPERS_SMURFCHANNELMAPPER_H_
+#define _SMURF_CORE_MAPPERS_SMURFCHANNELMAPPER_H_
 
 /**
  *-----------------------------------------------------------------------------
