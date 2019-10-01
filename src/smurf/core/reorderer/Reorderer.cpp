@@ -27,7 +27,9 @@ scr::Reorderer::Reorderer()
 :
     ris::Slave(),
     ris::Master(),
-    disable(false)
+    disable(false),
+    frameCnt(0),
+    frameSize(0)
 {
     std::cout << "Reorderer created" << std::endl;
 }
@@ -41,8 +43,10 @@ scr::ReordererPtr scr::Reorderer::create()
 void scr::Reorderer::setup_python()
 {
     bp::class_<scr::Reorderer, scr::ReordererPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("Reorderer", bp::init<>())
-        .def("setDisable", &Reorderer::setDisable)
-        .def("getDisable", &Reorderer::getDisable)
+        .def("setDisable",   &Reorderer::setDisable)
+        .def("getDisable",   &Reorderer::getDisable)
+        .def("getFrameCnt",  &Reorderer::getFrameCnt)
+        .def("getFrameSize", &Reorderer::getFrameSize)
     ;
     bp::implicitly_convertible< scr::ReordererPtr, ris::SlavePtr >();
     bp::implicitly_convertible< scr::ReordererPtr, ris::MasterPtr >();
@@ -58,6 +62,17 @@ const bool scr::Reorderer::getDisable() const
     return disable;
 }
 
+
+const std::size_t scr::Reorderer::getFrameCnt() const
+{
+    return frameCnt;
+}
+
+const std::size_t scr::Reorderer::getFrameSize() const
+{
+    return frameSize;
+}
+
 void scr::Reorderer::acceptFrame(ris::FramePtr frame)
 {
     std::cout << "Reorderer. Frame received..." << std::endl;
@@ -70,6 +85,12 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
         sendFrame(frame);
         return;
     }
+
+    //Increase the frame counter
+    ++frameCnt;
+
+    // Update the last frame size
+    frameSize = frame->getPayload();
 
     ris::FrameIterator it = frame->beginRead();
 

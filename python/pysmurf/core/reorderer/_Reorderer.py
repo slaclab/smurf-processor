@@ -37,6 +37,24 @@ class Reorderer(pyrogue.Device):
             localSet=lambda value: self._reorderer.setDisable(value),
             localGet=self._reorderer.getDisable))
 
+        # Add the frame counter variable
+        self.add(pyrogue.LocalVariable(
+            name='frameCnt',
+            description='Frame counter',
+            mode='R0',
+            value=0,
+            pollInterval=1,
+            localGet=self._reorderer.getFrameCnt))
+
+        # Add the last frame size variable
+        self.add(pyrogue.LocalVariable(
+            name='frameSize',
+            description='Last frame size',
+            mode='R0',
+            value=0,
+            pollInterval=1,
+            localGet=self._reorderer.getFrameSize))
+
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
         return self._reorderer

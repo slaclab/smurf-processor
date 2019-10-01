@@ -55,10 +55,18 @@ namespace smurf
                 void       setDisable(bool d);
                 const bool getDisable()       const;
 
+                // Get the frame counter
+                const std::size_t getFrameCnt() const;
+
+                // Get the last frame size (in bytes)
+                const std::size_t getFrameSize() const;
+
                 void acceptFrame(ris::FramePtr frame);
 
             private:
                 bool                 disable;   // Disable flag
+                std::size_t          frameCnt;  // Frame counter
+                std::size_t          frameSize; // Last frame size (bytes)
                 std::vector<uint8_t> indexes;   // map indexes
             };
         }
