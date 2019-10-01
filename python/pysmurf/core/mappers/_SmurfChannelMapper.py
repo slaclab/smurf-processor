@@ -35,7 +35,7 @@ class SmurfChannelMapper(pyrogue.Device):
             mode='RW',
             value=False,
             localSet=lambda value: self._mapper.setDisable(value),
-            localGet=self._mapper.getDisable))
+            localGet=self._mapper.isDisabled))
 
         # Add the frame counter variable
         self.add(pyrogue.LocalVariable(

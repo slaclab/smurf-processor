@@ -26,10 +26,7 @@ namespace scm  = smurf::core::mappers;
 scm::SmurfChannelMapper::SmurfChannelMapper()
 :
     ris::Slave(),
-    ris::Master(),
-    disable(false),
-    frameCnt(0),
-    frameSize(0)
+    ris::Master()
 {
     std::cout << "SmurfChannelMapper created" << std::endl;
 }
@@ -42,41 +39,15 @@ scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 // Setup Class in python
 void scm::SmurfChannelMapper::setup_python()
 {
-    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
+    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<ris::Slave,ris::Master,BaseSlave>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
         .def("setDisable",          &SmurfChannelMapper::setDisable)
-        .def("getDisable",          &SmurfChannelMapper::getDisable)
+        .def("isDisabled",          &SmurfChannelMapper::isDisabled)
         .def("getFrameCnt",         &SmurfChannelMapper::getFrameCnt)
         .def("getFrameSize",        &SmurfChannelMapper::getFrameSize)
         .def("clearCnt",            &SmurfChannelMapper::clearCnt)
     ;
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::SlavePtr >();
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
-}
-
-void scm::SmurfChannelMapper::setDisable(bool d)
-{
-    disable = d;
-}
-
-const bool scm::SmurfChannelMapper::getDisable() const
-{
-    return disable;
-}
-
-
-const std::size_t scm::SmurfChannelMapper::getFrameCnt() const
-{
-    return frameCnt;
-}
-
-const std::size_t scm::SmurfChannelMapper::getFrameSize() const
-{
-    return frameSize;
-}
-
-void scm::SmurfChannelMapper::clearCnt()
-{
-    frameCnt         = 0;
 }
 
 void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
@@ -86,18 +57,14 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 
     // If the processing block is disabled, just send the frame
     // to the next slave.
-    if (disable)
+    if (isDisabled())
     {
         sendFrame(frame);
         return;
     }
 
-    //Increase the frame counter
-    ++frameCnt;
-
-    // Update the last frame size
-    frameSize = frame->getPayload();
-
+    // Update counters. This is define in the BaseSlave class
+    updateCnts(frame->getPayload());
 
     // Request a new frame
     ris::FramePtr newFrame = reqFrame(128, true);

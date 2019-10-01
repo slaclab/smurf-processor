@@ -27,6 +27,7 @@
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include "smurf/core/common/BaseSlave.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -40,7 +41,7 @@ namespace smurf
             class SmurfChannelMapper;
             typedef boost::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
 
-            class SmurfChannelMapper : public ris::Slave, public ris::Master
+            class SmurfChannelMapper : public ris::Slave, public ris::Master, public BaseSlave
             {
             public:
                 SmurfChannelMapper();
@@ -50,26 +51,7 @@ namespace smurf
 
                 static void setup_python();
 
-                // Disable the processing block. The data
-                // will just pass through to the next slave
-                void       setDisable(bool d);
-                const bool getDisable()       const;
-
-                // Get the frame counter
-                const std::size_t getFrameCnt() const;
-
-                // Get the last frame size (in bytes)
-                const std::size_t getFrameSize() const;
-
-                // Clear all counter
-                void clearCnt();
-
                 void acceptFrame(ris::FramePtr frame);
-
-            private:
-                bool                 disable;           // Disable flag
-                std::size_t          frameCnt;          // Frame counter
-                std::size_t          frameSize;         // Last frame size (bytes)
             };
         }
     }
