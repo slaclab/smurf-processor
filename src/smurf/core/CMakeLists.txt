@@ -15,7 +15,7 @@
 
 add_subdirectory(filters)
 add_subdirectory(mappers)
-add_subdirectory(transmitter)
+add_subdirectory(transmitters)
 add_subdirectory(counters)
 
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/module.cpp")

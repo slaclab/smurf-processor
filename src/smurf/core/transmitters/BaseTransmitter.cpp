@@ -1,12 +1,12 @@
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Data Transmitter
+ * Title         : SMuRF Data Base Transmitter
  * ----------------------------------------------------------------------------
- * File          : Transmitter.cpp
+ * File          : BaseTransmitter.cpp
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *   SMuRF Data Transmitter Class.
+ *   SMuRF Data Base Transmitter Class.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -19,33 +19,33 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/transmitter/Transmitter.h"
+#include "smurf/core/transmitters/BaseTransmitter.h"
 
 namespace bp  = boost::python;
-namespace sct = smurf::core::transmitter;
+namespace sct = smurf::core::transmitters;
 
-sct::Transmitter::Transmitter()
+sct::BaseTransmitter::BaseTransmitter()
 :
     ris::Slave()
 {
-    std::cout << "Transmitter created" << std::endl;
+    std::cout << "BaseTransmitter created" << std::endl;
 }
 
-sct::TransmitterPtr sct::Transmitter::create()
+sct::BaseTransmitterPtr sct::BaseTransmitter::create()
 {
-    return boost::make_shared<Transmitter>();
+    return boost::make_shared<BaseTransmitter>();
 }
 
 // Setup Class in python
-void sct::Transmitter::setup_python()
+void sct::BaseTransmitter::setup_python()
 {
-    bp::class_<sct::Transmitter, sct::TransmitterPtr, bp::bases<ris::Slave>, boost::noncopyable >("Transmitter",bp::init<>())
+    bp::class_<sct::BaseTransmitter, sct::BaseTransmitterPtr, bp::bases<ris::Slave>, boost::noncopyable >("BaseTransmitter",bp::init<>())
     ;
-    bp::implicitly_convertible< sct::TransmitterPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< sct::BaseTransmitterPtr, ris::SlavePtr >();
 }
 
-void sct::Transmitter::acceptFrame(ris::FramePtr frame)
+void sct::BaseTransmitter::acceptFrame(ris::FramePtr frame)
 {
-    std::cout << "    Transmitter. Frame received..." << std::endl;
+    std::cout << "    BaseTransmitter. Frame received..." << std::endl;
     std::cout << "    Size = " << frame->getPayload() << std::endl;
 }

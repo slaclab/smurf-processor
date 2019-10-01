@@ -22,7 +22,7 @@
 #include "smurf/core/module.h"
 #include "smurf/core/mappers/module.h"
 #include "smurf/core/filters/module.h"
-#include "smurf/core/transmitter/module.h"
+#include "smurf/core/transmitters/module.h"
 #include "smurf/core/counters/module.h"
 
 
@@ -33,6 +33,6 @@ void sc::setup_module()
 {
    sc::mappers::setup_module();
    sc::filters::setup_module();
-   sc::transmitter::setup_module();
+   sc::transmitters::setup_module();
    sc::counters::setup_module();
 }

@@ -1,14 +1,12 @@
-#ifndef _SMURF_CORE_TRANSMITTER_MODULE_H_
-#define _SMURF_CORE_TRANSMITTER_MODULE_H_
 /**
  *-----------------------------------------------------------------------------
- * Title      : Python Module
+ * Title      : Python Module For Transmitter
  * ----------------------------------------------------------------------------
- * File       : module.h
+ * File       : module.cpp
  * Created    : 2016-09-27
  * ----------------------------------------------------------------------------
  * Description:
- * Python module setup
+ *   Python module setup
  * ----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -20,15 +18,23 @@
  * ----------------------------------------------------------------------------
 **/
 
-namespace smurf
-{
-    namespace core
-    {
-        namespace transmitter
-        {
-            void setup_module();
-        }
-    }
-}
+#include <boost/python.hpp>
+#include "smurf/core/transmitters/module.h"
+#include "smurf/core/transmitters/BaseTransmitter.h"
 
-#endif
+namespace bp  = boost::python;
+namespace sct = smurf::core::transmitters;
+
+void sct::setup_module()
+{
+    // map the IO namespace to a sub-module
+    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.transmitters"))));
+
+    // make "from mypackage import class1" work
+    bp::scope().attr("transmitters") = module;
+
+    // set the current scope to the new sub-module
+    bp::scope io_scope = module;
+
+    sct::BaseTransmitter::setup_python();
+}

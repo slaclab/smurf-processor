@@ -1,15 +1,15 @@
-#ifndef _SMURF_CORE_TRANSMITTER_H_
-#define _SMURF_CORE_TRANSMITTER_H_
+#ifndef _SMURF_CORE_TRANSMITTERS_BASETRANSMITTER_H_
+#define _SMURF_CORE_TRANSMITTERS_BASETRANSMITTER_H_
 
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Data Transmitter
+ * Title         : SMuRF Data Base Transmitter
  * ----------------------------------------------------------------------------
- * File          : Transmitter.h
+ * File          : BaseTransmitter.h
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *    SMuRF Data Transmitter Class.
+ *    SMuRF Data Base Transmitter Class.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -35,18 +35,18 @@ namespace smurf
 {
     namespace core
     {
-        namespace transmitter
+        namespace transmitters
         {
-            class Transmitter;
-            typedef boost::shared_ptr<Transmitter> TransmitterPtr;
+            class BaseTransmitter;
+            typedef boost::shared_ptr<BaseTransmitter> BaseTransmitterPtr;
 
-            class Transmitter : public ris::Slave
+            class BaseTransmitter : public ris::Slave
             {
             public:
-                Transmitter();
-                ~Transmitter() {};
+                BaseTransmitter();
+                ~BaseTransmitter() {};
 
-                static TransmitterPtr create();
+                static BaseTransmitterPtr create();
 
                 static void setup_python();
 
