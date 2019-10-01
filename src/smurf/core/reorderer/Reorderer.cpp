@@ -156,17 +156,6 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
 
     ris::FrameIterator it = frame->beginRead();
 
-    union U
-    {
-        uint32_t w;
-        uint8_t  b[4];
-    };
-
-    U frameNumber;
-
-    for (std::size_t i{0}; i < 4; ++i)
-            frameNumber.b[i] = *(it+84+i);
-
     std::cout << "Frame number = " << frameNumber << std::endl;
 
     for (std::size_t r{1}; r <= 0; ++r)
