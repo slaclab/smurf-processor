@@ -26,7 +26,8 @@ namespace scm  = smurf::core::mappers;
 scm::SmurfChannelMapper::SmurfChannelMapper()
 :
     ris::Slave(),
-    ris::Master()
+    ris::Master(),
+    BaseSlave()
 {
     std::cout << "SmurfChannelMapper created" << std::endl;
 }
@@ -39,7 +40,7 @@ scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 // Setup Class in python
 void scm::SmurfChannelMapper::setup_python()
 {
-    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<ris::Slave,ris::Master,BaseSlave>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
+    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
         .def("setDisable",          &SmurfChannelMapper::setDisable)
         .def("isDisabled",          &SmurfChannelMapper::isDisabled)
         .def("getFrameCnt",         &SmurfChannelMapper::getFrameCnt)
