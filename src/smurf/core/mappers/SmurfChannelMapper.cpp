@@ -1,12 +1,12 @@
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Data Re-orderer
+ * Title         : SMuRF Channel Mapper
  * ----------------------------------------------------------------------------
- * File          : Reorderer.cpp
+ * File          : SmurfChannelMapper.cpp
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
- * Description :
- *   SMuRF Data Re-orderer Class.
+ * Descmiption :
+ *   SMuRF Channel Mapper Class.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -19,11 +19,11 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/reorderer/Reorderer.h"
+#include "smurf/core/mappers/SmurfChannelMapper.h"
 
-namespace scr  = smurf::core::reorderer;
+namespace scm  = smurf::core::mappers;
 
-scr::Reorderer::Reorderer()
+scm::SmurfChannelMapper::SmurfChannelMapper()
 :
     ris::Slave(),
     ris::Master(),
@@ -31,57 +31,57 @@ scr::Reorderer::Reorderer()
     frameCnt(0),
     frameSize(0)
 {
-    std::cout << "Reorderer created" << std::endl;
+    std::cout << "SmurfChannelMapper created" << std::endl;
 }
 
-scr::ReordererPtr scr::Reorderer::create()
+scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 {
-    return boost::make_shared<Reorderer>();
+    return boost::make_shared<SmurfChannelMapper>();
 }
 
 // Setup Class in python
-void scr::Reorderer::setup_python()
+void scm::SmurfChannelMapper::setup_python()
 {
-    bp::class_<scr::Reorderer, scr::ReordererPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("Reorderer", bp::init<>())
-        .def("setDisable",          &Reorderer::setDisable)
-        .def("getDisable",          &Reorderer::getDisable)
-        .def("getFrameCnt",         &Reorderer::getFrameCnt)
-        .def("getFrameSize",        &Reorderer::getFrameSize)
-        .def("clearCnt",            &Reorderer::clearCnt)
+    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
+        .def("setDisable",          &SmurfChannelMapper::setDisable)
+        .def("getDisable",          &SmurfChannelMapper::getDisable)
+        .def("getFrameCnt",         &SmurfChannelMapper::getFrameCnt)
+        .def("getFrameSize",        &SmurfChannelMapper::getFrameSize)
+        .def("clearCnt",            &SmurfChannelMapper::clearCnt)
     ;
-    bp::implicitly_convertible< scr::ReordererPtr, ris::SlavePtr >();
-    bp::implicitly_convertible< scr::ReordererPtr, ris::MasterPtr >();
+    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
 }
 
-void scr::Reorderer::setDisable(bool d)
+void scm::SmurfChannelMapper::setDisable(bool d)
 {
     disable = d;
 }
 
-const bool scr::Reorderer::getDisable() const
+const bool scm::SmurfChannelMapper::getDisable() const
 {
     return disable;
 }
 
 
-const std::size_t scr::Reorderer::getFrameCnt() const
+const std::size_t scm::SmurfChannelMapper::getFrameCnt() const
 {
     return frameCnt;
 }
 
-const std::size_t scr::Reorderer::getFrameSize() const
+const std::size_t scm::SmurfChannelMapper::getFrameSize() const
 {
     return frameSize;
 }
 
-void scr::Reorderer::clearCnt()
+void scm::SmurfChannelMapper::clearCnt()
 {
     frameCnt         = 0;
 }
 
-void scr::Reorderer::acceptFrame(ris::FramePtr frame)
+void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 {
-    std::cout << "Reorderer. Frame received..." << std::endl;
+    std::cout << "SmurfChannelMapper. Frame received..." << std::endl;
     std::cout << "Size = " << frame->getPayload() << std::endl;
 
     // If the processing block is disabled, just send the frame

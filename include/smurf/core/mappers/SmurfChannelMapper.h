@@ -3,13 +3,13 @@
 
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Data Re-orderer
+ * Title         : SMuRF Channel Mapper
  * ----------------------------------------------------------------------------
- * File          : Reorderer.h
+ * File          : SmurfChannelMapper.h
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *    SMuRF Data Re-orderer Class.
+ *    SMuRF Channel Mapper Class.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -35,18 +35,18 @@ namespace smurf
 {
     namespace core
     {
-        namespace reorderer
+        namespace mappers
         {
-            class Reorderer;
-            typedef boost::shared_ptr<Reorderer> ReordererPtr;
+            class SmurfChannelMapper;
+            typedef boost::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
 
-            class Reorderer : public ris::Slave, public ris::Master
+            class SmurfChannelMapper : public ris::Slave, public ris::Master
             {
             public:
-                Reorderer();
-                ~Reorderer() {};
+                SmurfChannelMapper();
+                ~SmurfChannelMapper() {};
 
-                static ReordererPtr create();
+                static SmurfChannelMapperPtr create();
 
                 static void setup_python();
 

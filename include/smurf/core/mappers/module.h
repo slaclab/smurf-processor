@@ -24,7 +24,7 @@ namespace smurf
 {
     namespace core
     {
-        namespace reorderer
+        namespace mappers
         {
             void setup_module();
         }

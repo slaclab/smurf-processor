@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------------
 
 add_subdirectory(filter)
-add_subdirectory(reorderer)
+add_subdirectory(mappers)
 add_subdirectory(transmitter)
 add_subdirectory(counters)
 
