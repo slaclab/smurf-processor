@@ -36,5 +36,5 @@ void scc::setup_module()
     // set the current scope to the new sub-module
     bp::scope io_scope = module;
 
-    scc::Reorderer::setup_python();
+    scc::FrameStatistics::setup_python();
 }
