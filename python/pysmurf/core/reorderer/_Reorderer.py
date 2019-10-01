@@ -55,6 +55,24 @@ class Reorderer(pyrogue.Device):
             pollInterval=1,
             localGet=self._reorderer.getFrameSize))
 
+        # Add the frame lost counter  variable
+        self.add(pyrogue.LocalVariable(
+            name='FrameLossCnt',
+            description='Number of lost frames',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self._reorderer.getFrameLossCnt))
+
+        # Add the out-of-order frames variable
+        self.add(pyrogue.LocalVariable(
+            name='FrameOutOrderCnt',
+            description='Number of time we have received out-of-order frames',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self._reorderer.getFrameOutOrderCnt))
+
         # Command to clear all the counters
         self.add(pyrogue.LocalCommand(
             name='clearCnt',

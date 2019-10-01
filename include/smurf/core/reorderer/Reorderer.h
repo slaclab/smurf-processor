@@ -61,16 +61,27 @@ namespace smurf
                 // Get the last frame size (in bytes)
                 const std::size_t getFrameSize() const;
 
+                // Get number of lost frames
+                const std::size_t getFrameLossCnt() const;
+
+                // Get the number of out-of-order frames
+                const std::size_t getFrameOutOrderCnt() const;
+
                 // Clear all counter
                 void clearCnt();
 
                 void acceptFrame(ris::FramePtr frame);
 
             private:
-                bool                 disable;   // Disable flag
-                std::size_t          frameCnt;  // Frame counter
-                std::size_t          frameSize; // Last frame size (bytes)
-                std::vector<uint8_t> indexes;   // map indexes
+                bool                 disable;           // Disable flag
+                std::size_t          frameCnt;          // Frame counter
+                std::size_t          frameSize;         // Last frame size (bytes)
+                bool                 firstFrame;        // Flag to indicate we are processing the first frame
+                std::size_t          frameLossCnt;      // Number of frame lost
+                std::size_t          frameOutOrderCnt;  // Counts the number of times we received an out-of-order frame
+                std::size_t          frameNumber;       // Current frame number
+                std::size_t          prevFrameNumber;   // Last frame number
+                std::vector<uint8_t> indexes;           // map indexes
             };
         }
     }
