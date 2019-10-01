@@ -23,6 +23,8 @@
 #include "smurf/core/reorderer/module.h"
 #include "smurf/core/filter/module.h"
 #include "smurf/core/transmitter/module.h"
+#include "smurf/core/counters/module.h"
+
 
 namespace bp  = boost::python;
 namespace sc = smurf::core;
@@ -32,4 +34,5 @@ void sc::setup_module()
    sc::reorderer::setup_module();
    sc::filter::setup_module();
    sc::transmitter::setup_module();
+   sc::counters::setup_module();
 }
