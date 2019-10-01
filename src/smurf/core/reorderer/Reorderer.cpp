@@ -48,12 +48,12 @@ void scr::Reorderer::setup_python()
     bp::implicitly_convertible< scr::ReordererPtr, ris::MasterPtr >();
 }
 
-void src::Reorderer::setDisable(bool d)
+void scr::Reorderer::setDisable(bool d)
 {
     disable = d;
 }
 
-const bool src::Reorderer::getDisable() const
+const bool scr::Reorderer::getDisable() const
 {
     return disable;
 }
@@ -68,7 +68,7 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
     if (!disable)
     {
         sendFrame(frame);
-        return
+        return;
     }
 
     ris::FrameIterator it = frame->beginRead();
