@@ -61,6 +61,9 @@ namespace smurf
                 // Get the last frame size (in bytes)
                 const std::size_t getFrameSize() const;
 
+                // Clear all counter
+                void clearCnt();
+
                 void acceptFrame(ris::FramePtr frame);
 
             private:

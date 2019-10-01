@@ -47,6 +47,7 @@ void scr::Reorderer::setup_python()
         .def("getDisable",   &Reorderer::getDisable)
         .def("getFrameCnt",  &Reorderer::getFrameCnt)
         .def("getFrameSize", &Reorderer::getFrameSize)
+        .def("clearCnt",     &Reorderer::clearCnt)
     ;
     bp::implicitly_convertible< scr::ReordererPtr, ris::SlavePtr >();
     bp::implicitly_convertible< scr::ReordererPtr, ris::MasterPtr >();
@@ -71,6 +72,11 @@ const std::size_t scr::Reorderer::getFrameCnt() const
 const std::size_t scr::Reorderer::getFrameSize() const
 {
     return frameSize;
+}
+
+void scr::Reorderer::clearCnt()
+{
+    frameCnt = 0;
 }
 
 void scr::Reorderer::acceptFrame(ris::FramePtr frame)

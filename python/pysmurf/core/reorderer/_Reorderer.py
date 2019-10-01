@@ -55,6 +55,12 @@ class Reorderer(pyrogue.Device):
             pollInterval=1,
             localGet=self._reorderer.getFrameSize))
 
+        # Command to clear all the counters
+        self.add(pyrogue.LocalCommand(
+            name='clearCnt',
+            description='Clear all counters',
+            function=self._reorderer.clearCnt))
+
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
         return self._reorderer
