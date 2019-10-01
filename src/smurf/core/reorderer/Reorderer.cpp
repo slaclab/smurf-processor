@@ -83,7 +83,9 @@ const std::size_t scr::Reorderer::getFrameSize() const
 
 void scr::Reorderer::clearCnt()
 {
-    frameCnt = 0;
+    frameCnt         = 0;
+    frameLossCnt     = 0;
+    frameOutOrderCnt = 0;
 }
 
 const std::size_t scr::Reorderer::getFrameLossCnt() const
