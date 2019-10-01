@@ -26,12 +26,21 @@ class Reorderer(pyrogue.Device):
     """
     def __init__(self, name, **kwargs):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Data Re-orderer', **kwargs)
-        self._filter = smurf.core.reorderer.Reorderer()
+        self._reorderer = smurf.core.reorderer.Reorderer()
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable( name='Disable',
+                                        description='Disable the processing block. Data will just pass thorough to the next slave.',
+                                        mode='RW',
+                                        pollInterval=1,
+                                        value=False,
+                                        locaSet=self._reorderer.getDisable,
+                                        localGet=self._reorderer.setDisable))
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
-        return self._filter
+        return self._reorderer
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access master
     def _getStreamMaster(self):
-        return self._filter
+        return self._reorderer

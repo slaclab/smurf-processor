@@ -26,7 +26,8 @@ namespace scr  = smurf::core::reorderer;
 scr::Reorderer::Reorderer()
 :
     ris::Slave(),
-    ris::Master()
+    ris::Master(),
+    disable(false)
 {
     std::cout << "Reorderer created" << std::endl;
 }
@@ -40,15 +41,35 @@ scr::ReordererPtr scr::Reorderer::create()
 void scr::Reorderer::setup_python()
 {
     bp::class_<scr::Reorderer, scr::ReordererPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("Reorderer", bp::init<>())
+        .def("setDisable", &Reorderer::setDisable)
+        .def("getDisable", &Reorderer::getDisable)
     ;
     bp::implicitly_convertible< scr::ReordererPtr, ris::SlavePtr >();
     bp::implicitly_convertible< scr::ReordererPtr, ris::MasterPtr >();
+}
+
+void src::Reorderer::setDisable(bool d)
+{
+    disable = d;
+}
+
+const bool src::Reorderer::getDisable() const
+{
+    return disable;
 }
 
 void scr::Reorderer::acceptFrame(ris::FramePtr frame)
 {
     std::cout << "Reorderer. Frame received..." << std::endl;
     std::cout << "Size = " << frame->getPayload() << std::endl;
+
+    // If the processing block is disabled, just send the frame
+    // to the next slave.
+    if (!disable)
+    {
+        sendFrame(frame);
+        return
+    }
 
     ris::FrameIterator it = frame->beginRead();
 

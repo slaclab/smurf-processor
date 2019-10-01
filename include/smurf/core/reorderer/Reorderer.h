@@ -50,10 +50,16 @@ namespace smurf
 
                 static void setup_python();
 
+                // Disable the processing block. The data
+                // will just pass through to the next slave
+                void       setDisable(bool d);
+                const bool getDisable()       const;
+
                 void acceptFrame(ris::FramePtr frame);
 
             private:
-                std::vector<uint8_t> indexes;
+                bool                 disable;   // Disable flag
+                std::vector<uint8_t> indexes;   // map indexes
             };
         }
     }
