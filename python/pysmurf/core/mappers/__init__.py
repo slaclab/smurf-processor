@@ -17,4 +17,4 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
-from pysmurf.core.reorderer._Reorderer import *
+from pysmurf.core.mappers._SmurfChannelMapper import *

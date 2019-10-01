@@ -20,13 +20,13 @@
 import pyrogue
 import smurf
 
-class Reorderer(pyrogue.Device):
+class SmurfChannelMapper(pyrogue.Device):
     """
     SMuRF Data Re-orderer Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Data Re-orderer', **kwargs)
-        self._reorderer = smurf.core.reorderer.Reorderer()
+        self._mapper = smurf.core.mappers.SmurfChannelMapper()
 
         # Add "Disable" variable
         self.add(pyrogue.LocalVariable(
@@ -34,8 +34,8 @@ class Reorderer(pyrogue.Device):
             description='Disable the processing block. Data will just pass thorough to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self._reorderer.setDisable(value),
-            localGet=self._reorderer.getDisable))
+            localSet=lambda value: self._mapper.setDisable(value),
+            localGet=self._mapper.getDisable))
 
         # Add the frame counter variable
         self.add(pyrogue.LocalVariable(
@@ -44,7 +44,7 @@ class Reorderer(pyrogue.Device):
             mode='RO',
             value=0,
             pollInterval=1,
-            localGet=self._reorderer.getFrameCnt))
+            localGet=self._mapper.getFrameCnt))
 
         # Add the last frame size variable
         self.add(pyrogue.LocalVariable(
@@ -53,18 +53,18 @@ class Reorderer(pyrogue.Device):
             mode='RO',
             value=0,
             pollInterval=1,
-            localGet=self._reorderer.getFrameSize))
+            localGet=self._mapper.getFrameSize))
 
         # Command to clear all the counters
         self.add(pyrogue.LocalCommand(
             name='clearCnt',
             description='Clear all counters',
-            function=self._reorderer.clearCnt))
+            function=self._mapper.clearCnt))
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
-        return self._reorderer
+        return self._mapper
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access master
     def _getStreamMaster(self):
-        return self._reorderer
+        return self._mapper
