@@ -121,6 +121,9 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
         uint8_t  b[4];
     } fn;
 
+    // Get an iterator to the header of the frame
+    ris::FrameIterator it = frame->beginRead();
+
     for (std::size_t i{0}; i < 4; ++i)
             fn.b[i] = *(it+84+i);
 
@@ -153,8 +156,6 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
 
     // Update the last frame size
     frameSize = frame->getPayload();
-
-    ris::FrameIterator it = frame->beginRead();
 
     std::cout << "Frame number = " << frameNumber << std::endl;
 
