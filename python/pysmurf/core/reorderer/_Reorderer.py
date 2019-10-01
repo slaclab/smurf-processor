@@ -41,7 +41,7 @@ class Reorderer(pyrogue.Device):
         self.add(pyrogue.LocalVariable(
             name='frameCnt',
             description='Frame counter',
-            mode='R0',
+            mode='RO',
             value=0,
             pollInterval=1,
             localGet=self._reorderer.getFrameCnt))
@@ -50,7 +50,7 @@ class Reorderer(pyrogue.Device):
         self.add(pyrogue.LocalVariable(
             name='frameSize',
             description='Last frame size',
-            mode='R0',
+            mode='RO',
             value=0,
             pollInterval=1,
             localGet=self._reorderer.getFrameSize))
