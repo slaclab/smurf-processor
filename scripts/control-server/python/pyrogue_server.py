@@ -34,6 +34,7 @@ import rogue.interfaces.stream
 import pysmurf.core.filter
 import pysmurf.core.reorderer
 import pysmurf.core.transmitter
+import pysmurf.core.counters
 
 PIDFILE = '/tmp/smurf.pid'
 
@@ -293,10 +294,16 @@ class LocalServer(pyrogue.Root):
             # self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
             # pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
             # pyrogue.streamConnect(self.smurf_processor_fifo, self.smurf_processor)
+
+            self.smurf_frame_stats = pysmurf.core.counters.FrameStatistics(name="FrameRxStats")
+            self.add(self.smurf_frame_stats)
+
             self.smurf_reorderer = pysmurf.core.reorderer.Reorderer(name="Reorderer")
             self.smurf_filter = pysmurf.core.filter.Filter(name="Filter", size=10)
             self.smurf_transmitter = pysmurf.core.transmitter.Transmitter(name="Transmitter")
-            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_reorderer)
+
+            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_frame_stats)
+            pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_reorderer)
             pyrogue.streamConnect(self.smurf_reorderer, self.smurf_filter)
             pyrogue.streamConnect(self.smurf_filter, self.smurf_transmitter)
 
