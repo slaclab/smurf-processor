@@ -461,49 +461,49 @@ class LocalServer(pyrogue.Root):
                     description='runGarbageCollection',
                     function=self.run_garbage_collection))
 
-            self.add(pyrogue.LocalVariable(
-                name='smurfProcessorDebug',
-                description='Enable smurf processor transmit debug',
-                mode='RW',
-                value=False,
-                localSet=lambda value: self.smurf_processor.setDebug(value),
-                hidden=False))
+            #self.add(pyrogue.LocalVariable(
+            #    name='smurfProcessorDebug',
+            #    description='Enable smurf processor transmit debug',
+            #    mode='RW',
+            #    value=False,
+            #    localSet=lambda value: self.smurf_processor.setDebug(value),
+            #    hidden=False))
 
-            # Lost frame counter from smurf_processor
-            self.add(pyrogue.LocalVariable(
-                name='frameLossCnt',
-                description='Lost frame Counter',
-                mode='RO',
-                value=0,
-                localGet=self.smurf_processor.getFrameLossCnt,
-                pollInterval=1,
-                hidden=False))
+            ## Lost frame counter from smurf_processor
+            #self.add(pyrogue.LocalVariable(
+            #    name='frameLossCnt',
+            #    description='Lost frame Counter',
+            #    mode='RO',
+            #    value=0,
+            #    localGet=self.smurf_processor.getFrameLossCnt,
+            #    pollInterval=1,
+            #    hidden=False))
 
-            # Received frame counter from smurf_processor
-            self.add(pyrogue.LocalVariable(
-                name='frameRxCnt',
-                description='Received frame Counter',
-                mode='RO',
-                value=0,
-                localGet=self.smurf_processor.getFrameRxCnt,
-                pollInterval=1,
-                hidden=False))
+            ## Received frame counter from smurf_processor
+            #self.add(pyrogue.LocalVariable(
+            #    name='frameRxCnt',
+            #    description='Received frame Counter',
+            #    mode='RO',
+            #    value=0,
+            #    localGet=self.smurf_processor.getFrameRxCnt,
+            #    pollInterval=1,
+            #    hidden=False))
 
-            # Out-of-order frame counter from smurf_processor
-            self.add(pyrogue.LocalVariable(
-                name='frameOutOrderCnt',
-                description='Number of time out-of-order frames are detected',
-                mode='RO',
-                value=0,
-                localGet=self.smurf_processor.getFrameOutOrderCnt,
-                pollInterval=1,
-                hidden=False))
+            ## Out-of-order frame counter from smurf_processor
+            #self.add(pyrogue.LocalVariable(
+            #    name='frameOutOrderCnt',
+            #    description='Number of time out-of-order frames are detected',
+            #    mode='RO',
+            #    value=0,
+            #    localGet=self.smurf_processor.getFrameOutOrderCnt,
+            #    pollInterval=1,
+            #    hidden=False))
 
-            # Command to clear all the frame counters on smurf_processor
-            self.add(pyrogue.LocalCommand(
-                name='clearFrameCnt',
-                description='Clear all frame counters',
-                function=self.smurf_processor.clearFrameCnt))
+            ## Command to clear all the frame counters on smurf_processor
+            #self.add(pyrogue.LocalCommand(
+            #    name='clearFrameCnt',
+            #    description='Clear all frame counters',
+            #    function=self.smurf_processor.clearFrameCnt))
 
             # Start the root
             if group_name:
@@ -653,7 +653,7 @@ class LocalServer(pyrogue.Root):
                 tes_bias_val = self.TesBiasValue[2*tes_bias_index+1] - self.TesBiasValue[2*tes_bias_index]
 
                 # Send the difference value to smurf2mce
-                self.smurf_processor.setTesBias(tes_bias_index, tes_bias_val)
+                #self.smurf_processor.setTesBias(tes_bias_index, tes_bias_val)
 
 class PcieCard():
     """
