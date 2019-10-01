@@ -29,12 +29,7 @@ scr::Reorderer::Reorderer()
     ris::Master(),
     disable(false),
     frameCnt(0),
-    frameSize(0),
-    firstFrame(true),
-    frameLossCnt(0),
-    frameOutOrderCnt(0),
-    frameNumber(0),
-    prevFrameNumber(0)
+    frameSize(0)
 {
     std::cout << "Reorderer created" << std::endl;
 }
@@ -52,8 +47,6 @@ void scr::Reorderer::setup_python()
         .def("getDisable",          &Reorderer::getDisable)
         .def("getFrameCnt",         &Reorderer::getFrameCnt)
         .def("getFrameSize",        &Reorderer::getFrameSize)
-        .def("getFrameLossCnt",     &Reorderer::getFrameLossCnt)
-        .def("getFrameOutOrderCnt", &Reorderer::getFrameOutOrderCnt)
         .def("clearCnt",            &Reorderer::clearCnt)
     ;
     bp::implicitly_convertible< scr::ReordererPtr, ris::SlavePtr >();
@@ -84,20 +77,7 @@ const std::size_t scr::Reorderer::getFrameSize() const
 void scr::Reorderer::clearCnt()
 {
     frameCnt         = 0;
-    frameLossCnt     = 0;
-    frameOutOrderCnt = 0;
 }
-
-const std::size_t scr::Reorderer::getFrameLossCnt() const
-{
-    return frameLossCnt;
-}
-
-const std::size_t scr::Reorderer::getFrameOutOrderCnt() const
-{
-    return frameOutOrderCnt;
-}
-
 
 void scr::Reorderer::acceptFrame(ris::FramePtr frame)
 {
@@ -110,47 +90,6 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
     {
         sendFrame(frame);
         return;
-    }
-
-    // Store the current and last frame numbers
-    // - Previous frame number
-    prevFrameNumber = frameNumber;  // Previous frame number
-
-    // - Current frame number
-    union
-    {
-        uint32_t w;
-        uint8_t  b[4];
-    } fn;
-
-    // Get an iterator to the header of the frame
-    ris::FrameIterator it = frame->beginRead();
-
-    for (std::size_t i{0}; i < 4; ++i)
-            fn.b[i] = *(it+84+i);
-
-    frameNumber = fn.w;
-
-
-    // Check if we are missing frames, or receiving out-of-order frames
-    if (firstFrame)
-    {
-        // Don't compare the first frame
-        firstFrame = false;
-    }
-    else
-    {
-        // Discard out-of-order frames
-        if ( frameNumber < prevFrameNumber )
-        {
-            ++frameOutOrderCnt;
-            return;
-        }
-
-        // If we are missing frame, add the number of missing frames to the counter
-        std::size_t frameNumberDelta = frameNumber - prevFrameNumber - 1;
-        if ( frameNumberDelta )
-          frameLossCnt += frameNumberDelta;
     }
 
     //Increase the frame counter
