@@ -65,7 +65,7 @@ void scr::Reorderer::acceptFrame(ris::FramePtr frame)
 
     // If the processing block is disabled, just send the frame
     // to the next slave.
-    if (!disable)
+    if (disable)
     {
         sendFrame(frame);
         return;
