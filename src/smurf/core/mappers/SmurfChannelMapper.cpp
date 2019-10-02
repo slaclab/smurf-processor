@@ -151,6 +151,10 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
         outFrameIt += SmurfPacket::SmurfDataWordSize;
     }
 
+    // Update the number of channel in the header of the output smurf frame
+    SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(newFrame));
+    smurfHeaderOut->setNumberChannels(numCh);
+
     // Print a few work to verify the mapping works
     std::cout << "  === MAPPING === " << std::endl;
     std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
@@ -163,8 +167,15 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
         out += SmurfHeader::SmurfHeaderLength;
         for (std::size_t i{0}; i < 20; ++i)
             std::cout << i << "  " << unsigned(*(in+i)) << "  " << unsigned(*(out+i)) << std::endl;
+
+        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
+        SmurfHeaderROPtr smurfHeaderOut(SmurfHeaderRO::create(newFrame));
+
+        std::cout << "In frame, number of channels  = " << smurfHeaderIn->getNumberChannels() << std::endl;
+        std::cout << "Out frame, number of channels = " << smurfHeaderOut->getNumberChannels() << std::endl;
     }
     std::cout << "=====================================" << std::endl;
+
 
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
