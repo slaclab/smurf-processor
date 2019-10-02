@@ -67,8 +67,8 @@ class BaseMasterSlave(pyrogue.Device):
             description='Disable the frame transmission. No frames will be send to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self._master.disableTx(value),
-            localGet=self._master.isTxDisabled))
+            localSet=lambda value: self._device.disableTx(value),
+            localGet=self._device.isTxDisabled))
 
         # Add the frame counter variable
         self.add(pyrogue.LocalVariable(
@@ -77,7 +77,7 @@ class BaseMasterSlave(pyrogue.Device):
             mode='RO',
             value=0,
             pollInterval=1,
-            localGet=self._master.getTxFrameCnt))
+            localGet=self._device.getTxFrameCnt))
 
         # Add the last frame size variable
         self.add(pyrogue.LocalVariable(
@@ -86,13 +86,13 @@ class BaseMasterSlave(pyrogue.Device):
             mode='RO',
             value=0,
             pollInterval=1,
-            localGet=self._master.getTxFrameSize))
+            localGet=self._device.getTxFrameSize))
 
         # Command to clear all the counters
         self.add(pyrogue.LocalCommand(
             name='clearTxCnt',
             description='Clear all Tx counters',
-            function=self._master.clearTxCnt))
+            function=self._device.clearTxCnt))
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
