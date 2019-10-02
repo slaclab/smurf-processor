@@ -21,12 +21,26 @@
  *-----------------------------------------------------------------------------
 **/
 
+#include "smurf/core/common/SmurfHeader.h"
+
 class SmurfPacket
 {
 public:
-    // The length of the smurf packet payload (in number of channels)
+	// Smurf data type
+    typedef uint32_t smurf_data_t;
+
+    // Size in bytes of a SMuRF data word
+    static const std::size_t SmurfDataWordSize  = sizeof(smurf_data_t);
+
+	// The length of the smurf packet payload (in number of channels)
     // It has public access.
-    static const std::size_t SmurfPacketLength                = 528;
+    static const std::size_t SmurfPacketPayloadLength = 528;
+
+    // The size of the SMuRF packet payload in bytes
+	static const std::size_t SmurfPacketPayloadSize = SmurfPacketPayloadLength * SmurfDataWordSize;
+
+	// The total size, in bytes, of the SMuRF packet (i.e., including the header)
+	static const std::size_t SmurfPacketSize = SmurfHeader::SmurfHeaderLength + SmurfPacketPayloadSize;
 };
 
 #endif
