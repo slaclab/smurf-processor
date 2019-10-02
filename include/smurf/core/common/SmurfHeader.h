@@ -28,7 +28,7 @@
 
 namespace ris = rogue::interfaces::stream;
 
-class SmurfHeaderRO
+class SmurfHeaderRO;
 typedef std::shared_ptr<SmurfHeaderRO> SmurfHeaderROPtr;
 
 class SmurfHeaderRO

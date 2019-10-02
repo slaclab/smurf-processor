@@ -27,7 +27,7 @@ SmurfHeaderRO::SmurfHeaderRO(ris::FrameIterator it)
 {
 }
 
-static SmurfHeaderROPtr SmurfHeaderRO::create(ris::FrameIterator it)
+SmurfHeaderROPtr SmurfHeaderRO::create(ris::FrameIterator it)
 {
     return std::make_shared<SmurfHeaderRO>(it);
 }
