@@ -32,12 +32,52 @@ SmurfHeaderROPtr SmurfHeaderRO::create(ris::FrameIterator it)
     return std::make_shared<SmurfHeaderRO>(it);
 }
 
+// Function to get header words
 const uint32_t SmurfHeaderRO::getFrameCounter() const
 {
-    U32 fn;
+    return getU32Word(headerFrameCounterOffset);
+}
+
+// Helper functions
+const uint16_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
+{
+    union
+    {
+        uint16_t w;
+        uint8_t  b[2];
+    } aux;
+
+    for (std::size_t i{0}; i < 2; ++i)
+        aux.b[i] = *(headerIt+offset+i);
+
+    return aux.w;
+}
+
+const uint32_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
+{
+    union
+    {
+        uint32_t w;
+        uint8_t  b[4];
+    } aux;
 
     for (std::size_t i{0}; i < 4; ++i)
-        fn.b[i] = *(headerIt+headerFrameCounterOffset+i);
+        aux.b[i] = *(headerIt+offset+i);
 
-    return fn.w;
+    return aux.w;
 }
+
+const uint64_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
+{
+    union
+    {
+        uint64_t w;
+        uint8_t  b[8];
+    } aux;
+
+    for (std::size_t i{0}; i < 8; ++i)
+        aux.b[i] = *(headerIt+offset+i);
+
+    return aux.w;
+}
+
