@@ -78,13 +78,15 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
     // Only process the frame is the block is enable.
     if (!isRxDisabled())
     {
+        // (smart) pointer to the smurf header in the input frame (Read-only)
+        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame->beginRead()));
+
         // Store the current and last frame numbers
         // - Previous frame number
         prevFrameNumber = frameNumber;  // Previous frame number
 
         // - Current frame number
-        SmurfHeaderROPtr smurf_header_ro(frame->beginRead());
-        frameNumber = smurf_header_ro->getFrameCounter();
+        frameNumber = smurfHeaderIn->getFrameCounter();
 
         // Check if we are missing frames, or receiving out-of-order frames
         if (firstFrame)
