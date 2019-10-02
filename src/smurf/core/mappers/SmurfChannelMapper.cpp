@@ -151,6 +151,11 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
         outFrameIt += SmurfPacket::SmurfDataWordSize;
     }
 
+    // Set to zero the rest of the content of the output frame.
+    // This is only for convenience, as the header says the number of channel which have
+    // valid data. The rest of payload will have only garbage.
+    std::fill(outFrameIt, newFrame->endWrite(), 0);
+
     // Update the number of channel in the header of the output smurf frame
     SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(newFrame));
     smurfHeaderOut->setNumberChannels(numCh);
