@@ -106,9 +106,9 @@ private:
     SmurfHeaderRO& operator=(const SmurfHeaderRO&);
 
     // helper functions
-    const uint16_t getU32Word(std::size_t offset) const;
+    const uint16_t getU16Word(std::size_t offset) const;
     const uint32_t getU32Word(std::size_t offset) const;
-    const uint64_t getU32Word(std::size_t offset) const;
+    const uint64_t getU64Word(std::size_t offset) const;
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
