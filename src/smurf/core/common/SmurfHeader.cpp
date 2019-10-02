@@ -167,12 +167,6 @@ const uint16_t SmurfHeaderRO::getDataRate() const
     return getU16Word(headerDataRateOffset);
 }
 
-
-const uint32_t SmurfHeaderRO::getFrameCounter() const
-{
-    return getU32Word(headerFrameCounterOffset);
-}
-
 // Helper functions
 const uint8_t SmurfHeaderRO::getU8Word(std::size_t offset) const
 {
@@ -221,7 +215,7 @@ const uint64_t SmurfHeaderRO::getU64Word(std::size_t offset) const
     return aux.w;
 }
 
-const const bool SmurfHeaderRO::getWordBit(std::size_t offset, std::size_t index) const
+const bool SmurfHeaderRO::getWordBit(std::size_t offset, std::size_t index) const
 {
     if (index >= 8)
         throw std::runtime_error("Trying to get a bit with index > 8 from a byte");
