@@ -122,13 +122,8 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
         std::cout << "Frame number = " << frameNumber << std::endl;
     }
 
-    // Send the same frame to the next slave,
-    // if the TX block is not disabled
-    if (! isTxDisabled())
-    {
-        // Update the Tx counters. This is define in the BaseMaster class
-        updateTxCnts(frame->getPayload());
-
-        sendFrame(frame);
-    }
+    // Send the frame to the next slave.
+    // This method will check if the Tx block is disabled, as well
+    // as updating the Tx counters
+    txFrame(frame);
 }

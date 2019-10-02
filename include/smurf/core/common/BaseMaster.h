@@ -68,6 +68,12 @@ namespace smurf
                 // if other counters need to be clear.
                 virtual void clearTxCnt();
 
+                // This method is called to transmit a new frame. If the Tx block
+                // is disable this method won't do anything. Otherwise it will update
+                // the base counters and then it will send the frame calling the
+                // 'sendFrame' of the ris::Master class.
+                void txFrame(ris::FramePtr frame);
+
             private:
                 bool        disable;    // Disable flag
                 std::size_t frameCnt;   // Frame counter

@@ -49,10 +49,6 @@ namespace smurf
 
                 static void setup_python();
 
-                // Derivated classes need to class this method to
-                // update the counters
-                void updateRxCnts(std::size_t s);
-
                 // Disable the processing block. The data
                 // will just pass through to the next slave
                 void       disableRx(bool d);

@@ -54,14 +54,10 @@ void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
     if (isRxDisabled())
     {
 
-        // Is the Tx block is not disabled, send the same Rx frame
-        if (! isTxDisabled())
-        {
-            // Update the Tx counters. This is define in the BaseMaster class
-            updateTxCnts(frame->getPayload());
-
-            sendFrame(frame);
-        }
+        // Send the frame to the next slave.
+        // This method will check if the Tx block is disabled, as well
+        // as updating the Tx counters
+        txFrame(frame);
 
         return;
     }
@@ -82,12 +78,8 @@ void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
     // Set the frame size
     newFrame->setPayload(128);
 
-    // Send the frame, if the Tx block is not disabled
-    if (! isTxDisabled())
-    {
-        // Update the Tx counters. This is define in the BaseMaster class
-        updateTxCnts(newFrame->getPayload());
-
-        sendFrame(newFrame);
-    }
+        // Send the frame to the next slave.
+    // This method will check if the Tx block is disabled, as well
+    // as updating the Tx counters
+    txFrame(newFrame);
 }

@@ -49,12 +49,6 @@ void scc::BaseSlave::setup_python()
     bp::implicitly_convertible< scc::BaseSlavePtr, ris::SlavePtr >();
 }
 
-void scc::BaseSlave::updateRxCnts(std::size_t s)
-{
-    ++frameCnt;
-    frameSize = s;
-}
-
 void scc::BaseSlave::disableRx(bool d)
 {
     disable = d;

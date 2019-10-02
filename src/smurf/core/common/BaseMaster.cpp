@@ -79,3 +79,19 @@ void scc::BaseMaster::clearTxCnt()
 {
     frameCnt = 0;
 }
+
+void scc::BaseMaster::txFrame(ris::FramePtr frame)
+{
+    // If the Tx block is disable, don't do anything
+    if (disable)
+        return;
+
+    // Update the frame counter
+    ++frameCnt;
+
+    //Update the last frame size
+    frameSize = frame->getPayload();
+
+    // Now call the sendFrame method from ris::Master
+    sendFrame(frame);
+}
