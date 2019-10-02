@@ -250,147 +250,147 @@ SmurfHeaderPtr SmurfHeader::create(ris::FramePtr frame)
 }
 
 // Function to get header words
-const void SmurfHeaderRO::setVersion(uint8_t value) const
+void SmurfHeaderRO::setVersion(uint8_t value) const
 {
     return setU8Word(headerVersionOffset, value);
 }
 
-const void SmurfHeaderRO::setCrateID(uint8_t value) const
+void SmurfHeaderRO::setCrateID(uint8_t value) const
 {
     return setU8Word(headerCrateIDOffset, value);
 }
 
-const void SmurfHeaderRO::setSlotNumber(uint8_t value) const
+void SmurfHeaderRO::setSlotNumber(uint8_t value) const
 {
     return setU8Word(headerSlotNumberOffset, value);
 }
 
-const void SmurfHeaderRO::setTimingConfiguration(uint8_t value) const
+void SmurfHeaderRO::setTimingConfiguration(uint8_t value) const
 {
     return setU8Word(headerTimingConfigurationOffset, value);
 }
 
-const void SmurfHeaderRO::setNumberChannels(uint32_t value) const
+void SmurfHeaderRO::setNumberChannels(uint32_t value) const
 {
     return setU32Word(headerNumberChannelOffset, value);
 }
 
-const void SmurfHeaderRO::setTESBias(std::size_t index, int32_t value) const
+void SmurfHeaderRO::setTESBias(std::size_t index, int32_t value) const
 {
 }
 
-const void SmurfHeaderRO::setUnixTime(uint64_t value) const
+void SmurfHeaderRO::setUnixTime(uint64_t value) const
 {
     return setU64Word(headerUnixTimeOffset, value);
 }
 
-const void SmurfHeaderRO::setFluxRampIncrement(uint32_t value) const
+void SmurfHeaderRO::setFluxRampIncrement(uint32_t value) const
 {
     return setU32Word(headerFluxRampIncrementOffset, value);
 }
 
-const void SmurfHeaderRO::setFluxRampOffset(uint32_t value) const
+void SmurfHeaderRO::setFluxRampOffset(uint32_t value) const
 {
     return setU32Word(headerFluxRampOffsetOffset, value);
 }
 
-const void SmurfHeaderRO::setCounter0(uint32_t value) const
+void SmurfHeaderRO::setCounter0(uint32_t value) const
 {
     return setU32Word(headerCounter0Offset, value);
 }
 
-const void SmurfHeaderRO::setCounter1(uint32_t value) const
+void SmurfHeaderRO::setCounter1(uint32_t value) const
 {
     return setU32Word(headerCounter1Offset, value);
 }
 
-const void SmurfHeaderRO::setCounter2(uint64_t value) const
+void SmurfHeaderRO::setCounter2(uint64_t value) const
 {
     return setU64Word(headerCounter2Offset, value);
 }
 
-const void SmurfHeaderRO::setAveragingResetBits(uint32_t value) const
+void SmurfHeaderRO::setAveragingResetBits(uint32_t value) const
 {
     return setU32Word(headerAveragingResetBitsOffset, value);
 }
 
-const void SmurfHeaderRO::setFrameCounter(uint32_t value) const
+void SmurfHeaderRO::setFrameCounter(uint32_t value) const
 {
     return setU32Word(headerFrameCounterOffset, value);
 }
 
-const void SmurfHeaderRO::setTESRelaySetting(uint32_t value) const
+void SmurfHeaderRO::setTESRelaySetting(uint32_t value) const
 {
     return setU32Word(headerTESRelaySettingOffset, value);
 }
 
-const void SmurfHeaderRO::setExternalTimeClock(uint64_t value) const
+void SmurfHeaderRO::setExternalTimeClock(uint64_t value) const
 {
     return setU64Word(headerExternalTimeClockOffset, value);
 }
 
-const void SmurfHeaderRO::setControlField(uint8_t value) const
+void SmurfHeaderRO::setControlField(uint8_t value) const
 {
     return setU8Word(headerControlFieldOffset, value);
 }
 
-const void SmurfHeaderRO::setClearAverageBit(bool value) const
+void SmurfHeaderRO::setClearAverageBit(bool value) const
 {
     return setWordBit(headerControlFieldOffset, value, clearAvergaveBitOffset);
 }
 
-const void SmurfHeaderRO::setDisableStreamBit(bool value) const
+void SmurfHeaderRO::setDisableStreamBit(bool value) const
 {
     return setWordBit(headerControlFieldOffset, value, disableStreamBitOffset);
 }
 
-const void SmurfHeaderRO::setDisableFileWriteBit(bool value) const
+void SmurfHeaderRO::setDisableFileWriteBit(bool value) const
 {
     return setWordBit(headerControlFieldOffset, value, disableFileWriteBitOffset);
 }
 
-const void SmurfHeaderRO::setReadConfigEachCycleBit(bool value) const
+void SmurfHeaderRO::setReadConfigEachCycleBit(bool value) const
 {
     return setWordBit(headerControlFieldOffset, value, readConfigEachCycleBitOffset);
 }
 
-const void SmurfHeaderRO::setTestMode(uint8_t value) const
+void SmurfHeaderRO::setTestMode(uint8_t value) const
 {
     return s ( getU8Word, value(headerControlFieldOffset) >> 4 ) & 0x0f );
 }
 
-const void SmurfHeaderRO::setTestParameters(uint8_t value) const
+void SmurfHeaderRO::setTestParameters(uint8_t value) const
 {
     return setU8Word(headerTestParametersOffset, value);
 }
 
-const void SmurfHeaderRO::setNumberRows(uint16_t value) const
+void SmurfHeaderRO::setNumberRows(uint16_t value) const
 {
     return setU16Word(headerNumberRowsOffset, value);
 }
 
-const void SmurfHeaderRO::setNumberRowsReported(uint16_t value) const
+void SmurfHeaderRO::setNumberRowsReported(uint16_t value) const
 {
     return setU16Word(headerNumberRowsReportedOffset, value);
 }
 
-const void SmurfHeaderRO::setRowLength(uint16_t value) const
+void SmurfHeaderRO::setRowLength(uint16_t value) const
 {
     return setU16Word(headerRowLengthOffset, value);
 }
 
-const void SmurfHeaderRO::setDataRate(uint16_t value) const
+void SmurfHeaderRO::setDataRate(uint16_t value) const
 {
     return setU16Word(headerDataRateOffset, value);
 }
 
 // Helper functions
-const void SmurfHeader::setU8Word(std::size_t offset, uint8_t value) const
+void SmurfHeader::setU8Word(std::size_t offset, uint8_t value) const
 {
     *(headerIt+offset) = value;
 }
 
-const void SmurfHeader::setU16Word(std::size_t offset, uint16_t value) const
+void SmurfHeader::setU16Word(std::size_t offset, uint16_t value) const
 {
     union
     {
@@ -404,7 +404,7 @@ const void SmurfHeader::setU16Word(std::size_t offset, uint16_t value) const
         *(headerIt+offset+i) = aux.b[i];
 }
 
-const void SmurfHeader::setU32Word(std::size_t offset, uint32_t value) const
+void SmurfHeader::setU32Word(std::size_t offset, uint32_t value) const
 {
     union
     {
@@ -418,7 +418,7 @@ const void SmurfHeader::setU32Word(std::size_t offset, uint32_t value) const
         *(headerIt+offset+i) = aux.b[i];
 }
 
-const void SmurfHeader::setU64Word(std::size_t offset, uint64_t value) const
+void SmurfHeader::setU64Word(std::size_t offset, uint64_t value) const
 {
     union
     {
@@ -432,7 +432,7 @@ const void SmurfHeader::setU64Word(std::size_t offset, uint64_t value) const
         *(headerIt+offset+i) = aux.b[i];
 }
 
-const void SmurfHeader::setWordBit(std::size_t offset, std::size_t index, bool value) const
+void SmurfHeader::setWordBit(std::size_t offset, std::size_t index, bool value) const
 {
     if (index >= 8)
         throw std::runtime_error("Trying to set a byte's bit with index > 8");
@@ -446,6 +446,7 @@ const void SmurfHeader::setWordBit(std::size_t offset, std::size_t index, bool v
 
     *(headerIt+offset) = aux;
 }
+
 ////////////////////////////////////////
-////// + SmurfHeader definitions ///////
+////// - SmurfHeader definitions ///////
 ////////////////////////////////////////

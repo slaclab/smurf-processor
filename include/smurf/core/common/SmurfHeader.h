@@ -111,11 +111,11 @@ private:
     SmurfHeaderRO& operator=(const SmurfHeaderRO&);
 
     // helper functions
-    const uint8_t  getU8Word(std::size_t offset)  const;                    // Returns uint8_t word from the header, at offset 'offset'
-    const uint16_t getU16Word(std::size_t offset) const;                    // Returns uint16_t word from the header, at offset 'offset'
-    const uint32_t getU32Word(std::size_t offset) const;                    // Returns uin3t2_t word from the header, at offset 'offset'
-    const uint64_t getU64Word(std::size_t offset) const;                    // Returns uint64_t word from the header, at offset 'offset'
-    const bool     getWordBit(std::size_t offset, std::size_t index) const; // Returns bit 'index' from a header byte at offset 'offset'
+    const uint8_t  getU8Word(  std::size_t offset                    ) const; // Returns uint8_t word from the header, at offset 'offset'
+    const uint16_t getU16Word( std::size_t offset                    ) const; // Returns uint16_t word from the header, at offset 'offset'
+    const uint32_t getU32Word( std::size_t offset                    ) const; // Returns uin3t2_t word from the header, at offset 'offset'
+    const uint64_t getU64Word( std::size_t offset                    ) const; // Returns uint64_t word from the header, at offset 'offset'
+    const bool     getWordBit( std::size_t offset, std::size_t index ) const; // Returns bit 'index' from a header byte at offset 'offset'
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
@@ -130,33 +130,33 @@ public:
 
     static SmurfHeaderPtr create(ris::FramePtr frame);
 
-    void setVersion(uint8_t value);                     // Set protocol version
-    void setCrateID(uint8_t value);                     // Set ATCA crate ID
-    void setSlotNumber(uint8_t value);                  // Set ATCA slot number
-    void setTimingConfiguration(uint8_t value);         // Set timing configuration
-    void setNumberChannels(uint32_t value);             // Set number of channel in this packet
-    void setTESBias(std::size_t index, int32_t value);  // Set TES DAC values 16X 20 bit
-    void setUnixTime(uint64_t value);                   // Set 64 bit unix time nanoseconds
-    void setFluxRampIncrement(uint32_t value);          // Set signed 32 bit integer for increment
-    void setFluxRampOffset(uint32_t value);             // Set signed 32 it integer for offset
-    void setCounter0(uint32_t value);                   // Set 32 bit counter since last 1Hz marker
-    void setCounter1(uint32_t value);                   // Set 32 bit counter since last external input
-    void setCounter2(uint64_t value);                   // Set 64 bit timestamp
-    void setAveragingResetBits(uint32_t value);         // Set up to 32 bits of average reset from timing system
-    void setFrameCounter(uint32_t value);               // Set locally genreate frame counter 32 bit
-    void setTESRelaySetting(uint32_t value);            // Set TES and flux ramp relays, 17bits in use now
-    void setExternalTimeClock(uint64_t value);          // Set Syncword from mce for mce based systems (40 bit including header)
-    void setControlField(uint8_t value);                // Set control field word
-    void setClearAverageBit(bool value);                // Set control field's clear average and unwrap bit (bit 0)
-    void setDisableStreamBit(bool value);               // Set control field's disable stream to MCE bit (bit 1)
-    void setDisableFileWriteBit(bool value);            // Set control field's disable file write (bit 2)
-    void setReadConfigEachCycleBit(bool value);         // Set control field's set to read configuration file each cycle bit (bit 3)
-    void setTestMode(uint8_t value);                    // Set control field's test mode (bits 4-7)
-    void setTestParameters(uint8_t value);              // Set test parameters
-    void setNumberRows(uint16_t value);                 // Set MCE header value (max 255) (defaluts to 33 if 0)
-    void setNumberRowsReported(uint16_t value);         // Set MCE header value (defaults to numb rows if 0)
-    void setRowLength(uint16_t value);                  // Set MCE header value
-    void setDataRate(uint16_t value);                   // Set MCE header value
+    void setVersion(uint8_t value) const;                     // Set protocol version
+    void setCrateID(uint8_t value) const;                     // Set ATCA crate ID
+    void setSlotNumber(uint8_t value) const;                  // Set ATCA slot number
+    void setTimingConfiguration(uint8_t value) const;         // Set timing configuration
+    void setNumberChannels(uint32_t value) const;             // Set number of channel in this packet
+    void setTESBias(std::size_t index const, int32_t value);  // Set TES DAC values 16X 20 bit
+    void setUnixTime(uint64_t value) const;                   // Set 64 bit unix time nanoseconds
+    void setFluxRampIncrement(uint32_t value) const;          // Set signed 32 bit integer for increment
+    void setFluxRampOffset(uint32_t value) const;             // Set signed 32 it integer for offset
+    void setCounter0(uint32_t value) const;                   // Set 32 bit counter since last 1Hz marker
+    void setCounter1(uint32_t value) const;                   // Set 32 bit counter since last external input
+    void setCounter2(uint64_t value) const;                   // Set 64 bit timestamp
+    void setAveragingResetBits(uint32_t value) const;         // Set up to 32 bits of average reset from timing system
+    void setFrameCounter(uint32_t value) const;               // Set locally genreate frame counter 32 bit
+    void setTESRelaySetting(uint32_t value) const;            // Set TES and flux ramp relays, 17bits in use now
+    void setExternalTimeClock(uint64_t value) const;          // Set Syncword from mce for mce based systems (40 bit including header)
+    void setControlField(uint8_t value) const;                // Set control field word
+    void setClearAverageBit(bool value) const;                // Set control field's clear average and unwrap bit (bit 0)
+    void setDisableStreamBit(bool value) const;               // Set control field's disable stream to MCE bit (bit 1)
+    void setDisableFileWriteBit(bool value) const;            // Set control field's disable file write (bit 2)
+    void setReadConfigEachCycleBit(bool value) const;         // Set control field's set to read configuration file each cycle bit (bit 3)
+    void setTestMode(uint8_t value) const;                    // Set control field's test mode (bits 4-7)
+    void setTestParameters(uint8_t value) const;              // Set test parameters
+    void setNumberRows(uint16_t value) const;                 // Set MCE header value (max 255) (defaluts to 33 if 0)
+    void setNumberRowsReported(uint16_t value) const;         // Set MCE header value (defaults to numb rows if 0)
+    void setRowLength(uint16_t value) const;                  // Set MCE header value
+    void setDataRate(uint16_t value) const;                   // Set MCE header value
 
 private:
     // Prevent construction using the default or copy constructor.
