@@ -122,6 +122,8 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     }
 
     // Request a new frame, to hold the header + payload, and set its payload
+    // Although the number of active channel can change, and will be indicated in the
+    // header of the packet, we will send frames of fix size.
     ris::FramePtr newFrame = reqFrame(SmurfPacket::SmurfPacketSize, true);
     newFrame->setPayload(SmurfPacket::SmurfPacketSize);
 
