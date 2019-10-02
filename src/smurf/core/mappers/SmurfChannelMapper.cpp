@@ -134,7 +134,7 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     ris::FrameIterator outFrameIt = newFrame->beginWrite();
 
     // Copy the header from the input frame to the output frame.
-    for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderLength; ++i)
+    for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderSize; ++i)
             *(++outFrameIt) = *(++inFrameIt);
 
     // Now map the data from the input frame to the output frame according to the map vector

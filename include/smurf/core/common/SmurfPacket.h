@@ -40,7 +40,7 @@ public:
 	static const std::size_t SmurfPacketPayloadSize = SmurfPacketPayloadLength * SmurfDataWordSize;
 
 	// The total size, in bytes, of the SMuRF packet (i.e., including the header)
-	static const std::size_t SmurfPacketSize = SmurfHeader::SmurfHeaderLength + SmurfPacketPayloadSize;
+	static const std::size_t SmurfPacketSize = SmurfHeader::SmurfHeaderSize + SmurfPacketPayloadSize;
 };
 
 #endif

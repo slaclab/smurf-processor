@@ -71,9 +71,9 @@ public:
     const uint16_t getRowLength()                 const;  // Get MCE header value
     const uint16_t getDataRate()                  const;  // Get MCE header value
 
-    // The length of the smurf header (in bytes)
+    // The size of the smurf header (in bytes)
     // It has public access.
-    static const std::size_t SmurfHeaderLength                = 128;
+    static const std::size_t SmurfHeaderSize                 = 128;
 
 protected:
     // Header word offsets (in bytes)
