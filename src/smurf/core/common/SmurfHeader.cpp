@@ -32,7 +32,7 @@ SmurfHeaderRO::SmurfHeaderRO(ris::FramePtr frame)
 
 SmurfHeaderROPtr SmurfHeaderRO::create(ris::FramePtr frame)
 {
-    return std::make_shared<SmurfHeaderRO>(it);
+    return std::make_shared<SmurfHeaderRO>(frame);
 }
 
 // Function to get header words
