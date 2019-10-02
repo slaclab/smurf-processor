@@ -70,13 +70,13 @@ namespace smurf
 
                 // Re-define acceptFrame from ris::Slave.
                 // This method will use/update the variables defined in this base class
-                // (disable flag, counters, etc.), and then it will call the new pure
-                // virtual method 'rxFrame' which must be define by the derivated class.
+                // (disable flag, counters, etc.), and then it will call the new virtual
+                // method 'rxFrame' which must be define by the derivated class.
                 void acceptFrame(ris::FramePtr frame);
 
                 // This method is called from 'acceptFrame' after processing the base
-                // functionality. It must be defined by the derivated class.
-                virtual void rxFrame(ris::FramePtr frame) = 0;
+                // functionality. It must be re-defined by the derivated class.
+                virtual void rxFrame(ris::FramePtr frame) {};
 
             private:
                 bool        disable;    // Disable flag
