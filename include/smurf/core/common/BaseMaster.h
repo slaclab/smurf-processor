@@ -1,15 +1,15 @@
-#ifndef _SMURF_CORE_COMMON_BASESLAVE_H_
-#define _SMURF_CORE_COMMON_BASESLAVE_H_
+#ifndef _SMURF_CORE_COMMON_BASEMASTER_H_
+#define _SMURF_CORE_COMMON_BASEMASTER_H_
 
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Base Slave
+ * Title         : SMuRF Base Master
  * ----------------------------------------------------------------------------
- * File          : BaseSlave.h
+ * File          : BaseMaster.h
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *    SMuRF Base Class for all Slave Devices.
+ *    SMuRF Base Class for all Master Devices.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -22,7 +22,7 @@
 **/
 
 #include <iostream>
-#include <rogue/interfaces/stream/Slave.h>
+#include <rogue/interfaces/stream/Master.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
@@ -36,37 +36,37 @@ namespace smurf
     {
         namespace common
         {
-            class BaseSlave;
-            typedef boost::shared_ptr<BaseSlave> BaseSlavePtr;
+            class BaseMaster;
+            typedef boost::shared_ptr<BaseMaster> BaseMasterPtr;
 
-            class BaseSlave : public ris::Slave
+            class BaseMaster : public ris::Master
             {
             public:
-                BaseSlave();
-                virtual ~BaseSlave() {};
+                BaseMaster();
+                virtual ~BaseMaster() {};
 
-                static BaseSlavePtr create();
+                static BaseMasterPtr create();
 
                 static void setup_python();
 
                 // Derivated classes need to class this method to
                 // update the counters
-                void updateRxCnts(std::size_t s);
+                void updateTxCnts(std::size_t s);
 
                 // Disable the processing block. The data
                 // will just pass through to the next slave
-                void       disableRx(bool d);
-                const bool isRxDisabled() const;
+                void       disableTx(bool d);
+                const bool isTxDisabled() const;
 
                 // Get the frame counter
-                const std::size_t getRxFrameCnt() const;
+                const std::size_t getTxFrameCnt() const;
 
                 // Get the last frame size (in bytes)
-                const std::size_t getRxFrameSize() const;
+                const std::size_t getTxFrameSize() const;
 
                 // Clear all counter. It can be redefined in the derivated class
                 // if other counters need to be clear.
-                virtual void clearRxCnt();
+                virtual void clearTxCnt();
 
             private:
                 bool        disable;    // Disable flag

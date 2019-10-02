@@ -28,6 +28,7 @@
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include "smurf/core/common/BaseSlave.h"
+#include "smurf/core/common/BaseMaster.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -42,7 +43,7 @@ namespace smurf
             class SmurfChannelMapper;
             typedef boost::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
 
-            class SmurfChannelMapper : public scc::BaseSlave, public ris::Master
+            class SmurfChannelMapper : public scc::BaseSlave, public scc::BaseMaster
             {
             public:
                 SmurfChannelMapper();

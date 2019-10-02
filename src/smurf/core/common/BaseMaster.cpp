@@ -1,12 +1,12 @@
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Base Slave
+ * Title         : SMuRF Base Master
  * ----------------------------------------------------------------------------
- * File          : BaseSlave.cpp
+ * File          : BaseMaster.cpp
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
- *    SMuRF Base Class for all Slave Devices.
+ *    SMuRF Base Class for all Master Devices.
  *-----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -19,63 +19,63 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/common/BaseSlave.h"
+#include "smurf/core/common/BaseMaster.h"
 
 namespace scc  = smurf::core::common;
 
-scc::BaseSlave::BaseSlave()
+scc::BaseMaster::BaseMaster()
 :
-    ris::Slave(),
+    ris::Master(),
     disable(false),
     frameCnt(0),
     frameSize(0)
 {
 };
 
-scc::BaseSlavePtr scc::BaseSlave::create()
+scc::BaseMasterPtr scc::BaseMaster::create()
 {
-    return boost::make_shared<BaseSlave>();
+    return boost::make_shared<BaseMaster>();
 }
 
-void scc::BaseSlave::setup_python()
+void scc::BaseMaster::setup_python()
 {
-    bp::class_<scc::BaseSlave, scc::BaseSlavePtr, bp::bases<ris::Slave>, boost::noncopyable >("BaseSlave", bp::init<>())
-        .def("disableRx",      &BaseSlave::disableRx)
-        .def("isRxDisabled",   &BaseSlave::isRxDisabled)
-        .def("getRxFrameCnt",  &BaseSlave::getRxFrameCnt)
-        .def("getRxFrameSize", &BaseSlave::getRxFrameSize)
-        .def("clearRxCnt",     &BaseSlave::clearRxCnt)
+    bp::class_<scc::BaseMaster, scc::BaseMasterPtr, bp::bases<ris::Master>, boost::noncopyable >("BaseMaster", bp::init<>())
+        .def("disableTx",      &BaseMaster::disableTx)
+        .def("isTxDisabled",   &BaseMaster::isTxDisabled)
+        .def("getTxFrameCnt",  &BaseMaster::getTxFrameCnt)
+        .def("getTxFrameSize", &BaseMaster::getTxFrameSize)
+        .def("clearTxCnt",     &BaseMaster::clearTxCnt)
     ;
-    bp::implicitly_convertible< scc::BaseSlavePtr, ris::SlavePtr >();
+    bp::implicitly_convertible< scc::BaseMasterPtr, ris::MasterPtr >();
 }
 
-void scc::BaseSlave::updateRxCnts(std::size_t s)
+void scc::BaseMaster::updateTxCnts(std::size_t s)
 {
     ++frameCnt;
     frameSize = s;
 }
 
-void scc::BaseSlave::disableRx(bool d)
+void scc::BaseMaster::disableTx(bool d)
 {
     disable = d;
 }
 
-const bool scc::BaseSlave::isRxDisabled() const
+const bool scc::BaseMaster::isTxDisabled() const
 {
     return disable;
 }
 
-const std::size_t scc::BaseSlave::getRxFrameCnt() const
+const std::size_t scc::BaseMaster::getTxFrameCnt() const
 {
     return frameCnt;
 }
 
-const std::size_t scc::BaseSlave::getRxFrameSize() const
+const std::size_t scc::BaseMaster::getTxFrameSize() const
 {
     return frameSize;
 }
 
-void scc::BaseSlave::clearRxCnt()
+void scc::BaseMaster::clearTxCnt()
 {
     frameCnt = 0;
 }

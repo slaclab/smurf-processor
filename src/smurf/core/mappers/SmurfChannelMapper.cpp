@@ -26,7 +26,7 @@ namespace scm  = smurf::core::mappers;
 scm::SmurfChannelMapper::SmurfChannelMapper()
 :
     scc::BaseSlave(),
-    ris::Master()
+    scc::BaseMaster()
 {
     std::cout << "SmurfChannelMapper created" << std::endl;
 }
@@ -39,10 +39,10 @@ scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 // Setup Class in python
 void scm::SmurfChannelMapper::setup_python()
 {
-    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<scc::BaseSlave,ris::Master>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
+    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
     ;
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, scc::BaseSlavePtr >();
-    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
+    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, scc::BaseMasterPtr >();
 }
 
 void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
@@ -59,7 +59,7 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     }
 
     // Update counters. This is define in the BaseSlave class
-    updateCnts(frame->getPayload());
+    updateRxCnts(frame->getPayload());
 
     // Request a new frame
     ris::FramePtr newFrame = reqFrame(128, true);

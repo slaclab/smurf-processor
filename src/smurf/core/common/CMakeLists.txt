@@ -14,4 +14,5 @@
 # ----------------------------------------------------------------------------
 
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/BaseSlave.cpp")
+target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/BaseMaster.cpp")
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/module.cpp")
