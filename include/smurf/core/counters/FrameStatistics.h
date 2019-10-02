@@ -27,6 +27,7 @@
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include "smurf/core/common/BaseSlave.h"
 #include "smurf/core/common/BaseMaster.h"
+#include "smurf/core/common/SmurfHeader.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
