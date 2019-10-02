@@ -36,13 +36,12 @@ class SmurfChannelMapper(pysmurf.core.common.BaseMasterSlave):
             mode='RO',
             value=0,
             pollInterval=1,
-            localGet=self._mapper.getNumCh
+            localGet=self._mapper.getNumCh))
 
-		# Add variable to set the mapping mask
+        # Add variable to set the mapping mask
         self.add(pyrogue.LocalVariable(
             name='Mask',
             description='Set the mapping mask',
             mode='RW',
-            value=[],
-            pollInterval=1,
-            localGet=self._mapper.setMask
+            value=[0],  # Rogue doesn't allow to have an empty list here.
+            localSet=lambda value: self._mapper.setMask(vaue)))
