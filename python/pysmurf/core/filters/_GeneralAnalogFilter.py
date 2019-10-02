@@ -19,19 +19,12 @@
 
 import pyrogue
 import smurf
+import pysmurf.core.common
 
-class GeneralAnalogFilter(pyrogue.Device):
+class GeneralAnalogFilter(pysmurf.core.common.BaseMasterSlave):
     """
     SMuRF Data GeneralAnalogFilter Python Wrapper.
     """
     def __init__(self, size, name, **kwargs):
-        pyrogue.Device.__init__(self, name=name, description='SMuRF Data GeneralAnalogFilter', **kwargs)
         self._filter = smurf.core.filters.GeneralAnalogFilter(size)
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
-    def _getStreamSlave(self):
-        return self._filter
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
-    def _getStreamMaster(self):
-        return self._filter
+        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._filter, description='SMuRF Data GeneralAnalogFilter', **kwargs)

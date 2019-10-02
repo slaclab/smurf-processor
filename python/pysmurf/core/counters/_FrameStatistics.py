@@ -19,41 +19,15 @@
 
 import pyrogue
 import smurf
+import pysmurf.core.common
 
-class FrameStatistics(pyrogue.Device):
+class FrameStatistics(pysmurf.core.common.BaseMasterSlave):
     """
     SMuRF Frame Statistics Python Wrapper.
     """
     def __init__(self, name, **kwargs):
-        pyrogue.Device.__init__(self, name=name, description='SMuRF Frame Statistics', **kwargs)
         self._FrameStatistics = smurf.core.counters.FrameStatistics()
-
-        # Add "Disable" variable
-        self.add(pyrogue.LocalVariable(
-            name='Disable',
-            description='Disable the processing block. Data will just pass thorough to the next slave.',
-            mode='RW',
-            value=False,
-            localSet=lambda value: self._FrameStatistics.setDisable(value),
-            localGet=self._FrameStatistics.getDisable))
-
-        # Add the frame counter variable
-        self.add(pyrogue.LocalVariable(
-            name='frameCnt',
-            description='Frame counter',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._FrameStatistics.getFrameCnt))
-
-        # Add the last frame size variable
-        self.add(pyrogue.LocalVariable(
-            name='frameSize',
-            description='Last frame size',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._FrameStatistics.getFrameSize))
+        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._FrameStatistics, description='SMuRF Frame Statistics', **kwargs)
 
         # Add the frame lost counter  variable
         self.add(pyrogue.LocalVariable(
@@ -72,17 +46,3 @@ class FrameStatistics(pyrogue.Device):
             value=0,
             pollInterval=1,
             localGet=self._FrameStatistics.getFrameOutOrderCnt))
-
-        # Command to clear all the counters
-        self.add(pyrogue.LocalCommand(
-            name='clearCnt',
-            description='Clear all counters',
-            function=self._FrameStatistics.clearCnt))
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
-    def _getStreamSlave(self):
-        return self._FrameStatistics
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
-    def _getStreamMaster(self):
-        return self._FrameStatistics

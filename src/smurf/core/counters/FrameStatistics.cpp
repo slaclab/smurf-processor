@@ -21,15 +21,12 @@
 #include <boost/python.hpp>
 #include "smurf/core/counters/FrameStatistics.h"
 
-namespace scc  = smurf::core::counters;
+namespace scc = smurf::core::counters;
 
 scc::FrameStatistics::FrameStatistics()
 :
-    ris::Slave(),
-    ris::Master(),
-    disable(false),
-    frameCnt(0),
-    frameSize(0),
+    sccommon::BaseSlave(),
+    sccommon::BaseMaster(),
     firstFrame(true),
     frameLossCnt(0),
     frameOutOrderCnt(0),
@@ -47,43 +44,17 @@ scc::FrameStatisticsPtr scc::FrameStatistics::create()
 // Setup Class in python
 void scc::FrameStatistics::setup_python()
 {
-    bp::class_<scc::FrameStatistics, scc::FrameStatisticsPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("FrameStatistics", bp::init<>())
-        .def("setDisable",          &FrameStatistics::setDisable)
-        .def("getDisable",          &FrameStatistics::getDisable)
-        .def("getFrameCnt",         &FrameStatistics::getFrameCnt)
-        .def("getFrameSize",        &FrameStatistics::getFrameSize)
+    bp::class_<scc::FrameStatistics, scc::FrameStatisticsPtr, bp::bases<sccommon::BaseSlave,sccommon::BaseMaster>, boost::noncopyable >("FrameStatistics", bp::init<>())
         .def("getFrameLossCnt",     &FrameStatistics::getFrameLossCnt)
         .def("getFrameOutOrderCnt", &FrameStatistics::getFrameOutOrderCnt)
-        .def("clearCnt",            &FrameStatistics::clearCnt)
     ;
-    bp::implicitly_convertible< scc::FrameStatisticsPtr, ris::SlavePtr >();
-    bp::implicitly_convertible< scc::FrameStatisticsPtr, ris::MasterPtr >();
+    bp::implicitly_convertible< scc::FrameStatisticsPtr, sccommon::BaseSlavePtr  >();
+    bp::implicitly_convertible< scc::FrameStatisticsPtr, sccommon::BaseMasterPtr >();
 }
 
-void scc::FrameStatistics::setDisable(bool d)
+void scc::FrameStatistics::clearRxCnt()
 {
-    disable = d;
-}
-
-const bool scc::FrameStatistics::getDisable() const
-{
-    return disable;
-}
-
-
-const std::size_t scc::FrameStatistics::getFrameCnt() const
-{
-    return frameCnt;
-}
-
-const std::size_t scc::FrameStatistics::getFrameSize() const
-{
-    return frameSize;
-}
-
-void scc::FrameStatistics::clearCnt()
-{
-    frameCnt         = 0;
+    sccommon::BaseSlave::clearRxCnt();
     frameLossCnt     = 0;
     frameOutOrderCnt = 0;
 }
@@ -105,8 +76,7 @@ void scc::FrameStatistics::acceptFrame(ris::FramePtr frame)
     std::cout << "Size = " << frame->getPayload() << std::endl;
 
     // Only process the frame is the block is enable.
-    // Otherwise, it will just send to the next slave.
-    if (!disable)
+    if (!isRxDisabled())
     {
         // Store the current and last frame numbers
         // - Previous frame number
@@ -149,15 +119,20 @@ void scc::FrameStatistics::acceptFrame(ris::FramePtr frame)
               frameLossCnt += frameNumberDelta;
         }
 
-        //Increase the frame counter
-        ++frameCnt;
 
-        // Update the last frame size
-        frameSize = frame->getPayload();
+        // Update the Rx counters. This is define in the BaseSlave class
+        updateRxCnts(frame->getPayload());
 
         std::cout << "Frame number = " << frameNumber << std::endl;
     }
 
-    // Send the same frame to the next slave
-    sendFrame(frame);
+    // Send the same frame to the next slave,
+    // if the TX block is not disabled
+    if (! isTxDisabled())
+    {
+        // Update the Tx counters. This is define in the BaseMaster class
+        updateTxCnts(frame->getPayload());
+
+        sendFrame(frame);
+    }
 }

@@ -19,19 +19,13 @@
 
 import pyrogue
 import smurf
+import pysmurf.core.common
 
-class BaseTransmitter(pyrogue.Device):
+class BaseTransmitter(pysmurf.core.common.BaseSlave):
     """
     SMuRF Data BaseTransmitter Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Data BaseTransmitter', **kwargs)
         self._transmitter = smurf.core.transmitters.BaseTransmitter()
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
-    def _getStreamSlave(self):
-        return self._transmitter
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
-    def _getStreamMaster(self):
-        return self._transmitter
+        pysmurf.core.common.BaseSlave.__init__(self, name=name, device=self._mapper, description='SMuRF Data BaseTransmitter', **kwargs)

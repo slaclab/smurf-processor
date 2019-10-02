@@ -23,9 +23,8 @@ import pysmurf.core.common
 
 class SmurfChannelMapper(pysmurf.core.common.BaseMasterSlave):
     """
-    SMuRF Data Re-orderer Python Wrapper.
+    SMuRF Channel Mapper Python Wrapper.
     """
     def __init__(self, name, **kwargs):
-        # pyrogue.Device.__init__(self, name=name, description='SMuRF Data Re-orderer', **kwargs)
         self._mapper = smurf.core.mappers.SmurfChannelMapper()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, **kwargs)
+        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, description='SMuRF Channel Mapper', **kwargs)

@@ -26,7 +26,7 @@ namespace sct = smurf::core::transmitters;
 
 sct::BaseTransmitter::BaseTransmitter()
 :
-    ris::Slave()
+    scc::BaseSlave()
 {
     std::cout << "BaseTransmitter created" << std::endl;
 }
@@ -39,9 +39,9 @@ sct::BaseTransmitterPtr sct::BaseTransmitter::create()
 // Setup Class in python
 void sct::BaseTransmitter::setup_python()
 {
-    bp::class_<sct::BaseTransmitter, sct::BaseTransmitterPtr, bp::bases<ris::Slave>, boost::noncopyable >("BaseTransmitter",bp::init<>())
+    bp::class_<sct::BaseTransmitter, sct::BaseTransmitterPtr, bp::bases<scc::BaseSlave>, boost::noncopyable >("BaseTransmitter",bp::init<>())
     ;
-    bp::implicitly_convertible< sct::BaseTransmitterPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< sct::BaseTransmitterPtr, scc::BaseSlavePtr >();
 }
 
 void sct::BaseTransmitter::acceptFrame(ris::FramePtr frame)

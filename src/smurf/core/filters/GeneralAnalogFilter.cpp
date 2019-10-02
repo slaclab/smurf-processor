@@ -25,8 +25,8 @@ namespace scf = smurf::core::filters;
 
 scf::GeneralAnalogFilter::GeneralAnalogFilter(std::size_t s)
 :
-    ris::Slave(),
-    ris::Master(),
+    scc::BaseSlave(),
+    scc::BaseMaster(),
     size(s)
 {
     std::cout << "GeneralAnalogFilter of size " << size << " created" << std::endl;
@@ -39,10 +39,10 @@ scf::GeneralAnalogFilterPtr scf::GeneralAnalogFilter::create(std::size_t s)
 
 void scf::GeneralAnalogFilter::setup_python()
 {
-    bp::class_<scf::GeneralAnalogFilter, scf::GeneralAnalogFilterPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("GeneralAnalogFilter",bp::init<std::size_t>())
+    bp::class_<scf::GeneralAnalogFilter, scf::GeneralAnalogFilterPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("GeneralAnalogFilter",bp::init<std::size_t>())
     ;
-    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::SlavePtr >();
-    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::MasterPtr >();
+    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, scc::BaseSlavePtr  >();
+    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, scc::BaseMasterPtr >();
 }
 
 void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)

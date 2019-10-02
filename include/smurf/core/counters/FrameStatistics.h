@@ -22,14 +22,15 @@
 **/
 
 #include <iostream>
-#include <rogue/interfaces/stream/Master.h>
-#include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include "smurf/core/common/BaseSlave.h"
+#include "smurf/core/common/BaseMaster.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
+namespace sccommon = smurf::core::common;   // scc would conflict with smurf::core::counters
 
 namespace smurf
 {
@@ -40,7 +41,7 @@ namespace smurf
             class FrameStatistics;
             typedef boost::shared_ptr<FrameStatistics> FrameStatisticsPtr;
 
-            class FrameStatistics : public ris::Slave, public ris::Master
+            class FrameStatistics : public sccommon::BaseSlave, public sccommon::BaseMaster
             {
             public:
                 FrameStatistics();
@@ -50,38 +51,24 @@ namespace smurf
 
                 static void setup_python();
 
-                // Disable the processing block. The data
-                // will just pass through to the next slave
-                void       setDisable(bool d);
-                const bool getDisable()       const;
-
-                // Get the frame counter
-                const std::size_t getFrameCnt() const;
-
-                // Get the last frame size (in bytes)
-                const std::size_t getFrameSize() const;
-
                 // Get number of lost frames
                 const std::size_t getFrameLossCnt() const;
 
                 // Get the number of out-of-order frames
                 const std::size_t getFrameOutOrderCnt() const;
 
-                // Clear all counter
-                void clearCnt();
-
                 void acceptFrame(ris::FramePtr frame);
 
+                // Clear the Rx counter. Override the base class implementation to
+                // clear all the other counters with the same command.
+                virtual void clearRxCnt();
+
             private:
-                bool                 disable;           // Disable flag
-                std::size_t          frameCnt;          // Frame counter
-                std::size_t          frameSize;         // Last frame size (bytes)
-                bool                 firstFrame;        // Flag to indicate we are processing the first frame
-                std::size_t          frameLossCnt;      // Number of frame lost
-                std::size_t          frameOutOrderCnt;  // Counts the number of times we received an out-of-order frame
-                std::size_t          frameNumber;       // Current frame number
-                std::size_t          prevFrameNumber;   // Last frame number
-                std::vector<uint8_t> indexes;           // map indexes
+                bool        firstFrame;        // Flag to indicate we are processing the first frame
+                std::size_t frameLossCnt;      // Number of frame lost
+                std::size_t frameOutOrderCnt;  // Counts the number of times we received an out-of-order frame
+                std::size_t frameNumber;       // Current frame number
+                std::size_t prevFrameNumber;   // Last frame number
             };
         }
     }

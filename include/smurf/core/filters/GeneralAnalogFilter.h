@@ -22,14 +22,15 @@
 **/
 
 #include <iostream>
-#include <rogue/interfaces/stream/Master.h>
-#include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include "smurf/core/common/BaseSlave.h"
+#include "smurf/core/common/BaseMaster.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
+namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -40,7 +41,7 @@ namespace smurf
             class GeneralAnalogFilter;
             typedef boost::shared_ptr<GeneralAnalogFilter> GeneralAnalogFilterPtr;
 
-            class GeneralAnalogFilter : public ris::Slave, public ris::Master
+            class GeneralAnalogFilter : public scc::BaseSlave, public scc::BaseMaster
             {
             public:
                 GeneralAnalogFilter(std::size_t s);

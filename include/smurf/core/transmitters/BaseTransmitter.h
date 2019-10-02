@@ -22,14 +22,14 @@
 **/
 
 #include <iostream>
-#include <rogue/interfaces/stream/Master.h>
-#include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include "smurf/core/common/BaseSlave.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
+namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -40,7 +40,7 @@ namespace smurf
             class BaseTransmitter;
             typedef boost::shared_ptr<BaseTransmitter> BaseTransmitterPtr;
 
-            class BaseTransmitter : public ris::Slave
+            class BaseTransmitter : public scc::BaseSlave
             {
             public:
                 BaseTransmitter();
