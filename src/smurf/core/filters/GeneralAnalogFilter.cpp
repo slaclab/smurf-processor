@@ -50,5 +50,47 @@ void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
     std::cout << "  GeneralAnalogFilter. Frame received..." << std::endl;
     std::cout << "  Size = " << frame->getPayload() << std::endl;
 
-    sendFrame(frame);
+    // If the processing block is disabled, do not process the frame
+    if (isRxDisabled())
+    {
+
+        // Is the Tx block is not disabled, send the same Rx frame
+        if (! isTxDisabled())
+        {
+            // Update the Tx counters. This is define in the BaseMaster class
+            updateTxCnts(frame->getPayload());
+
+            sendFrame(frame);
+        }
+
+        return;
+    }
+
+    // Update the Rx counters. This is define in the BaseSlave class
+    updateRxCnts(frame->getPayload());
+
+    // Request a new frame
+    ris::FramePtr newFrame = reqFrame(128, true);
+
+    // Iterator to the input frame
+    ris::FrameIterator itIn = frame->beginRead();
+
+    // Iterator to the output frame
+    ris::FrameIterator itOut = newFrame->beginWrite();
+
+    // Copy the header from the input frame to the output frame.
+    for (std::size_t i{0}; i < 128; ++i)
+            *(itOut+1) = *(itIn+1);
+
+    // Set the frame size
+    newFrame->setPayload(128);
+
+    // Send the frame, if the Tx block is not disabled
+    if (! isTxDisabled())
+    {
+        // Update the Tx counters. This is define in the BaseMaster class
+        updateTxCnts(newFrame->getPayload());
+
+        sendFrame(newFrame);
+    }
 }

@@ -48,4 +48,11 @@ void sct::BaseTransmitter::acceptFrame(ris::FramePtr frame)
 {
     std::cout << "    BaseTransmitter. Frame received..." << std::endl;
     std::cout << "    Size = " << frame->getPayload() << std::endl;
+
+    // If the processing block is disabled, do not process the frame
+    if (isRxDisabled())
+    	return;
+
+    // Update the Rx counters. This is define in the BaseSlave class
+    updateRxCnts(frame->getPayload());
 }
