@@ -25,13 +25,9 @@ namespace scu  = smurf::core::unwrappers;
 
 scu::Unwrapper::Unwrapper()
 :
-    ris::Slave(),
-    ris::Master(),
-    disable(false),
-    frameCnt(0),
-    frameSize(0)
+    scc::BaseSlave(),
+    scc::BaseMaster()
 {
-    std::cout << "Unwrapper created" << std::endl;
 }
 
 scu::UnwrapperPtr scu::Unwrapper::create()
@@ -42,79 +38,27 @@ scu::UnwrapperPtr scu::Unwrapper::create()
 // Setup Class in python
 void scu::Unwrapper::setup_python()
 {
-    bp::class_<scu::Unwrapper, scu::UnwrapperPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("Unwrapper", bp::init<>())
-        .def("setDisable",          &Unwrapper::setDisable)
-        .def("getDisable",          &Unwrapper::getDisable)
-        .def("getFrameCnt",         &Unwrapper::getFrameCnt)
-        .def("getFrameSize",        &Unwrapper::getFrameSize)
-        .def("clearCnt",            &Unwrapper::clearCnt)
+    bp::class_<scu::Unwrapper, scu::UnwrapperPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("Unwrapper", bp::init<>())
     ;
     bp::implicitly_convertible< scu::UnwrapperPtr, ris::SlavePtr >();
     bp::implicitly_convertible< scu::UnwrapperPtr, ris::MasterPtr >();
 }
 
-void scu::Unwrapper::setDisable(bool d)
+void scu::Unwrapper::rxtFrame(ris::FramePtr frame)
 {
-    disable = d;
-}
-
-const bool scu::Unwrapper::getDisable() const
-{
-    return disable;
-}
-
-
-const std::size_t scu::Unwrapper::getFrameCnt() const
-{
-    return frameCnt;
-}
-
-const std::size_t scu::Unwrapper::getFrameSize() const
-{
-    return frameSize;
-}
-
-void scu::Unwrapper::clearCnt()
-{
-    frameCnt         = 0;
-}
-
-void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
-{
-    std::cout << "Unwrapper. Frame received..." << std::endl;
-    std::cout << "Size = " << frame->getPayload() << std::endl;
-
-    // If the processing block is disabled, just send the frame
-    // to the next slave.
-    if (disable)
+    // If the processing block is disabled, do not process the frame
+    if (isRxDisabled())
     {
-        sendFrame(frame);
+        // Send the frame to the next slave.
+        // This method will check if the Tx block is disabled, as well
+        // as updating the Tx counters
+        txFrame(frame);
+
         return;
     }
 
-    //Increase the frame counter
-    ++frameCnt;
-
-    // Update the last frame size
-    frameSize = frame->getPayload();
-
-
-    // Request a new frame
-    ris::FramePtr newFrame = reqFrame(128, true);
-
-    // Iterator to the input frame
-    ris::FrameIterator itIn = frame->beginRead();
-
-    // Iterator to the output frame
-    ris::FrameIterator itOut = newFrame->beginWrite();
-
-    // Copy the header from the input frame to the output frame.
-    for (std::size_t i{0}; i < 128; ++i)
-            *(itOut+1) = *(itIn+1);
-
-    // Set the frame size
-    newFrame->setPayload(128);
-
-    // Send the frame
-    sendFrame(newFrame);
+    // Send the frame to the next slave.
+    // This method will check if the Tx block is disabled, as well
+    // as updating the Tx counters
+    txFrame(frame);
 }

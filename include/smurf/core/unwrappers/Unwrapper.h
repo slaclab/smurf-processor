@@ -22,14 +22,17 @@
 **/
 
 #include <iostream>
-#include <rogue/interfaces/stream/Master.h>
-#include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include "smurf/core/common/BaseSlave.h"
+#include "smurf/core/common/BaseMaster.h"
+#include "smurf/core/common/SmurfHeader.h"
+#include "smurf/core/common/SmurfPacket.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
+namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -40,7 +43,7 @@ namespace smurf
             class Unwrapper;
             typedef boost::shared_ptr<Unwrapper> UnwrapperPtr;
 
-            class Unwrapper : public ris::Slave, public ris::Master
+            class Unwrapper : public scc::BaseSlave, public scc::BaseMaster
             {
             public:
                 Unwrapper();
@@ -50,26 +53,11 @@ namespace smurf
 
                 static void setup_python();
 
-                // Disable the processing block. The data
-                // will just pass through to the next slave
-                void       setDisable(bool d);
-                const bool getDisable()       const;
-
-                // Get the frame counter
-                const std::size_t getFrameCnt() const;
-
-                // Get the last frame size (in bytes)
-                const std::size_t getFrameSize() const;
-
-                // Clear all counter
-                void clearCnt();
-
-                void acceptFrame(ris::FramePtr frame);
+                // This will be call by the BaseSlave class after updating
+                // the base counters
+                void rxtFrame(ris::FramePtr frame);
 
             private:
-                bool                 disable;           // Disable flag
-                std::size_t          frameCnt;          // Frame counter
-                std::size_t          frameSize;         // Last frame size (bytes)
             };
         }
     }
