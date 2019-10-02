@@ -25,9 +25,8 @@ namespace scm  = smurf::core::mappers;
 
 scm::SmurfChannelMapper::SmurfChannelMapper()
 :
-    ris::Slave(),
-    ris::Master(),
-    BaseSlave()
+    scc::BaseSlave(),
+    ris::Master()
 {
     std::cout << "SmurfChannelMapper created" << std::endl;
 }
@@ -40,14 +39,9 @@ scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 // Setup Class in python
 void scm::SmurfChannelMapper::setup_python()
 {
-    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<ris::Slave,ris::Master>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
-        .def("setDisable",          &SmurfChannelMapper::setDisable)
-        .def("isDisabled",          &SmurfChannelMapper::isDisabled)
-        .def("getFrameCnt",         &SmurfChannelMapper::getFrameCnt)
-        .def("getFrameSize",        &SmurfChannelMapper::getFrameSize)
-        .def("clearCnt",            &SmurfChannelMapper::clearCnt)
+    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<scc::BaseSlave,ris::Master>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
     ;
-    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::SlavePtr >();
+    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, scc::BaseSlavePtr >();
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
 }
 
@@ -58,7 +52,7 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 
     // If the processing block is disabled, just send the frame
     // to the next slave.
-    if (isDisabled())
+    if (isRxDisabled())
     {
         sendFrame(frame);
         return;

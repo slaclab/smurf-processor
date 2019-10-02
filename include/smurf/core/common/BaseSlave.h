@@ -21,35 +21,60 @@
  *-----------------------------------------------------------------------------
 **/
 
-class BaseSlave
+#include <iostream>
+#include <rogue/interfaces/stream/Slave.h>
+#include <rogue/interfaces/stream/Frame.h>
+#include <rogue/interfaces/stream/FrameLock.h>
+#include <rogue/interfaces/stream/FrameIterator.h>
+
+namespace bp  = boost::python;
+namespace ris = rogue::interfaces::stream;
+
+namespace smurf
 {
-public:
-    BaseSlave() : disable(false), frameCnt(0), frameSize(0) {};
-    virtual ~BaseSlave() {};
+    namespace core
+    {
+        namespace common
+        {
+            class BaseSlave;
+            typedef boost::shared_ptr<BaseSlave> BaseSlavePtr;
 
-    // Derivated classes need to class this method to
-    // update the counters
-    void updateCnts(std::size_t s)          { ++frameCnt; frameSize = s; };
+            class BaseSlave : public ris::Slave
+            {
+            public:
+                BaseSlave();
+                virtual ~BaseSlave() {};
 
-    // Disable the processing block. The data
-    // will just pass through to the next slave
-    void       setDisable(bool d)           { disable = d;      };
-    const bool isDisabled()       const     { return disable;   };
+                static BaseSlavePtr create();
 
-    // Get the frame counter
-    const std::size_t getFrameCnt() const   { return frameCnt;  };
+                static void setup_python();
 
-    // Get the last frame size (in bytes)
-    const std::size_t getFrameSize() const  { return frameSize; };
+                // Derivated classes need to class this method to
+                // update the counters
+                void updateCnts(std::size_t s);
 
-    // Clear all counter. It can be redefined in the derivated class
-    // if other counters need to be clear.
-    virtual void clearCnt()                 { frameCnt = 0; };
+                // Disable the processing block. The data
+                // will just pass through to the next slave
+                void       disableRx(bool d);
+                const bool isRxDisabled()       const;
 
-private:
-    bool                 disable;           // Disable flag
-    std::size_t          frameCnt;          // Frame counter
-    std::size_t          frameSize;         // Last frame size (bytes)
-};
+                // Get the frame counter
+                const std::size_t getRxFrameCnt() const;
+
+                // Get the last frame size (in bytes)
+                const std::size_t getRxFrameSize() const;
+
+                // Clear all counter. It can be redefined in the derivated class
+                // if other counters need to be clear.
+                virtual void clearRxCnt();
+
+            private:
+                bool        disable;    // Disable flag
+                std::size_t frameCnt;   // Frame counter
+                std::size_t frameSize;  // Last frame size (bytes)
+            };
+        }
+    }
+}
 
 #endif

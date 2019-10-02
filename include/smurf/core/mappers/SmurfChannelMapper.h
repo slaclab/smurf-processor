@@ -31,6 +31,7 @@
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
+namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -41,7 +42,7 @@ namespace smurf
             class SmurfChannelMapper;
             typedef boost::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
 
-            class SmurfChannelMapper : public ris::Slave, public ris::Master, public BaseSlave
+            class SmurfChannelMapper : public scc::BaseSlave, public ris::Master
             {
             public:
                 SmurfChannelMapper();
