@@ -50,15 +50,18 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     std::cout << "SmurfChannelMapper. Frame received..." << std::endl;
     std::cout << "Size = " << frame->getPayload() << std::endl;
 
-    // If the processing block is disabled, just send the frame
-    // to the next slave.
+    // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {
-        sendFrame(frame);
+
+        // Is the Tx block is not disabled, send the same Rx frame
+        if (! isTxDisabled())
+            sendFrame(frame);
+
         return;
     }
 
-    // Update counters. This is define in the BaseSlave class
+    // Update the Rx counters. This is define in the BaseSlave class
     updateRxCnts(frame->getPayload());
 
     // Request a new frame
@@ -77,6 +80,12 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     // Set the frame size
     newFrame->setPayload(128);
 
-    // Send the frame
-    sendFrame(newFrame);
+    // Send the frame, if the Tx block is not disabled
+    if (! isTxDisabled())
+    {
+        // Update the Tx counters. This is define in the BaseMaster class
+        updateTxCnts(newFrame->getPayload());
+
+        sendFrame(newFrame);
+    }
 }
