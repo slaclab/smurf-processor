@@ -28,3 +28,21 @@ class SmurfChannelMapper(pysmurf.core.common.BaseMasterSlave):
     def __init__(self, name, **kwargs):
         self._mapper = smurf.core.mappers.SmurfChannelMapper()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, description='SMuRF Channel Mapper', **kwargs)
+
+        # Add the number of enabled channels  variable
+        self.add(pyrogue.LocalVariable(
+            name='NumEnabledChannels',
+            description='Number enabled channels',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self._mapper.getNumCh
+
+		# Add variable to set the mapping mask
+        self.add(pyrogue.LocalVariable(
+            name='Mask',
+            description='Set the mapping mask',
+            mode='RW',
+            value=[],
+            pollInterval=1,
+            localGet=self._mapper.setMask

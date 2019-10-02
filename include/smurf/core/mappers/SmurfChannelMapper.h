@@ -27,6 +27,8 @@
 #include <rogue/interfaces/stream/FrameIterator.h>
 #include "smurf/core/common/BaseSlave.h"
 #include "smurf/core/common/BaseMaster.h"
+#include "smurf/core/common/SmurfHeader.h"
+#include "smurf/core/common/SmurfPacket.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -54,6 +56,16 @@ namespace smurf
                 // This will be call by the BaseSlave class after updating
                 // the base counters
                 void rxFrame(ris::FramePtr frame);
+
+                // Set the Channel mask vector
+                void setMask(boost::python::list m);
+
+                // Get the number of mapper channels
+                const std::size_t getNumCh() const;
+
+            private:
+                std::size_t              numCh; // Number of mapped channels
+                std::vector<std::size_t> mask;  // Channel mask file
             };
         }
     }
