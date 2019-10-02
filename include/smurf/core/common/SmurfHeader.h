@@ -22,6 +22,7 @@
 **/
 
 #include <memory>
+#include <stdexcept>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
@@ -106,9 +107,11 @@ private:
     SmurfHeaderRO& operator=(const SmurfHeaderRO&);
 
     // helper functions
-    const uint16_t getU16Word(std::size_t offset) const;
-    const uint32_t getU32Word(std::size_t offset) const;
-    const uint64_t getU64Word(std::size_t offset) const;
+    const uint8_t  getU8Word(std::size_t offset)  const;                    // Returns uint8_t word from the header, at offset 'offset'
+    const uint16_t getU16Word(std::size_t offset) const;                    // Returns uint16_t word from the header, at offset 'offset'
+    const uint32_t getU32Word(std::size_t offset) const;                    // Returns uin3t2_t word from the header, at offset 'offset'
+    const uint64_t getU64Word(std::size_t offset) const;                    // Returns uint64_t word from the header, at offset 'offset'
+    const bool     getWordBit(std::size_t offset, std::size_t index) const; // Returns bit 'index' from a header byte at offset 'offset'
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
