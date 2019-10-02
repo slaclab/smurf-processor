@@ -86,7 +86,7 @@ void scc::BaseSlave::acceptFrame(ris::FramePtr frame)
     ++frameCnt;
 
     //Update the last frame size
-    frameSise = frame->getPayload();
+    frameSize = frame->getPayload();
 
     // Now call the rxFrame, which will be defined in the derivated class
     rxFrame(frame);
