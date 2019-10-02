@@ -24,8 +24,8 @@ class BaseMaster(pyrogue.Device):
     """
     SMuRF Base Master Python Wrapper.
     """
-    def __init__(self, name, master, **kwargs):
-        pyrogue.Device.__init__(self, name=name, description='SMuRF Base Master', **kwargs)
+    def __init__(self, name, description, master, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description=description, **kwargs)
         self._master = master
 
         # Add "Disable" variable

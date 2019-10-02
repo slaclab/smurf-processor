@@ -24,8 +24,8 @@ class BaseSlave(pyrogue.Device):
     """
     SMuRF Base Slave Python Wrapper.
     """
-    def __init__(self, name, slave, **kwargs):
-        pyrogue.Device.__init__(self, name=name, description='SMuRF Base Slave', **kwargs)
+    def __init__(self, name, description, slave, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description=description, **kwargs)
         self._slave = slave
 
         # Add "Disable" variable
