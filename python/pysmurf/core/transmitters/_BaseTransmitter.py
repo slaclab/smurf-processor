@@ -28,4 +28,4 @@ class BaseTransmitter(pysmurf.core.common.BaseSlave):
     def __init__(self, name, **kwargs):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Data BaseTransmitter', **kwargs)
         self._transmitter = smurf.core.transmitters.BaseTransmitter()
-        pysmurf.core.common.BaseSlave.__init__(self, name=name, device=self._transmitter, description='SMuRF Data BaseTransmitter', **kwargs)
+        pysmurf.core.common.BaseSlave.__init__(self, name=name, slave=self._transmitter, description='SMuRF Data BaseTransmitter', **kwargs)
