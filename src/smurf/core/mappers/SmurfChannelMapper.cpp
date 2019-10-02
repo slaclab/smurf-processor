@@ -56,7 +56,12 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 
         // Is the Tx block is not disabled, send the same Rx frame
         if (! isTxDisabled())
+        {
+            // Update the Tx counters. This is define in the BaseMaster class
+            updateTxCnts(frame->getPayload());
+
             sendFrame(frame);
+        }
 
         return;
     }
