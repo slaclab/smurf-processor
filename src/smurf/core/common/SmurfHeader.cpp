@@ -32,7 +32,7 @@ const uint32_t SmurfHeader_RO::getFrameCounter() const
     U32 fn;
 
     for (std::size_t i{0}; i < 4; ++i)
-        fn.b[i] = *(it+headerFrameCounterOffset+i);
+        fn.b[i] = *(headerIt+headerFrameCounterOffset+i);
 
     return fn.w;
 }
