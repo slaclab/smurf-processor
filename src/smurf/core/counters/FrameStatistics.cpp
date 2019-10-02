@@ -79,7 +79,7 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
     if (!isRxDisabled())
     {
         // (smart) pointer to the smurf header in the input frame (Read-only)
-        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame->beginRead()));
+        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
 
         // Store the current and last frame numbers
         // - Previous frame number

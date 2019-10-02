@@ -20,14 +20,17 @@
 
 #include "smurf/core/common/SmurfHeader.h"
 
+//////////////////////////////////////////
+////// + SmurfHeaderRO definitions ///////
+//////////////////////////////////////////
 
-SmurfHeaderRO::SmurfHeaderRO(ris::FrameIterator it)
+SmurfHeaderRO::SmurfHeaderRO(ris::FramePtr frame)
 :
-    headerIt(it)
+    headerIt(frame->beginRead())
 {
 }
 
-SmurfHeaderROPtr SmurfHeaderRO::create(ris::FrameIterator it)
+SmurfHeaderROPtr SmurfHeaderRO::create(ris::FramePtr frame)
 {
     return std::make_shared<SmurfHeaderRO>(it);
 }
@@ -222,3 +225,34 @@ const bool SmurfHeaderRO::getWordBit(std::size_t offset, std::size_t index) cons
 
     return ( (*(headerIt+offset) >> index ) & 0x01 );
 }
+
+
+//////////////////////////////////////////
+////// - SmurfHeaderRO definitions ///////
+//////////////////////////////////////////
+
+
+////////////////////////////////////////
+////// + SmurfHeader definitions ///////
+////////////////////////////////////////
+
+SmurfHeader::SmurfHeader(ris::FramePtr frame)
+:
+    SmurfHeaderRO(frame),
+    headerIt(frame->beginWrite())
+{
+
+}
+
+SmurfHeaderPtr SmurfHeader::create(ris::FramePtr frame)
+{
+    return std::make_shared<SmurfHeader>(frame);
+}
+
+// Function to get header words
+
+// Helper functions
+
+////////////////////////////////////////
+////// + SmurfHeader definitions ///////
+////////////////////////////////////////

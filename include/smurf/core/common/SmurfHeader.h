@@ -30,15 +30,19 @@
 namespace ris = rogue::interfaces::stream;
 
 class SmurfHeaderRO;
+class SmurfHeader;
 typedef std::shared_ptr<SmurfHeaderRO> SmurfHeaderROPtr;
+typedef std::shared_ptr<SmurfHeader>   SmurfHeaderPtr;
 
+
+// SMuRF header class. This class give a read-only access
 class SmurfHeaderRO
 {
 public:
-    SmurfHeaderRO(ris::FrameIterator it);
-    ~SmurfHeaderRO() {};
+    SmurfHeaderRO(ris::FramePtr frame);
+    virtual ~SmurfHeaderRO() {};
 
-    static SmurfHeaderROPtr create(ris::FrameIterator it);
+    static SmurfHeaderROPtr create(ris::FramePtr frame);
 
     const uint8_t  getVersion()                   const;  // Get protocol version
     const uint8_t  getCrateID()                   const;  // Get ATCA crate ID
@@ -112,6 +116,61 @@ private:
     const uint32_t getU32Word(std::size_t offset) const;                    // Returns uin3t2_t word from the header, at offset 'offset'
     const uint64_t getU64Word(std::size_t offset) const;                    // Returns uint64_t word from the header, at offset 'offset'
     const bool     getWordBit(std::size_t offset, std::size_t index) const; // Returns bit 'index' from a header byte at offset 'offset'
+
+    // Private variables
+    ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+};
+
+// SMuRF header class. This class give a read-write access
+class SmurfHeader : public SmurfHeaderRO
+{
+public:
+    SmurfHeader(ris::FramePtr frame);
+    ~SmurfHeader() {};
+
+    static SmurfHeaderPtr create(ris::FramePtr frame);
+
+    void setVersion(uint8_t value);                     // Set protocol version
+    void setCrateID(uint8_t value);                     // Set ATCA crate ID
+    void setSlotNumber(uint8_t value);                  // Set ATCA slot number
+    void setTimingConfiguration(uint8_t value);         // Set timing configuration
+    void setNumberChannels(uint32_t value);             // Set number of channel in this packet
+    void setTESBias(std::size_t index, int32_t value);  // Set TES DAC values 16X 20 bit
+    void setUnixTime(uint64_t value);                   // Set 64 bit unix time nanoseconds
+    void setFluxRampIncrement(uint32_t value);          // Set signed 32 bit integer for increment
+    void setFluxRampOffset(uint32_t value);             // Set signed 32 it integer for offset
+    void setCounter0(uint32_t value);                   // Set 32 bit counter since last 1Hz marker
+    void setCounter1(uint32_t value);                   // Set 32 bit counter since last external input
+    void setCounter2(uint64_t value);                   // Set 64 bit timestamp
+    void setAveragingResetBits(uint32_t value);         // Set up to 32 bits of average reset from timing system
+    void setFrameCounter(uint32_t value);               // Set locally genreate frame counter 32 bit
+    void setTESRelaySetting(uint32_t value);            // Set TES and flux ramp relays, 17bits in use now
+    void setExternalTimeClock(uint64_t value);          // Set Syncword from mce for mce based systems (40 bit including header)
+    void setControlField(uint8_t value);                // Set control field word
+    void setClearAverageBit(bool value);                // Set control field's clear average and unwrap bit (bit 0)
+    void setDisableStreamBit(bool value);               // Set control field's disable stream to MCE bit (bit 1)
+    void setDisableFileWriteBit(bool value);            // Set control field's disable file write (bit 2)
+    void setReadConfigEachCycleBit(bool value);         // Set control field's set to read configuration file each cycle bit (bit 3)
+    void setTestMode(uint8_t value);                    // Set control field's test mode (bits 4-7)
+    void setTestParameters(uint8_t value);              // Set test parameters
+    void setNumberRows(uint16_t value);                 // Set MCE header value (max 255) (defaluts to 33 if 0)
+    void setNumberRowsReported(uint16_t value);         // Set MCE header value (defaults to numb rows if 0)
+    void setRowLength(uint16_t value);                  // Set MCE header value
+    void setDataRate(uint16_t value);                   // Set MCE header value
+
+private:
+    // Prevent construction using the default or copy constructor.
+    // Prevent an SmurfHeaderRO object to be assigned as well.
+    SmurfHeader();
+    SmurfHeader(const SmurfHeader&);
+    SmurfHeader& operator=(const SmurfHeader&);
+
+    // helper functions
+    const void setU8Word(  std::size_t offset, uint32_t val                ) const; // Write a uint8_t word into the header, at offset 'offset'
+    const void setU16Word( std::size_t offset, uint32_t val                ) const; // Write a uint16_t word into the header, at offset 'offset'
+    const void setU32Word( std::size_t offset, uint32_t val                ) const; // Write a uin3t2_t word into the header, at offset 'offset'
+    const void setU64Word( std::size_t offset, uint32_t val                ) const; // Write a uint64_t word into the header, at offset 'offset'
+    const void setWordBit( std::size_t offset, std::size_t index, bool val ) const; // write a bit at 'index' position into the header byte at offset 'offset'
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
