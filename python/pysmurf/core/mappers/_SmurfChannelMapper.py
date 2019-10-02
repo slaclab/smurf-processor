@@ -44,4 +44,4 @@ class SmurfChannelMapper(pysmurf.core.common.BaseMasterSlave):
             description='Set the mapping mask',
             mode='RW',
             value=[0],  # Rogue doesn't allow to have an empty list here.
-            localSet=lambda value: self._mapper.setMask(vaue)))
+            localSet=lambda value: self._mapper.setMask(value)))
