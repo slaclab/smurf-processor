@@ -135,7 +135,7 @@ public:
     void setSlotNumber(uint8_t value) const;                  // Set ATCA slot number
     void setTimingConfiguration(uint8_t value) const;         // Set timing configuration
     void setNumberChannels(uint32_t value) const;             // Set number of channel in this packet
-    void setTESBias(std::size_t index const, int32_t value);  // Set TES DAC values 16X 20 bit
+    void setTESBias(std::size_t index, int32_t value) const;  // Set TES DAC values 16X 20 bit
     void setUnixTime(uint64_t value) const;                   // Set 64 bit unix time nanoseconds
     void setFluxRampIncrement(uint32_t value) const;          // Set signed 32 bit integer for increment
     void setFluxRampOffset(uint32_t value) const;             // Set signed 32 it integer for offset

@@ -250,111 +250,111 @@ SmurfHeaderPtr SmurfHeader::create(ris::FramePtr frame)
 }
 
 // Function to get header words
-void SmurfHeaderRO::setVersion(uint8_t value) const
+void SmurfHeader::setVersion(uint8_t value) const
 {
     setU8Word(headerVersionOffset, value);
 }
 
-void SmurfHeaderRO::setCrateID(uint8_t value) const
+void SmurfHeader::setCrateID(uint8_t value) const
 {
     setU8Word(headerCrateIDOffset, value);
 }
 
-void SmurfHeaderRO::setSlotNumber(uint8_t value) const
+void SmurfHeader::setSlotNumber(uint8_t value) const
 {
     setU8Word(headerSlotNumberOffset, value);
 }
 
-void SmurfHeaderRO::setTimingConfiguration(uint8_t value) const
+void SmurfHeader::setTimingConfiguration(uint8_t value) const
 {
     setU8Word(headerTimingConfigurationOffset, value);
 }
 
-void SmurfHeaderRO::setNumberChannels(uint32_t value) const
+void SmurfHeader::setNumberChannels(uint32_t value) const
 {
     setU32Word(headerNumberChannelOffset, value);
 }
 
-void SmurfHeaderRO::setTESBias(std::size_t index, int32_t value) const
+void SmurfHeader::setTESBias(std::size_t index, int32_t value) const
 {
 }
 
-void SmurfHeaderRO::setUnixTime(uint64_t value) const
+void SmurfHeader::setUnixTime(uint64_t value) const
 {
     setU64Word(headerUnixTimeOffset, value);
 }
 
-void SmurfHeaderRO::setFluxRampIncrement(uint32_t value) const
+void SmurfHeader::setFluxRampIncrement(uint32_t value) const
 {
     setU32Word(headerFluxRampIncrementOffset, value);
 }
 
-void SmurfHeaderRO::setFluxRampOffset(uint32_t value) const
+void SmurfHeader::setFluxRampOffset(uint32_t value) const
 {
     setU32Word(headerFluxRampOffsetOffset, value);
 }
 
-void SmurfHeaderRO::setCounter0(uint32_t value) const
+void SmurfHeader::setCounter0(uint32_t value) const
 {
     setU32Word(headerCounter0Offset, value);
 }
 
-void SmurfHeaderRO::setCounter1(uint32_t value) const
+void SmurfHeader::setCounter1(uint32_t value) const
 {
     setU32Word(headerCounter1Offset, value);
 }
 
-void SmurfHeaderRO::setCounter2(uint64_t value) const
+void SmurfHeader::setCounter2(uint64_t value) const
 {
     setU64Word(headerCounter2Offset, value);
 }
 
-void SmurfHeaderRO::setAveragingResetBits(uint32_t value) const
+void SmurfHeader::setAveragingResetBits(uint32_t value) const
 {
     setU32Word(headerAveragingResetBitsOffset, value);
 }
 
-void SmurfHeaderRO::setFrameCounter(uint32_t value) const
+void SmurfHeader::setFrameCounter(uint32_t value) const
 {
     setU32Word(headerFrameCounterOffset, value);
 }
 
-void SmurfHeaderRO::setTESRelaySetting(uint32_t value) const
+void SmurfHeader::setTESRelaySetting(uint32_t value) const
 {
     setU32Word(headerTESRelaySettingOffset, value);
 }
 
-void SmurfHeaderRO::setExternalTimeClock(uint64_t value) const
+void SmurfHeader::setExternalTimeClock(uint64_t value) const
 {
     setU64Word(headerExternalTimeClockOffset, value);
 }
 
-void SmurfHeaderRO::setControlField(uint8_t value) const
+void SmurfHeader::setControlField(uint8_t value) const
 {
     setU8Word(headerControlFieldOffset, value);
 }
 
-void SmurfHeaderRO::setClearAverageBit(bool value) const
+void SmurfHeader::setClearAverageBit(bool value) const
 {
     setWordBit(headerControlFieldOffset, value, clearAvergaveBitOffset);
 }
 
-void SmurfHeaderRO::setDisableStreamBit(bool value) const
+void SmurfHeader::setDisableStreamBit(bool value) const
 {
     setWordBit(headerControlFieldOffset, value, disableStreamBitOffset);
 }
 
-void SmurfHeaderRO::setDisableFileWriteBit(bool value) const
+void SmurfHeader::setDisableFileWriteBit(bool value) const
 {
     setWordBit(headerControlFieldOffset, value, disableFileWriteBitOffset);
 }
 
-void SmurfHeaderRO::setReadConfigEachCycleBit(bool value) const
+void SmurfHeader::setReadConfigEachCycleBit(bool value) const
 {
     setWordBit(headerControlFieldOffset, value, readConfigEachCycleBitOffset);
 }
 
-void SmurfHeaderRO::setTestMode(uint8_t value) const
+void SmurfHeader::setTestMode(uint8_t value) const
 {
     uint8_t u8 = getControlField();
 
@@ -364,27 +364,27 @@ void SmurfHeaderRO::setTestMode(uint8_t value) const
     setU8Word(headerControlFieldOffset, aux);
 }
 
-void SmurfHeaderRO::setTestParameters(uint8_t value) const
+void SmurfHeader::setTestParameters(uint8_t value) const
 {
     setU8Word(headerTestParametersOffset, value);
 }
 
-void SmurfHeaderRO::setNumberRows(uint16_t value) const
+void SmurfHeader::setNumberRows(uint16_t value) const
 {
     setU16Word(headerNumberRowsOffset, value);
 }
 
-void SmurfHeaderRO::setNumberRowsReported(uint16_t value) const
+void SmurfHeader::setNumberRowsReported(uint16_t value) const
 {
     setU16Word(headerNumberRowsReportedOffset, value);
 }
 
-void SmurfHeaderRO::setRowLength(uint16_t value) const
+void SmurfHeader::setRowLength(uint16_t value) const
 {
     setU16Word(headerRowLengthOffset, value);
 }
 
-void SmurfHeaderRO::setDataRate(uint16_t value) const
+void SmurfHeader::setDataRate(uint16_t value) const
 {
     setU16Word(headerDataRateOffset, value);
 }
