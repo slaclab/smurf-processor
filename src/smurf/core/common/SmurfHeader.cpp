@@ -39,7 +39,7 @@ const uint32_t SmurfHeaderRO::getFrameCounter() const
 }
 
 // Helper functions
-const uint16_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
+const uint16_t SmurfHeaderRO::getU32Word(std::size_t offset) const
 {
     union
     {
@@ -53,7 +53,7 @@ const uint16_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
     return aux.w;
 }
 
-const uint32_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
+const uint32_t SmurfHeaderRO::getU32Word(std::size_t offset) const
 {
     union
     {
@@ -67,7 +67,7 @@ const uint32_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
     return aux.w;
 }
 
-const uint64_t SmurfHeaderRO::getU32Word(std::sie_t offset) const
+const uint64_t SmurfHeaderRO::getU32Word(std::size_t offset) const
 {
     union
     {
