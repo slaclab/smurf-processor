@@ -361,7 +361,7 @@ void SmurfHeader::setTestMode(uint8_t value) const
     u8 &= 0x0f;
     u8 |= ( (value << 4 ) & 0xf0 );
 
-    setU8Word(headerControlFieldOffset, aux);
+    setU8Word(headerControlFieldOffset, u8);
 }
 
 void SmurfHeader::setTestParameters(uint8_t value) const

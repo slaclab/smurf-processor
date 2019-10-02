@@ -166,11 +166,11 @@ private:
     SmurfHeader& operator=(const SmurfHeader&);
 
     // helper functions
-    const void setU8Word(  std::size_t offset, uint32_t value                ) const; // Write a uint8_t word into the header, at offset 'offset'
-    const void setU16Word( std::size_t offset, uint32_t value                ) const; // Write a uint16_t word into the header, at offset 'offset'
-    const void setU32Word( std::size_t offset, uint32_t value                ) const; // Write a uin3t2_t word into the header, at offset 'offset'
-    const void setU64Word( std::size_t offset, uint32_t value                ) const; // Write a uint64_t word into the header, at offset 'offset'
-    const void setWordBit( std::size_t offset, std::size_t index, bool value ) const; // write a bit at 'index' position into the header byte at offset 'offset'
+    void setU8Word(  std::size_t offset, uint32_t value                ) const; // Write a uint8_t word into the header, at offset 'offset'
+    void setU16Word( std::size_t offset, uint32_t value                ) const; // Write a uint16_t word into the header, at offset 'offset'
+    void setU32Word( std::size_t offset, uint32_t value                ) const; // Write a uin3t2_t word into the header, at offset 'offset'
+    void setU64Word( std::size_t offset, uint32_t value                ) const; // Write a uint64_t word into the header, at offset 'offset'
+    void setWordBit( std::size_t offset, std::size_t index, bool value ) const; // write a bit at 'index' position into the header byte at offset 'offset'
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
