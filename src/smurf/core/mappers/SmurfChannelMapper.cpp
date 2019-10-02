@@ -45,7 +45,7 @@ void scm::SmurfChannelMapper::setup_python()
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, scc::BaseMasterPtr >();
 }
 
-void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
+void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
 {
     std::cout << "SmurfChannelMapper. Frame received..." << std::endl;
     std::cout << "Size = " << frame->getPayload() << std::endl;
@@ -65,9 +65,6 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 
         return;
     }
-
-    // Update the Rx counters. This is define in the BaseSlave class
-    updateRxCnts(frame->getPayload());
 
     // Request a new frame
     ris::FramePtr newFrame = reqFrame(128, true);

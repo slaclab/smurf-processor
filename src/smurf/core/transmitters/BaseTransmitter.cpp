@@ -44,7 +44,7 @@ void sct::BaseTransmitter::setup_python()
     bp::implicitly_convertible< sct::BaseTransmitterPtr, scc::BaseSlavePtr >();
 }
 
-void sct::BaseTransmitter::acceptFrame(ris::FramePtr frame)
+void sct::BaseTransmitter::rxFrame(ris::FramePtr frame)
 {
     std::cout << "    BaseTransmitter. Frame received..." << std::endl;
     std::cout << "    Size = " << frame->getPayload() << std::endl;
@@ -52,7 +52,4 @@ void sct::BaseTransmitter::acceptFrame(ris::FramePtr frame)
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     	return;
-
-    // Update the Rx counters. This is define in the BaseSlave class
-    updateRxCnts(frame->getPayload());
 }

@@ -79,3 +79,15 @@ void scc::BaseSlave::clearRxCnt()
 {
     frameCnt = 0;
 }
+
+void scc::BaseSlave::acceptFrame(ris::FramePtr frame)
+{
+    // Update the frame counter
+    ++frameCnt;
+
+    //Update the last frame size
+    frameSise = frame->getPayload();
+
+    // Now call the rxFrame, which will be defined in the derivated class
+    rxFrame(frame);
+}

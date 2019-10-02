@@ -45,7 +45,7 @@ void scf::GeneralAnalogFilter::setup_python()
     bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, scc::BaseMasterPtr >();
 }
 
-void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
+void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
 {
     std::cout << "  GeneralAnalogFilter. Frame received..." << std::endl;
     std::cout << "  Size = " << frame->getPayload() << std::endl;
@@ -65,9 +65,6 @@ void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
 
         return;
     }
-
-    // Update the Rx counters. This is define in the BaseSlave class
-    updateRxCnts(frame->getPayload());
 
     // Request a new frame
     ris::FramePtr newFrame = reqFrame(128, true);

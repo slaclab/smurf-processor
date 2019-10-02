@@ -50,7 +50,9 @@ namespace smurf
 
                 static void setup_python();
 
-                void acceptFrame(ris::FramePtr frame);
+                // This will be call by the BaseSlave class after updating
+                // the base counters
+                void rxFrame(ris::FramePtr frame);
             };
         }
     }

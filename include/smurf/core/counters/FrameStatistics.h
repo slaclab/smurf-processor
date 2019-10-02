@@ -57,7 +57,9 @@ namespace smurf
                 // Get the number of out-of-order frames
                 const std::size_t getFrameOutOrderCnt() const;
 
-                void acceptFrame(ris::FramePtr frame);
+                // This will be call by the BaseSlave class after updating
+                // the base counters
+                virtual void rxFrame(ris::FramePtr frame);
 
                 // Clear the Rx counter. Override the base class implementation to
                 // clear all the other counters with the same command.

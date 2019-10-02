@@ -70,7 +70,7 @@ const std::size_t scc::FrameStatistics::getFrameOutOrderCnt() const
 }
 
 
-void scc::FrameStatistics::acceptFrame(ris::FramePtr frame)
+void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
 {
     std::cout << "FrameStatistics. Frame received..." << std::endl;
     std::cout << "Size = " << frame->getPayload() << std::endl;
@@ -118,10 +118,6 @@ void scc::FrameStatistics::acceptFrame(ris::FramePtr frame)
             if ( frameNumberDelta )
               frameLossCnt += frameNumberDelta;
         }
-
-
-        // Update the Rx counters. This is define in the BaseSlave class
-        updateRxCnts(frame->getPayload());
 
         std::cout << "Frame number = " << frameNumber << std::endl;
     }
