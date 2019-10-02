@@ -64,6 +64,11 @@ namespace smurf
                 const std::size_t getNumCh() const;
 
             private:
+
+                // This is the maximum number of channel we expect from an input frame.
+                static const std::size_t maxNumInCh = 4095;
+
+                // Private data members
                 std::size_t              numCh; // Number of mapped channels
                 std::vector<std::size_t> mask;  // Channel mask file
             };

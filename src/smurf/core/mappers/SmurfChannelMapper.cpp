@@ -75,13 +75,13 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
         std::size_t val = boost::python::extract<std::size_t>(m[i]);
 
         // Check if the mask value is not greater than
-        // the number of channel we received in the FW frame
-        if (val > 2048)
+        // the number of channel we received in the incoming frame
+        if (val > maxNumInCh)
         {
             // This should go to a logger instead
             std::cerr << "ERROR: mask value at index " << i << " is " << val \
-                      << ", which is greater the maximum number of channel in the received frame = " \
-                      << 2048 << std::endl;
+                      << ", which is greater the maximum number of channel we expect from an input frame = " \
+                      << maxNumInCh << std::endl;
 
             // Do not update the mask vector.
             return;
@@ -113,7 +113,6 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {
-
         // Send the frame to the next slave.
         // This method will check if the Tx block is disabled, as well
         // as updating the Tx counters
