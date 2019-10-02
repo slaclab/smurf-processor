@@ -54,13 +54,13 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
     std::size_t listSize = len(m);
 
     // Check if the size of the list, is not greater than
-    // the size of the SMuRF packet
-    if ( listSize > SmurfHeader::SmurfHeaderLength )
+    // the size of the SMuRF packet payload (in words)
+    if ( listSize > SmurfPacket::SmurfPacketPayloadLength )
     {
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set a mask list of length = " << listSize \
                   << ", which is larger that the number of channel in a SMuRF packet = " \
-                  <<  SmurfHeader::SmurfHeaderLength << std::endl;
+                  <<  SmurfPacket::SmurfPacketPayloadLength << std::endl;
 
         // Do not update the mask vector.
         return;
@@ -126,21 +126,42 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
         return;
     }
 
-    // Request a new frame
-    ris::FramePtr newFrame = reqFrame(128, true);
+    // Request a new frame, to hold the header + payload, and set its payload
+    ris::FramePtr newFrame = reqFrame(SmurfPacket::SmurfPacketSize, true);
+    newFrame->setPayload(SmurfPacket::SmurfPacketSize);
 
     // Iterator to the input frame
-    ris::FrameIterator itIn = frame->beginRead();
+    ris::FrameIterator inFrameIt = frame->beginRead();
 
     // Iterator to the output frame
-    ris::FrameIterator itOut = newFrame->beginWrite();
+    ris::FrameIterator outFrameIt = newFrame->beginWrite();
 
     // Copy the header from the input frame to the output frame.
-    for (std::size_t i{0}; i < 128; ++i)
-            *(itOut+1) = *(itIn+1);
+    for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderLength; ++i)
+            *(++outFrameIt) = *(++inFrameIt);
 
-    // Set the frame size
-    newFrame->setPayload(128);
+    // Now map the data from the input frame to the output frame according to the map vector
+    for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
+    {
+        // Copy each data word, byte-by-byte
+        for (std::size_t i{0}; i < SmurfPacket::SmurfDataWordSize; ++i)
+            *(outFrameIt + i) = *(inFrameIt + *maskIt * SmurfPacket::SmurfDataWordSize + i);
+
+        // Move the output frame iterator to the new word cell
+        outFrameIt += SmurfPacket::SmurfDataWordSize;
+    }
+
+    // Print a few work to verify the mapping works
+    std::cout << "  === MAPPING === " << std::endl;
+    std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
+    std::cout << "=====================================" << std::endl;
+    {
+        ris::FrameIterator in = frame->beginRead();
+        ris::FrameIterator out = newFrame->beginRead();
+        for (std::size_t i{0}; i < 20; ++i)
+            std::cout << i << "  " << *(in+i) << "  " << *(out+i) << std::endl;
+    }
+    std::cout << "=====================================" << std::endl;
 
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
