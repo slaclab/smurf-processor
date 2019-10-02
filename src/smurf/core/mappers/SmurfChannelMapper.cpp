@@ -158,8 +158,11 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     {
         ris::FrameIterator in = frame->beginRead();
         ris::FrameIterator out = newFrame->beginRead();
+
+        in += SmurfHeader::SmurfHeaderLength;
+        out += SmurfHeader::SmurfHeaderLength;
         for (std::size_t i{0}; i < 20; ++i)
-            std::cout << i << "  " << *(in+i) << "  " << *(out+i) << std::endl;
+            std::cout << i << "  " << unsigned(*(in+i)) << "  " << unsigned(*(out+i)) << std::endl;
     }
     std::cout << "=====================================" << std::endl;
 
