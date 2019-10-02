@@ -30,7 +30,6 @@ scm::SmurfChannelMapper::SmurfChannelMapper()
     numCh(0),
     mask(0)
 {
-    std::cout << "SmurfChannelMapper created" << std::endl;
 }
 
 scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
@@ -111,9 +110,6 @@ const std::size_t scm::SmurfChannelMapper::getNumCh() const
 
 void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
 {
-    std::cout << "SmurfChannelMapper. Frame received..." << std::endl;
-    std::cout << "Size = " << frame->getPayload() << std::endl;
-
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {
@@ -159,28 +155,6 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // Update the number of channel in the header of the output smurf frame
     SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(newFrame));
     smurfHeaderOut->setNumberChannels(numCh);
-
-    // Print a few work to verify the mapping works
-    std::cout << "  === MAPPING === " << std::endl;
-    std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
-    std::cout << "=====================================" << std::endl;
-    {
-        ris::FrameIterator in = frame->beginRead();
-        ris::FrameIterator out = newFrame->beginRead();
-
-        in += SmurfHeader::SmurfHeaderLength;
-        out += SmurfHeader::SmurfHeaderLength;
-        for (std::size_t i{0}; i < 20; ++i)
-            std::cout << i << "  " << unsigned(*(in+i)) << "  " << unsigned(*(out+i)) << std::endl;
-
-        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
-        SmurfHeaderROPtr smurfHeaderOut(SmurfHeaderRO::create(newFrame));
-
-        std::cout << "In frame, number of channels  = " << smurfHeaderIn->getNumberChannels() << std::endl;
-        std::cout << "Out frame, number of channels = " << smurfHeaderOut->getNumberChannels() << std::endl;
-    }
-    std::cout << "=====================================" << std::endl;
-
 
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well

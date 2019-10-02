@@ -33,7 +33,6 @@ scc::FrameStatistics::FrameStatistics()
     frameNumber(0),
     prevFrameNumber(0)
 {
-    std::cout << "FrameStatistics created" << std::endl;
 }
 
 scc::FrameStatisticsPtr scc::FrameStatistics::create()
@@ -72,9 +71,6 @@ const std::size_t scc::FrameStatistics::getFrameOutOrderCnt() const
 
 void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
 {
-    std::cout << "FrameStatistics. Frame received..." << std::endl;
-    std::cout << "Size = " << frame->getPayload() << std::endl;
-
     // Only process the frame is the block is enable.
     if (!isRxDisabled())
     {
@@ -108,8 +104,6 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
             if ( frameNumberDelta )
               frameLossCnt += frameNumberDelta;
         }
-
-        std::cout << "Frame number = " << frameNumber << std::endl;
     }
 
     // Send the frame to the next slave.
