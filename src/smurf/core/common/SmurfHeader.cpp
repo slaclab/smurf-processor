@@ -21,13 +21,18 @@
 #include "smurf/core/common/SmurfHeader.h"
 
 
-SmurfHeader_RO::SmurfHeader_RO(ris::FrameIterator it)
+SmurfHeaderRO::SmurfHeaderRO(ris::FrameIterator it)
 :
     headerIt(it)
 {
 }
 
-const uint32_t SmurfHeader_RO::getFrameCounter() const
+static SmurfHeaderROPtr SmurfHeaderRO::create(ris::FrameIterator it)
+{
+    return std::make_shared<SmurfHeaderRO>(it);
+}
+
+const uint32_t SmurfHeaderRO::getFrameCounter() const
 {
     U32 fn;
 

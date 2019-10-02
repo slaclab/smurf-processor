@@ -82,22 +82,9 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
         // - Previous frame number
         prevFrameNumber = frameNumber;  // Previous frame number
 
-        // // - Current frame number
-        // union
-        // {
-        //     uint32_t w;
-        //     uint8_t  b[4];
-        // } fn;
-
-        // // Get an iterator to the header of the frame
-        // ris::FrameIterator it = frame->beginRead();
-
-        // for (std::size_t i{0}; i < 4; ++i)
-        //         fn.b[i] = *(it+84+i);
-
-        // frameNumber = fn.w;
-        SmurfHeader_RO smurf_header_ro(frame->beginRead());
-        frameNumber = smurf_header_ro.getFrameCounter();
+        // - Current frame number
+        SmurfHeaderROPtr smurf_header_ro(frame->beginRead());
+        frameNumber = smurf_header_ro->getFrameCounter();
 
         // Check if we are missing frames, or receiving out-of-order frames
         if (firstFrame)

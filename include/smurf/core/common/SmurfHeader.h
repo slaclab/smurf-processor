@@ -21,17 +21,23 @@
  *-----------------------------------------------------------------------------
 **/
 
+#include <memory>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
 
 namespace ris = rogue::interfaces::stream;
 
-class SmurfHeader_RO
+class SmurfHeaderRO
+typedef std::shared_ptr<SmurfHeaderRO> SmurfHeaderROPtr;
+
+class SmurfHeaderRO
 {
 public:
-    SmurfHeader_RO(ris::FrameIterator it);
-    ~SmurfHeader_RO() {};
+    SmurfHeaderRO(ris::FrameIterator it);
+    ~SmurfHeaderRO() {};
+
+    static SmurfHeaderROPtr create(ris::FrameIterator it);
 
     const uint32_t getFrameCounter()              const;  // Get locally generate frame counter 32 bit
 
@@ -39,6 +45,11 @@ protected:
     static const std::size_t headerFrameCounterOffset         = 84;
 
 private:
+    // Prevent construction using the default or copy constructor.
+    // Prevent an SmurfHeaderRO object to be assigned as well.
+    SmurfHeaderRO();
+    SmurfHeaderRO(const SmurfHeaderRO&);
+    SmurfHeaderRO& operator=(const SmurfHeaderRO&);
 
     // Helper unions definitions
     union U32
@@ -48,7 +59,6 @@ private:
     };
 
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
-
 };
 
 #endif
