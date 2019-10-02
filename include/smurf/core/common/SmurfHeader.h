@@ -34,7 +34,6 @@ class SmurfHeader;
 typedef std::shared_ptr<SmurfHeaderRO> SmurfHeaderROPtr;
 typedef std::shared_ptr<SmurfHeader>   SmurfHeaderPtr;
 
-
 // SMuRF header class. This class give a read-only access
 class SmurfHeaderRO
 {
@@ -71,6 +70,10 @@ public:
     const uint16_t getNumberRowsReported()        const;  // Get MCE header value (defaults to numb rows if 0)
     const uint16_t getRowLength()                 const;  // Get MCE header value
     const uint16_t getDataRate()                  const;  // Get MCE header value
+
+    // The length of the smurf header (in bytes)
+    // It has public access.
+    static const std::size_t SmurfHeaderLength                = 128;
 
 protected:
     // Header word offsets (in bytes)
