@@ -21,15 +21,11 @@ import pyrogue
 import smurf
 import pysmurf.core.common
 
-class SmurfChannelMapper(pysmurf.core.common.BaseSlave):
+class SmurfChannelMapper(pysmurf.core.common.BaseMasterSlave):
     """
     SMuRF Data Re-orderer Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         # pyrogue.Device.__init__(self, name=name, description='SMuRF Data Re-orderer', **kwargs)
         self._mapper = smurf.core.mappers.SmurfChannelMapper()
-        pysmurf.core.common.BaseSlave.__init__(self, name=name, slave=self._mapper, **kwargs)
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
-    def _getStreamMaster(self):
-        return self._mapper
+        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, **kwargs)

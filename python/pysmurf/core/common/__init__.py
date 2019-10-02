@@ -18,3 +18,5 @@
 #-----------------------------------------------------------------------------
 
 from pysmurf.core.common._BaseSlave import *
+from pysmurf.core.common._BaseMaster import *
+from pysmurf.core.common._BaseMasterSlave import *
