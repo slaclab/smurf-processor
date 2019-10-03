@@ -55,7 +55,7 @@ namespace smurf
 
                 // This will be call by the BaseSlave class after updating
                 // the base counters
-                void rxtFrame(ris::FramePtr frame);
+                void rxFrame(ris::FramePtr frame);
 
             private:
                 // Data type used to read the data from the input frame

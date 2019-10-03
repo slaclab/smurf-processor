@@ -47,7 +47,7 @@ void scu::Unwrapper::setup_python()
     bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseMasterPtr >();
 }
 
-void scu::Unwrapper::rxtFrame(ris::FramePtr frame)
+void scu::Unwrapper::rxFrame(ris::FramePtr frame)
 {
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
