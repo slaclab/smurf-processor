@@ -187,7 +187,7 @@ void scf::GeneralAnalogFilter::reset()
         b_coef.resize( order +  1, 0);
 }
 
-void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
+void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
 {
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())

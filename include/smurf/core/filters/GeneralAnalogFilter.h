@@ -55,7 +55,7 @@ namespace smurf
 
                 // This will be call by the BaseSlave class after updating
                 // the base counters
-                void rxtFrame(ris::FramePtr frame);
+                void rxFrame(ris::FramePtr frame);
 
                 // Set the filter order
                 void setOrder(std::size_t o);
