@@ -49,7 +49,7 @@ const SmurfPacketRaw::data_t SmurfPacketRawRO::getDataWord(std::size_t offset) c
     } aux;
 
     for (std::size_t i{0}; i < 2; ++i)
-        aux.b[i] = *(dataIt+offset+i);
+        aux.b[i] = *(dataIt + offset * DataWordSize + i);
 
     return static_cast<int16_t>(aux.w);
 }
@@ -88,7 +88,7 @@ void SmurfPacketRaw::setDataWord(std::size_t offset, data_t value) const
     aux.w = static_cast<uint16_t>(value);
 
     for (std::size_t i{0}; i < 2; ++i)
-        *(dataIt+offset+i) = aux.b[i];
+        *(dataIt + offset * DataWordSize + i) = aux.b[i];
 }
 
 ///////////////////////////////////////////
