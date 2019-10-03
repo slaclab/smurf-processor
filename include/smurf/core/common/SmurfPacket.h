@@ -32,8 +32,13 @@ namespace ris = rogue::interfaces::stream;
 
 class SmurfPacketRawRO;
 class SmurfPacketRaw;
+class SmurfPacketRO;
+class SmurfPacket;
+
 typedef std::shared_ptr<SmurfPacketRawRO> SmurfPacketRawROPtr;
-typedef std::shared_ptr<SmurfPacketRaw> SmurfPacketRawPtr;
+typedef std::shared_ptr<SmurfPacketRaw>   SmurfPacketRawPtr;
+typedef std::shared_ptr<SmurfPacketRO>    SmurfPacketROPtr;
+typedef std::shared_ptr<SmurfPacket>      SmurfPacketPtr;
 
 
 // SMuRF packet class.
@@ -80,7 +85,7 @@ public:
     // Factory method, to create a smart pointer.
     static SmurfPacketRawPtr create(ris::FramePtr frame);
 
-    // Get a data point
+    // Set a data point
     void setDataWord(std::size_t offset, data_t value) const;
 
 private:
@@ -94,28 +99,65 @@ private:
     ris::FrameIterator dataIt;  // Iterator to the start of the header in a Frame};
 };
 
-
-
 // SMuRF packet class.
-// This class handle SW processed packets
-class SmurfPacket
+// This class handle SW processed packets.
+// This class give read-only access.
+class SmurfPacketRO
 {
 public:
-    // Smurf data type
-    typedef int32_t smurf_data_t;
+    SmurfPacketRO(ris::FramePtr frame);
+    ~SmurfPacketRO() {};
 
-    // Size in bytes of a SMuRF data word
-    static const std::size_t SmurfDataWordSize  = sizeof(smurf_data_t);
+    // Factory method, to create a smart pointer.
+    static SmurfPacketROPtr create(ris::FramePtr frame);
 
-    // The length of the smurf packet payload (in number of channels)
-    // It has public access.
-    static const std::size_t SmurfPacketPayloadLength = 528;
+    // Data type
+    typedef int32_t data_t;
 
-    // The size of the SMuRF packet payload in bytes
-    static const std::size_t SmurfPacketPayloadSize = SmurfPacketPayloadLength * SmurfDataWordSize;
+    // Size in bytes of a data word
+    static const std::size_t DataWordSize  = sizeof(data_t);
 
-    // The total size, in bytes, of the SMuRF packet (i.e., including the header)
-    static const std::size_t SmurfPacketSize = SmurfHeader::SmurfHeaderSize + SmurfPacketPayloadSize;
+    // Get a data point
+    const data_t getDataWord(std::size_t offset) const;
+
+private:
+    // Prevent construction using the default or copy constructor.
+    // Prevent an SmurfPacketRawRO object to be assigned as well.
+    SmurfPacketRO();
+    SmurfPacketRO(const SmurfPacketRO&);
+    SmurfPacketRO& operator=(const SmurfPacketRO&);
+
+    // Private data members
+    ris::FrameIterator dataIt;  // Iterator to the start of the header in a Frame};
+};
+
+// SMuRF packet class.
+// This class handle SW processed packets.
+// This class give read-only access.
+class SmurfPacket : public SmurfPacketRO
+{
+public:
+    SmurfPacket(ris::FramePtr frame);
+    ~SmurfPacket() {};
+
+    // Factory method, to create a smart pointer.
+    static SmurfPacketPtr create(ris::FramePtr frame);
+
+    // Size in bytes of a data word
+    static const std::size_t DataWordSize  = sizeof(data_t);
+
+    // Get a data point
+    void setDataWord(std::size_t offset, data_t value) const;
+
+private:
+    // Prevent construction using the default or copy constructor.
+    // Prevent an SmurfPacketRawRO object to be assigned as well.
+    SmurfPacket();
+    SmurfPacket(const SmurfPacket&);
+    SmurfPacket& operator=(const SmurfPacket&);
+
+    // Private data members
+    ris::FrameIterator dataIt;  // Iterator to the start of the header in a Frame};
 };
 
 #endif

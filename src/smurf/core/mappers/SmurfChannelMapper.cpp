@@ -53,13 +53,13 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
     std::size_t listSize = len(m);
 
     // Check if the size of the list, is not greater than
-    // the size of the SMuRF packet payload (in words)
-    if ( listSize > SmurfPacket::SmurfPacketPayloadLength )
+    // the number of channels we can have in the output packet.
+    if ( listSize > maxNumOutCh )
     {
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set a mask list of length = " << listSize \
                   << ", which is larger that the number of channel in a SMuRF packet = " \
-                  <<  SmurfPacket::SmurfPacketPayloadLength << std::endl;
+                  <<  maxNumOutCh << std::endl;
 
         // Do not update the mask vector.
         return;

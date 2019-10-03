@@ -21,7 +21,6 @@
 #include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/SmurfPacket.h"
 
-
 /////////////////////////////////////////////
 ////// + SmurfPacketRawRO definitions ///////
 /////////////////////////////////////////////
@@ -45,10 +44,10 @@ const SmurfPacketRaw::data_t SmurfPacketRawRO::getDataWord(std::size_t offset) c
     union
     {
         uint16_t w;
-        uint8_t  b[2];
+        uint8_t  b[DataWordSize];
     } aux;
 
-    for (std::size_t i{0}; i < 2; ++i)
+    for (std::size_t i{0}; i < DataWordSize; ++i)
         aux.b[i] = *(dataIt + offset * DataWordSize + i);
 
     return static_cast<int16_t>(aux.w);
@@ -76,21 +75,85 @@ SmurfPacketRawPtr SmurfPacketRaw::create(ris::FramePtr frame)
 
 void SmurfPacketRaw::setDataWord(std::size_t offset, data_t value) const
 {
-    // Unfortunately this code, is not parametric with the user-define
-    // data type 'data_t'. So, it will need to be update if the definition
-    // of 'data_t' changes.
     union
     {
         uint16_t w;
-        uint8_t  b[2];
+        uint8_t  b[DataWordSize];
     } aux;
 
     aux.w = static_cast<uint16_t>(value);
 
-    for (std::size_t i{0}; i < 2; ++i)
+    for (std::size_t i{0}; i < DataWordSize; ++i)
         *(dataIt + offset * DataWordSize + i) = aux.b[i];
 }
 
 ///////////////////////////////////////////
 ////// - SmurfPacketRaw definitions ///////
 ///////////////////////////////////////////
+
+//////////////////////////////////////////
+////// + SmurfPacketRO definitions ///////
+//////////////////////////////////////////
+
+SmurfPacketRO::SmurfPacketRO(ris::FramePtr frame)
+:
+    dataIt(frame->beginRead() + SmurfHeader::SmurfHeaderSize)
+{
+}
+
+SmurfPacketROPtr SmurfPacketRO::create(ris::FramePtr frame)
+{
+    return std::make_shared<SmurfPacketRO>(frame);
+}
+
+const SmurfPacket::data_t SmurfPacketRO::getDataWord(std::size_t offset) const
+{
+    union
+    {
+        uint16_t w;
+        uint8_t  b[DataWordSize];
+    } aux;
+
+    for (std::size_t i{0}; i < DataWordSize; ++i)
+        aux.b[i] = *(dataIt + offset * DataWordSize + i);
+
+    return static_cast<int16_t>(aux.w);
+}
+
+//////////////////////////////////////////
+////// - SmurfPacketRO definitions ///////
+//////////////////////////////////////////
+
+////////////////////////////////////////
+////// + SmurfPacket definitions ///////
+////////////////////////////////////////
+
+SmurfPacket::SmurfPacket(ris::FramePtr frame)
+:
+    SmurfPacketRO(frame),
+    dataIt(frame->beginWrite() + SmurfHeader::SmurfHeaderSize)
+{
+}
+
+SmurfPacketPtr SmurfPacket::create(ris::FramePtr frame)
+{
+    return std::make_shared<SmurfPacket>(frame);
+}
+
+void SmurfPacket::setDataWord(std::size_t offset, data_t value) const
+{
+    union
+    {
+        uint16_t w;
+        uint8_t  b[DataWordSize];
+    } aux;
+
+    aux.w = static_cast<uint16_t>(value);
+
+    for (std::size_t i{0}; i < DataWordSize; ++i)
+        *(dataIt + offset * DataWordSize + i) = aux.b[i];
+}
+
+////////////////////////////////////////
+////// - SmurfPacket definitions ///////
+////////////////////////////////////////
