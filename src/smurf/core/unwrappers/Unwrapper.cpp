@@ -87,7 +87,10 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
     }
 
     // Request a new frame, to hold the same payload as the input frame
-    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
+    //std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
+    // For now we want to keep packet of the same size, so let's do this instead:
+    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize +
+        ( ( frame->getPayload() - SmurfHeader::SmurfHeaderSize )/sizeof(input_data_t) ) * sizeof(output_data_t);
     ris::FramePtr outFrame = reqFrame(outFrameSize, true);
     outFrame->setPayload(outFrameSize);
 
