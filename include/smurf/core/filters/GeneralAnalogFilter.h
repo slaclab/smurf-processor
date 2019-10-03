@@ -85,6 +85,11 @@ namespace smurf
                 std::vector<double> a_coef; // Filter's a coefficients
                 std::vector<double> b_coef; // Filter's b coefficients
 
+                // Data vector, needed to store all the pass data points.
+                // The outer vector's size will depend on the filter's order, and
+                // the inner vector's size will depend on the number of channels being processed
+                std::vector< std::vector<output_data_t> > data;
+
             };
         }
     }

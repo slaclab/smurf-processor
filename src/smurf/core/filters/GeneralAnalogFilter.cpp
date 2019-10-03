@@ -31,7 +31,8 @@ scf::GeneralAnalogFilter::GeneralAnalogFilter()
     order(0),
     gain(1),
     a_coef(1,1),
-    b_coef(1,1)
+    b_coef(1,1),
+    data(order)
 {
 }
 
