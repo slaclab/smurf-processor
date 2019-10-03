@@ -32,7 +32,7 @@ scf::GeneralAnalogFilter::GeneralAnalogFilter()
     gain(1),
     a_coef(1,1),
     b_coef(1,1),
-    data(order)
+    data( order, std::vector<output_data_t>(numCh) )
 {
 }
 
