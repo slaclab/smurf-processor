@@ -28,7 +28,7 @@
 #include "smurf/core/common/BaseSlave.h"
 #include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
-#include "smurf/core/common/SmurfPacket.h"
+#include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -58,8 +58,22 @@ namespace smurf
                 void rxtFrame(ris::FramePtr frame);
 
             private:
-                std::vector<uint8_t> prevData;  // Data from the previous frame
-                // std::vector<> wrap_counter
+                // Data type used to read the data from the input frame
+                typedef int16_t input_data_t;
+
+                // Data type used to write data to the output frame
+                typedef int32_t output_data_t;
+
+                // If we are above/below these and jump, assume a wrap
+                const input_data_t upperUnwrap =  0x6000;
+                const input_data_t lowerUnwrap = -0x6000;
+
+                // Wrap counter steps
+                const output_data_t stepUnwrap = 0x10000;
+
+                std::vector<output_data_t> currentData;
+                std::vector<output_data_t> previousData;
+                std::vector<output_data_t> wrapCounter;
             };
         }
     }
