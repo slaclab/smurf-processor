@@ -126,8 +126,8 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // header of the packet, we will send frames of fix size.
     // The output packet has has the same 'SmurfPacketRaw' data structure as the input packet.
     std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + SmurfPacketRaw::DataWordSize * maxNumOutCh;
-    ris::FramePtr newFrame = reqFrame(outFrameSizeSmurfPacketSize, true);
-    newFrame->setPayload(outFrameSizeSmurfPacketSize);
+    ris::FramePtr newFrame = reqFrame(outFrameSize, true);
+    newFrame->setPayload(outFrameSize);
 
     // Iterator to the input frame
     ris::FrameIterator inFrameIt = frame->beginRead();
