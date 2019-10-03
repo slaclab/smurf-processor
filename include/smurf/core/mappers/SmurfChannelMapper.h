@@ -76,7 +76,7 @@ namespace smurf
                     } temp;
 
                     for (std::size_t i{0}; i < sizeof(T); ++i)
-                        temp.b[i] = *(it + offset * sizeof(T));
+                        temp.b[i] = *(it + offset * sizeof(T) + i);
 
                     return temp.w;
                 };
@@ -93,7 +93,7 @@ namespace smurf
                     temp.w = value;
 
                     for (std::size_t i{0}; i < sizeof(T); ++i)
-                        *(it + offset * sizeof(T)) = temp.b[i];
+                        *(it + offset * sizeof(T) + i) = temp.b[i];
                 };
 
                 // Data type used to read the data from the input frame
