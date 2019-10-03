@@ -28,7 +28,7 @@
 #include "smurf/core/common/BaseSlave.h"
 #include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
-// #include "smurf/core/common/SmurfPacket.h"
+#include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
@@ -64,37 +64,6 @@ namespace smurf
                 const std::size_t getNumCh() const;
 
             private:
-
-                // Template helper function
-                template<typename T>
-                const T getWord(ris::FrameIterator it, std::size_t offset)
-                {
-                    union
-                    {
-                        T       w;
-                        uint8_t b[sizeof(T)];
-                    } temp;
-
-                    for (std::size_t i{0}; i < sizeof(T); ++i)
-                        temp.b[i] = *(it + offset * sizeof(T) + i);
-
-                    return temp.w;
-                };
-
-                template<typename T>
-                void setWord(ris::FrameIterator it, std::size_t offset, T value)
-                {
-                    union
-                    {
-                        T       w;
-                        uint8_t b[sizeof(T)];
-                    } temp;
-
-                    temp.w = value;
-
-                    for (std::size_t i{0}; i < sizeof(T); ++i)
-                        *(it + offset * sizeof(T) + i) = temp.b[i];
-                };
 
                 // Data type used to read the data from the input frame
                 typedef int16_t input_data_t;
