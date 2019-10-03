@@ -26,5 +26,5 @@ class Unwrapper(pysmurf.core.common.BaseMasterSlave):
     SMuRF Data Unwrapper Python Wrapper.
     """
     def __init__(self, name, **kwargs):
-        self._mapper = smurf.core.mappers.SmurfChannelMapper()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, description='SMuRF Data Unwrapper', **kwargs)
+        self._unwrapper = smurf.core.unwrappers.Unwrapper()
+        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._unwrapper, description='SMuRF Data Unwrapper', **kwargs)
