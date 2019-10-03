@@ -31,10 +31,12 @@ import pyrogue
 import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 
-import pysmurf.core.filter
-import pysmurf.core.reorderer
-import pysmurf.core.transmitter
 import pysmurf.core.counters
+import pysmurf.core.mappers
+import pysmurf.core.unwrappers
+import pysmurf.core.filters
+import pysmurf.core.transmitters
+
 
 PIDFILE = '/tmp/smurf.pid'
 
@@ -298,14 +300,16 @@ class LocalServer(pyrogue.Root):
             self.smurf_frame_stats = pysmurf.core.counters.FrameStatistics(name="FrameRxStats")
             self.add(self.smurf_frame_stats)
 
-            self.smurf_reorderer = pysmurf.core.reorderer.Reorderer(name="Reorderer")
-            self.smurf_filter = pysmurf.core.filter.Filter(name="Filter", size=10)
-            self.smurf_transmitter = pysmurf.core.transmitter.Transmitter(name="Transmitter")
+            self.smurf_mapper = pysmurf.core.mappers.SmurfChannelMapper(name="ChannelMapper")
+            self.add(self.smurf_mapper)
+
+            self.smurf_unwrapper = pysmurf.core.unwrappers.Unwrapper(name="DataUnwrapper")
+            self.add(self.smurf_unwrapper)
+
 
             pyrogue.streamConnect(self.streaming_streams[1], self.smurf_frame_stats)
-            pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_reorderer)
-            pyrogue.streamConnect(self.smurf_reorderer, self.smurf_filter)
-            pyrogue.streamConnect(self.smurf_filter, self.smurf_transmitter)
+            pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_mapper)
+            pyrogue.streamConnect(self.smurf_mapper, self.smurf_unwrapper)
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
