@@ -76,13 +76,14 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
     // Verify if the frame size has changed
     if (numCh != newNumCh)
     {
+
+        // Update the number of channels we are processing
+        numCh = newNumCh;
+
         // Resize and clear the data buffers
         currentData.resize(  numCh, 0 );
         previousData.resize( numCh, 0 );
         wrapCounter.resize(  numCh, 0 );
-
-        // Update the number of channels we are processing
-        numCh = newNumCh;
     }
 
     // Request a new frame, to hold the same payload as the input frame
