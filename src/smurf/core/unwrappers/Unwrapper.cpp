@@ -77,9 +77,11 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
     if (numCh != newNumCh)
     {
         // Resize and clear the data buffers
-        currentData.resize(numCh);
-        previousData.resize(numCh)
-        wrapCounter.resize(numCh);
+        currentData.resize(  numCh, 0 );
+        previousData.resize( numCh, 0 );
+        wrapCounter.resize(  numCh, 0 );
+
+        // Update the number of channels we are processing
         numCh = newNumCh;
     }
 
