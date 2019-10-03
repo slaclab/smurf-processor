@@ -43,8 +43,8 @@ void scu::Unwrapper::setup_python()
 {
     bp::class_<scu::Unwrapper, scu::UnwrapperPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("Unwrapper", bp::init<>())
     ;
-    bp::implicitly_convertible< scu::UnwrapperPtr, ris::SlavePtr >();
-    bp::implicitly_convertible< scu::UnwrapperPtr, ris::MasterPtr >();
+    bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseSlavePtr  >();
+    bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseMasterPtr >();
 }
 
 void scu::Unwrapper::rxtFrame(ris::FramePtr frame)
@@ -102,7 +102,7 @@ void scu::Unwrapper::rxtFrame(ris::FramePtr frame)
     }
 
     // Print a few work to verify the mapping works
-    std::cout << "  === MAPPING === " << std::endl;
+    std::cout << "  === UNWRAPPER === " << std::endl;
     std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
     std::cout << "=====================================" << std::endl;
     {
