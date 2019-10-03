@@ -19,52 +19,12 @@
 
 import pyrogue
 import smurf
+import pysmurf.core.common
 
-class Unwrapper(pyrogue.Device):
+class Unwrapper(pysmurf.core.common.BaseMasterSlave):
     """
-    SMuRF Data Re-orderer Python Wrapper.
+    SMuRF Data Unwrapper Python Wrapper.
     """
     def __init__(self, name, **kwargs):
-        pyrogue.Device.__init__(self, name=name, description='SMuRF Data Re-orderer', **kwargs)
-        self._unwrapper = smurf.core.unwrappers.Unwrapper()
-
-        # Add "Disable" variable
-        self.add(pyrogue.LocalVariable(
-            name='Disable',
-            description='Disable the processing block. Data will just pass thorough to the next slave.',
-            mode='RW',
-            value=False,
-            localSet=lambda value: self._unwrapper.setDisable(value),
-            localGet=self._unwrapper.getDisable))
-
-        # Add the frame counter variable
-        self.add(pyrogue.LocalVariable(
-            name='frameCnt',
-            description='Frame counter',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._unwrapper.getFrameCnt))
-
-        # Add the last frame size variable
-        self.add(pyrogue.LocalVariable(
-            name='frameSize',
-            description='Last frame size',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._unwrapper.getFrameSize))
-
-        # Command to clear all the counters
-        self.add(pyrogue.LocalCommand(
-            name='clearCnt',
-            description='Clear all counters',
-            function=self._unwrapper.clearCnt))
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
-    def _getStreamSlave(self):
-        return self._unwrapper
-
-    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
-    def _getStreamMaster(self):
-        return self._unwrapper
+        self._mapper = smurf.core.mappers.SmurfChannelMapper()
+        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, description='SMuRF Data Unwrapper', **kwargs)
