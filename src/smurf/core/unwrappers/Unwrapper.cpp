@@ -26,7 +26,8 @@ namespace scu  = smurf::core::unwrappers;
 scu::Unwrapper::Unwrapper()
 :
     scc::BaseSlave(),
-    scc::BaseMaster()
+    scc::BaseMaster(),
+    prevData(0)
 {
 }
 
@@ -56,6 +57,19 @@ void scu::Unwrapper::rxtFrame(ris::FramePtr frame)
 
         return;
     }
+
+    // (smart) pointer to the smurf header in the input frame (Read-only)
+    SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
+
+    // Get the number of channels
+    std::size_t numChIn = smurfHeaderIn->getNumberChannels();
+
+    // Request a new frame, to hold the same payload as the input frame
+    std::size_t outputFrameSize = frame->getPayload();
+    ris::FramePtr newFrame = reqFrame(outputFrameSize, true);
+    newFrame->setPayload(outputFrameSize);
+
+
 
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well

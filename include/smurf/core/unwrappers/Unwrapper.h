@@ -58,6 +58,8 @@ namespace smurf
                 void rxtFrame(ris::FramePtr frame);
 
             private:
+                std::vector<uint8_t> prevData;  // Data from the previous frame
+                // std::vector<> wrap_counter
             };
         }
     }
