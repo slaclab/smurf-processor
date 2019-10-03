@@ -57,25 +57,71 @@ void scf::GeneralAnalogFilter::setup_python()
 void scf::GeneralAnalogFilter::setOrder(std::size_t o)
 {
     order = o;
+
+    std::cout << "Order set to: " << order << std::endl;
 }
 
 void scf::GeneralAnalogFilter::setA(boost::python::list a)
 {
     std::vector<double> temp;
 
+    std::size_t listSize = len(a);
+
+    // Verify that the input list is not empty.
+    // If empty, set the coefficients vector to a = [1.0].
+    if (listSize == 0)
+    {
+        // This should go to a logger instead
+        std::cerr << "ERROR: Trying to set an empty set of a coefficients. Defaulting to 'a = [1.0]'"<< std::endl;
+        temp.push_back(1.0);
+        b_coef.swap(temp);
+
+        return;
+    }
+
+    // Verify that the first coefficient is not zero.
+    // if it is, set the coefficients vector to a = [1.0].
+    if (a[0] == 0)
+    {
+        // This should go to a logger instead
+        std::cerr << "ERROR: The first a coefficient can not be zero. Defaulting to 'a = [1.0]'"<< std::endl;
+        temp.push_back(1.0);
+        b_coef.swap(temp);
+        return;
+    }
+
     // Extract the coefficients coming from python into a temporal vector
-    for (std::size_t i{0}; i < len(a); ++i)
+    for (std::size_t i{0}; i < listSize; ++i)
     {
         temp.push_back(boost::python::extract<double>(a[i]));
     }
 
     // Update the a_coef vector with the new values
     a_coef.swap(temp);
+
+    std::cout << "A coefficients set to: " << std::endl;
+    for (std::vector<double>::iterator it = a_coef.begin(); it != a_coef.end(); ++it)
+        std::cout << *it << ", ";
+    std::cout << std::endl;
 }
 
 void scf::GeneralAnalogFilter::setB(boost::python::list b)
 {
     std::vector<double> temp;
+
+    std::size_t listSize = len(b);
+
+    // Verify that the input list is not empty.
+    // If empty, set the coefficients vector to a = [0.0].
+    if (listSize == 0)
+    {
+        // This should go to a logger instead
+        std::cerr << "ERROR: Trying to set an empty set of a coefficients. Defaulting to 'b = [0.0]'"<< std::endl;
+        temp.push_back(0.0);
+        b_coef.swap(temp);
+
+        return;
+    }
 
     // Extract the coefficients coming from python into a temporal vector
     for (std::size_t i{0}; i < len(b); ++i)
@@ -85,11 +131,18 @@ void scf::GeneralAnalogFilter::setB(boost::python::list b)
 
     // Update the a_coef vector with the new values
     b_coef.swap(temp);
+
+    std::cout << "B coefficients set to: " << std::endl;
+    for (std::vector<double>::iterator it = b_coef.begin(); it != b_coef.end(); ++it)
+        std::cout << *it << ", ";
+    std::cout << std::endl;
 }
 
 void scf::GeneralAnalogFilter::setGain(double g)
 {
     gain = g;
+
+    std::cout << "Gain set to: " << gain << std::endl;
 }
 
 // Get the number of mapper channels
