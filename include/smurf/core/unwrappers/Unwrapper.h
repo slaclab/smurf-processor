@@ -57,6 +57,9 @@ namespace smurf
                 // the base counters
                 void rxFrame(ris::FramePtr frame);
 
+                // Get the number of mapper channels
+                const std::size_t getNumCh() const;
+
             private:
                 // Data type used to read the data from the input frame
                 typedef int16_t input_data_t;
@@ -71,6 +74,9 @@ namespace smurf
                 // Wrap counter steps
                 const output_data_t stepUnwrap = 0x10000;
 
+                std::size_t numCh;
+
+                // Data buffer
                 std::vector<output_data_t> currentData;
                 std::vector<output_data_t> previousData;
                 std::vector<output_data_t> wrapCounter;

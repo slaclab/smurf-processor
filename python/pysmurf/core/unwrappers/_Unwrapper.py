@@ -28,3 +28,12 @@ class Unwrapper(pysmurf.core.common.BaseMasterSlave):
     def __init__(self, name, **kwargs):
         self._unwrapper = smurf.core.unwrappers.Unwrapper()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._unwrapper, description='SMuRF Data Unwrapper', **kwargs)
+
+        # Add the number of enabled channels  variable
+        self.add(pyrogue.LocalVariable(
+            name='NumChannels',
+            description='Number of channels being processed',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self._unwrapper.getNumCh))

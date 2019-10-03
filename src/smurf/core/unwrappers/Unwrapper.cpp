@@ -27,6 +27,7 @@ scu::Unwrapper::Unwrapper()
 :
     scc::BaseSlave(),
     scc::BaseMaster(),
+    numCh(0),
     currentData(0),
     previousData(0),
     wrapCounter(0)
@@ -42,12 +43,18 @@ scu::UnwrapperPtr scu::Unwrapper::create()
 void scu::Unwrapper::setup_python()
 {
     bp::class_<scu::Unwrapper, scu::UnwrapperPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("Unwrapper", bp::init<>())
+        .def("getNumCh", &Unwrapper::getNumCh)
     ;
     bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseSlavePtr  >();
     bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseMasterPtr >();
 }
 
-void scu::Unwrapper::rxFrame(ris::FramePtr frame)
+const std::size_t scu::Unwrapper::getNumCh() const
+{
+    return numCh;
+}
+
+void scu::Unwrapper::rxFrame (ris::FramePtr frame)
 {
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
@@ -64,7 +71,17 @@ void scu::Unwrapper::rxFrame(ris::FramePtr frame)
     SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
 
     // Get the number of channels in the input frame. The number of output channel will be the same
-    std::size_t numCh = smurfHeaderIn->getNumberChannels();
+    std::size_t newNumCh = smurfHeaderIn->getNumberChannels();
+
+    // Verify if the frame size has changed
+    if (numCh != newNumCh)
+    {
+        // Resize and clear the data buffers
+        currentData.resize(numCh);
+        previousData.resize(numCh)
+        wrapCounter.resize(numCh);
+        numCh = newNumCh;
+    }
 
     // Request a new frame, to hold the same payload as the input frame
     std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
