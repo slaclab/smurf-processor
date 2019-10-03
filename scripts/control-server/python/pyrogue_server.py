@@ -306,10 +306,14 @@ class LocalServer(pyrogue.Root):
             self.smurf_unwrapper = pysmurf.core.unwrappers.Unwrapper(name="DataUnwrapper")
             self.add(self.smurf_unwrapper)
 
+            self.smurf_filter = pysmurf.core.filters.GeneralAnalogFilter(name="DataFilter", size=10)
+            self.add(self.smurf_filter)
+
 
             pyrogue.streamConnect(self.streaming_streams[1], self.smurf_frame_stats)
             pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_mapper)
             pyrogue.streamConnect(self.smurf_mapper, self.smurf_unwrapper)
+            pyrogue.streamConnect(self.smurf_unwrapper, self.smurf_filter)
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
