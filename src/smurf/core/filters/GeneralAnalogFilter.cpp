@@ -56,9 +56,30 @@ void scf::GeneralAnalogFilter::setup_python()
 
 void scf::GeneralAnalogFilter::setOrder(std::size_t o)
 {
-    order = o;
+    // Check if the new order is different from the current one
+    if ( o != order )
+    {
+        order = o;
 
-    std::cout << "Order set to: " << order << std::endl;
+        // When the order it change, reset the filter
+        reset();
+
+        std::cout << "Order set to: " << order << std::endl;
+
+        std::cout << "a_coef.size() = " << a_coef.size() << ". Elements are:" << std::endl;
+        for (std::vector<double>::iterator it = a_coef.begin(); it != a_coef.end(); ++it)
+                std::cout << *it << ", ";
+            std::cout << std::endl;
+
+        std::cout << "b_coef.size() = " << b_coef.size() << ". Elements are:" << std::endl;
+        for (std::vector<double>::iterator it = b_coef.begin(); it != b_coef.end(); ++it)
+                std::cout << *it << ", ";
+            std::cout << std::endl;
+
+            std::cout << "data.size() = " << data.size() << std::endl;
+            if (data.size() > 0)
+                std::cout << "data.at(0).size() = " << data.at(0).size() << std::endl;
+    }
 }
 
 void scf::GeneralAnalogFilter::setA(boost::python::list a)
@@ -145,10 +166,25 @@ void scf::GeneralAnalogFilter::setGain(double g)
     std::cout << "Gain set to: " << gain << std::endl;
 }
 
-// Get the number of mapper channels
 const std::size_t scf::GeneralAnalogFilter::getNumCh() const
 {
     return numCh;
+}
+
+void scf::GeneralAnalogFilter::reset()
+{
+    // Resize and re-initialize the data buffer
+    std::vector< std::vector<output_data_t> >(order, std::vector<output_data_t>(numCh)).swap(data);
+
+    // Check that a coefficient vector size is at least 'order + 1'.
+    // If not, add expand it with zeros.
+    if ( a_coef.size() < (order + 1) )
+        a_coef.resize( order +  1, 0);
+
+    // Check that b coefficient vector size is at least 'order + 1'.
+    // If not, add expand it with zeros.
+    if ( b_coef.size() < (order + 1) )
+        b_coef.resize( order +  1, 0);
 }
 
 void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
@@ -173,9 +209,15 @@ void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
     // Verify if the frame size has changed
     if (numCh != newNumCh)
     {
-
         // Update the number of channels we are processing
         numCh = newNumCh;
+
+        // When the number of channel change, reset the filter
+        reset();
+
+        std::cout << "data.size() = " << data.size() << std::endl;
+        if (data.size() > 0)
+            std::cout << "data.at(0).size() = " << data.at(0).size() << std::endl;
     }
 
     // Request a new frame, to hold the same payload as the input frame

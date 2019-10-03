@@ -72,6 +72,11 @@ namespace smurf
                 // Get the number of mapper channels
                 const std::size_t getNumCh() const;
 
+                // Reset the filter. Resize and Zero-initialize the data buffer, and
+                // check if the coefficient vectors have the correct size, and expand
+                // if necessary, padding with zeros.
+                void reset();
+
             private:
                 // Data type used to read the data from the input frame
                 typedef int32_t input_data_t;
