@@ -92,7 +92,10 @@ void scf::GeneralAnalogFilter::setGain(double g)
 }
 
 // Get the number of mapper channels
-const std::size_t getNumCh() const;
+const std::size_t scf::GeneralAnalogFilter::getNumCh() const
+{
+    return numCh;
+}
 
 void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
 {
@@ -119,11 +122,6 @@ void scf::GeneralAnalogFilter::rxtFrame(ris::FramePtr frame)
 
         // Update the number of channels we are processing
         numCh = newNumCh;
-
-        // Resize and clear the data buffers
-        currentData.resize(  numCh, 0 );
-        previousData.resize( numCh, 0 );
-        wrapCounter.resize(  numCh, 0 );
     }
 
     // Request a new frame, to hold the same payload as the input frame
