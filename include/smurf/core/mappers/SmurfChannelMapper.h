@@ -68,6 +68,11 @@ namespace smurf
                 // This is the maximum number of channel we expect from an input frame.
                 static const std::size_t maxNumInCh = 4095;
 
+                // This is the maximum number of channel the output packet can hold.
+                // The output frame size will be fixed to this size, even if not all
+                // channel are mapped.
+                static const std::size_t maxNumOutCh = 528;
+
                 // Private data members
                 std::size_t              numCh; // Number of mapped channels
                 std::vector<std::size_t> mask;  // Channel mask file
