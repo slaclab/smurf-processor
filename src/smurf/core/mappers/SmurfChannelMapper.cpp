@@ -140,11 +140,6 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderSize; ++i)
             *(++outFrameIt) = *(++inFrameIt);
 
-
-    // SMuRF packets (smart) pointers
-    // SmurfPacketRawROPtr smurfPacketIn(SmurfPacketRawRO::create(frame));
-    // SmurfPacketRawPtr   smurfPacketOut(SmurfPacketRaw::create(newFrame));
-
     // Fill the output frame to zero.
     // This is only for convenience, as the header says the number of channel which have
     // valid data. The rest of payload will have only garbage.
@@ -155,13 +150,6 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
         helpers::setWord<output_data_t>(outFrameIt, i++, static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, *maskIt)));
-        //smurfPacketOut->setDataWord(i++, smurfPacketIn->getDataWord(*maskIt));
-        // Copy each data word, byte-by-byte
-        // for (std::size_t i{0}; i < SmurfPacket::SmurfDataWordSize; ++i)
-            // *(outFrameIt + i) = *(inFrameIt + *maskIt * SmurfPacket::SmurfDataWordSize + i);
-
-        // Move the output frame iterator to the new word cell
-        // outFrameIt += SmurfPacket::SmurfDataWordSize;
     }
 
     // Update the number of channel in the header of the output smurf frame
