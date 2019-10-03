@@ -141,8 +141,8 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
 
 
     // SMuRF packets (smart) pointers
-    SmurfPacketRawROPtr smurfPacketIn(SmurfPacketRawRO::create(frame));
-    SmurfPacketRawPtr   smurfPacketOut(SmurfPacketRaw::create(newFrame));
+    // SmurfPacketRawROPtr smurfPacketIn(SmurfPacketRawRO::create(frame));
+    // SmurfPacketRawPtr   smurfPacketOut(SmurfPacketRaw::create(newFrame));
 
     // Fill the output frame to zero.
     // This is only for convenience, as the header says the number of channel which have
@@ -153,7 +153,8 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     std::size_t i{0};
     for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
-        smurfPacketOut->setDataWord(i++, smurfPacketIn->getDataWord(*maskIt));
+        setWord<output_data_t>(outFrameIt, i, static_cast<output_data_t>(getWord<input_data_t>(inFrameIt, *maskIt)));
+        //smurfPacketOut->setDataWord(i++, smurfPacketIn->getDataWord(*maskIt));
         // Copy each data word, byte-by-byte
         // for (std::size_t i{0}; i < SmurfPacket::SmurfDataWordSize; ++i)
             // *(outFrameIt + i) = *(inFrameIt + *maskIt * SmurfPacket::SmurfDataWordSize + i);

@@ -65,6 +65,43 @@ namespace smurf
 
             private:
 
+                // Template helper function
+                template<typename T>
+                const T getWord(ris::FrameIterator it, std::size_t offset)
+                {
+                    union
+                    {
+                        T       w;
+                        uint8_t b[sizeof(T)];
+                    } temp;
+
+                    for (std::size_t i{0}; i < sizeof(T); ++i)
+                        temp.b[i] = *(it + offset * sizeof(T));
+
+                    return temp.w;
+                };
+
+                template<typename T>
+                void setWord(ris::FrameIterator it, std::size_t offset, T value)
+                {
+                    union
+                    {
+                        T       w;
+                        uint8_t b[sizeof(T)];
+                    } temp;
+
+                    temp.w = value;
+
+                    for (std::size_t i{0}; i < sizeof(T); ++i)
+                        *(it + offset * sizeof(T)) = temp.b[i];
+                };
+
+                // Data type used to read the data from the input frame
+                typedef int16_t input_data_t;
+
+                // Data type used to write data to the output frame
+                typedef int16_t output_data_t;
+
                 // This is the maximum number of channel we expect from an input frame.
                 static const std::size_t maxNumInCh = 4095;
 
