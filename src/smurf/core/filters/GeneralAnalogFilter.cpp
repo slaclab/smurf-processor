@@ -30,9 +30,11 @@ scf::GeneralAnalogFilter::GeneralAnalogFilter()
     numCh(0),
     order(0),
     gain(1),
-    a_coef(1,1),
-    b_coef(1,1),
-    data( order, std::vector<output_data_t>(numCh) )
+    a(1,1),
+    b(1,1),
+    dataIndex(0),
+    x( order, std::vector<output_data_t>(numCh) ),
+    y( order, std::vector<output_data_t>(numCh) )
 {
 }
 
@@ -66,27 +68,27 @@ void scf::GeneralAnalogFilter::setOrder(std::size_t o)
 
         std::cout << "Order set to: " << order << std::endl;
 
-        std::cout << "a_coef.size() = " << a_coef.size() << ". Elements are:" << std::endl;
-        for (std::vector<double>::iterator it = a_coef.begin(); it != a_coef.end(); ++it)
+        std::cout << "a.size() = " << a.size() << ". Elements are:" << std::endl;
+        for (std::vector<double>::iterator it = a.begin(); it != a.end(); ++it)
                 std::cout << *it << ", ";
             std::cout << std::endl;
 
-        std::cout << "b_coef.size() = " << b_coef.size() << ". Elements are:" << std::endl;
-        for (std::vector<double>::iterator it = b_coef.begin(); it != b_coef.end(); ++it)
+        std::cout << "b.size() = " << b.size() << ". Elements are:" << std::endl;
+        for (std::vector<double>::iterator it = b.begin(); it != b.end(); ++it)
                 std::cout << *it << ", ";
             std::cout << std::endl;
 
-            std::cout << "data.size() = " << data.size() << std::endl;
-            if (data.size() > 0)
-                std::cout << "data.at(0).size() = " << data.at(0).size() << std::endl;
+            std::cout << "x.size() = " << x.size() << std::endl;
+            if (x.size() > 0)
+                std::cout << "x.at(0).size() = " << x.at(0).size() << std::endl;
     }
 }
 
-void scf::GeneralAnalogFilter::setA(boost::python::list a)
+void scf::GeneralAnalogFilter::setA(boost::python::list l)
 {
     std::vector<double> temp;
 
-    std::size_t listSize = len(a);
+    std::size_t listSize = len(l);
 
     // Verify that the input list is not empty.
     // If empty, set the coefficients vector to a = [1.0].
@@ -95,42 +97,42 @@ void scf::GeneralAnalogFilter::setA(boost::python::list a)
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set an empty set of a coefficients. Defaulting to 'a = [1.0]'"<< std::endl;
         temp.push_back(1.0);
-        b_coef.swap(temp);
+        b.swap(temp);
 
         return;
     }
 
     // Verify that the first coefficient is not zero.
     // if it is, set the coefficients vector to a = [1.0].
-    if (a[0] == 0)
+    if (l[0] == 0)
     {
         // This should go to a logger instead
         std::cerr << "ERROR: The first a coefficient can not be zero. Defaulting to 'a = [1.0]'"<< std::endl;
         temp.push_back(1.0);
-        b_coef.swap(temp);
+        b.swap(temp);
         return;
     }
 
     // Extract the coefficients coming from python into a temporal vector
     for (std::size_t i{0}; i < listSize; ++i)
     {
-        temp.push_back(boost::python::extract<double>(a[i]));
+        temp.push_back(boost::python::extract<double>(l[i]));
     }
 
-    // Update the a_coef vector with the new values
-    a_coef.swap(temp);
+    // Update the a vector with the new values
+    a.swap(temp);
 
     std::cout << "A coefficients set to: " << std::endl;
-    for (std::vector<double>::iterator it = a_coef.begin(); it != a_coef.end(); ++it)
+    for (std::vector<double>::iterator it = a.begin(); it != a.end(); ++it)
         std::cout << *it << ", ";
     std::cout << std::endl;
 }
 
-void scf::GeneralAnalogFilter::setB(boost::python::list b)
+void scf::GeneralAnalogFilter::setB(boost::python::list l)
 {
     std::vector<double> temp;
 
-    std::size_t listSize = len(b);
+    std::size_t listSize = len(l);
 
     // Verify that the input list is not empty.
     // If empty, set the coefficients vector to a = [0.0].
@@ -139,22 +141,22 @@ void scf::GeneralAnalogFilter::setB(boost::python::list b)
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set an empty set of a coefficients. Defaulting to 'b = [0.0]'"<< std::endl;
         temp.push_back(0.0);
-        b_coef.swap(temp);
+        b.swap(temp);
 
         return;
     }
 
     // Extract the coefficients coming from python into a temporal vector
-    for (std::size_t i{0}; i < len(b); ++i)
+    for (std::size_t i{0}; i < len(l); ++i)
     {
-        temp.push_back(boost::python::extract<double>(b[i]));
+        temp.push_back(boost::python::extract<double>(l[i]));
     }
 
-    // Update the a_coef vector with the new values
-    b_coef.swap(temp);
+    // Update the a vector with the new values
+    b.swap(temp);
 
     std::cout << "B coefficients set to: " << std::endl;
-    for (std::vector<double>::iterator it = b_coef.begin(); it != b_coef.end(); ++it)
+    for (std::vector<double>::iterator it = b.begin(); it != b.end(); ++it)
         std::cout << *it << ", ";
     std::cout << std::endl;
 }
@@ -174,17 +176,18 @@ const std::size_t scf::GeneralAnalogFilter::getNumCh() const
 void scf::GeneralAnalogFilter::reset()
 {
     // Resize and re-initialize the data buffer
-    std::vector< std::vector<output_data_t> >(order, std::vector<output_data_t>(numCh)).swap(data);
+    std::vector< std::vector<output_data_t> >(order, std::vector<output_data_t>(numCh)).swap(x);
+    std::vector< std::vector<output_data_t> >(order, std::vector<output_data_t>(numCh)).swap(y);
 
     // Check that a coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
-    if ( a_coef.size() < (order + 1) )
-        a_coef.resize( order +  1, 0);
+    if ( a.size() < (order + 1) )
+        a.resize( order +  1, 0);
 
     // Check that b coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
-    if ( b_coef.size() < (order + 1) )
-        b_coef.resize( order +  1, 0);
+    if ( b.size() < (order + 1) )
+        b.resize( order +  1, 0);
 }
 
 void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
@@ -215,9 +218,9 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
         // When the number of channel change, reset the filter
         reset();
 
-        std::cout << "data.size() = " << data.size() << std::endl;
-        if (data.size() > 0)
-            std::cout << "data.at(0).size() = " << data.at(0).size() << std::endl;
+        std::cout << "x.size() = " << x.size() << std::endl;
+        if (x.size() > 0)
+            std::cout << "x.at(0).size() = " << x.at(0).size() << std::endl;
     }
 
     // Request a new frame, to hold the same payload as the input frame
@@ -239,6 +242,44 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
             *(++outFrameIt) = *(++inFrameIt);
 
     // Filter the data
+
+    // Iterate over the channel sample
+    for (std::size_t ch{0}; ch < numCh; ++ch)
+    {
+        // Get the new data from from the input frame
+        output_data_t inNotCasted = helpers::getWord<input_data_t>(inFrameIt, ch);
+        double in = static_cast<double>(inNotCasted);
+
+        // Start computing the output value
+        double out = b.at(0) * in;
+
+        // Iterate over the pass samples
+        for (std::size_t t{1}; t <= order; ++t)
+        {
+            // Compute the correct index in the 'circular' buffer
+            std::size_t i{ ( order + dataIndex - t ) % order };
+            out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+        }
+
+        // Divide the resulting value by the first a coefficient
+        out /= a.at(0);
+
+        // Multiply by the gain
+        out *= gain;
+
+        // Copy the new output value into the output frame as well as
+        // into the data buffer
+        output_data_t outCasted = static_cast<output_data_t>(out);
+        helpers::setWord<output_data_t>(outFrameIt, ch, outCasted);
+        y.at(dataIndex).at(ch) = outCasted;
+
+        // Copy the current input value into the data buffer
+        x.at(dataIndex).at(ch) = inNotCasted;
+    }
+
+    // Update the index to point to the now older point in the 'circular' buffer
+    dataIndex = (dataIndex + 1) % order;
+
 
     // Print a few work to verify the mapping works
     std::cout << "  === FILTER === " << std::endl;

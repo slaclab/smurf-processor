@@ -61,10 +61,10 @@ namespace smurf
                 void setOrder(std::size_t o);
 
                 // Set the filter a coefficients
-                void setA(boost::python::list a);
+                void setA(boost::python::list l);
 
                 // Set the filter b coefficients
-                void setB(boost::python::list b);
+                void setB(boost::python::list l);
 
                 // Set the filter gain
                 void setGain(double g);
@@ -87,13 +87,16 @@ namespace smurf
                 std::size_t         numCh;  // Number of channels being processed
                 std::size_t         order;  // Filter order
                 double              gain;   // Filter gain
-                std::vector<double> a_coef; // Filter's a coefficients
-                std::vector<double> b_coef; // Filter's b coefficients
+                std::vector<double> a;      // Filter's a coefficients
+                std::vector<double> b;      // Filter's b coefficients
 
-                // Data vector, needed to store all the pass data points.
+                // Data buffers, needed to store all the pass data points.
                 // The outer vector's size will depend on the filter's order, and
                 // the inner vector's size will depend on the number of channels being processed
-                std::vector< std::vector<output_data_t> > data;
+                std::size_t dataIndex;                         // Index of older data point in the buffer
+                std::vector< std::vector<output_data_t> > x;   // pass inputs
+                std::vector< std::vector<output_data_t> > y;   // pass output
+
 
             };
         }
