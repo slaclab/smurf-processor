@@ -74,6 +74,7 @@ namespace smurf
                 // Wrap counter steps
                 const output_data_t stepUnwrap = 0x10000;
 
+                // Number of channels being processed
                 std::size_t numCh;
 
                 // Data buffer

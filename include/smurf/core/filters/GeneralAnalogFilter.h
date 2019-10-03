@@ -44,10 +44,10 @@ namespace smurf
             class GeneralAnalogFilter : public scc::BaseSlave, public scc::BaseMaster
             {
             public:
-                GeneralAnalogFilter(std::size_t s);
+                GeneralAnalogFilter();
                 ~GeneralAnalogFilter() {};
 
-                static GeneralAnalogFilterPtr create(std::size_t s);
+                static GeneralAnalogFilterPtr create();
 
                 static void setup_python();
 
@@ -55,8 +55,28 @@ namespace smurf
                 // the base counters
                 void rxtFrame(ris::FramePtr frame);
 
+                // Set the filter order
+                void setOrder(std::size_t o);
+
+                // Set the filter a coefficients
+                void setA(boost::python::list a);
+
+                // Set the filter b coefficients
+                void setB(boost::python::list b);
+
+                // Set the filter gain
+                void setGain(double g);
+
+                // Get the number of mapper channels
+                const std::size_t getNumCh() const;
+
             private:
-                std::size_t size;
+                std::size_t         numCh;  // Number of channels being processed
+                std::size_t         order;  // Filter order
+                double              gain;   // Filter gain
+                std::vector<double> a_coef; // Filter's a coefficients
+                std::vector<double> b_coef; // Filter's b coefficients
+
             };
         }
     }

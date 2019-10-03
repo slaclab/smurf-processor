@@ -104,7 +104,7 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
     for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderSize; ++i)
             *(++outFrameIt) = *(++inFrameIt);
 
-    // Unwrap data
+    // Unwrap the data
     for(std::size_t i{0}; i < numCh; ++i)
     {
         currentData.at(i) = static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, i));
