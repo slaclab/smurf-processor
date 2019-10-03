@@ -29,35 +29,41 @@ namespace ris = rogue::interfaces::stream;
 
 namespace helpers
 {
-	template<typename T>
-	const T getWord(ris::FrameIterator it, std::size_t offset)
-	{
-	    union
-	    {
-	        T       w;
-	        uint8_t b[sizeof(T)];
-	    } temp;
+    // Function to read a data word from a data frame.
+    // - 'it' iterator should point to the payload area (not to the header).
+    // - 'offset' is expressed in number of words.
+    template<typename T>
+    const T getWord(ris::FrameIterator it, std::size_t offset)
+    {
+        union
+        {
+            T       w;
+            uint8_t b[sizeof(T)];
+        } temp;
 
-	    for (std::size_t i{0}; i < sizeof(T); ++i)
-	        temp.b[i] = *(it + offset * sizeof(T) + i);
+        for (std::size_t i{0}; i < sizeof(T); ++i)
+            temp.b[i] = *(it + offset * sizeof(T) + i);
 
-	    return temp.w;
-	};
+        return temp.w;
+    };
 
-	template<typename T>
-	void setWord(ris::FrameIterator it, std::size_t offset, T value)
-	{
-	    union
-	    {
-	        T       w;
-	        uint8_t b[sizeof(T)];
-	    } temp;
+    // Function to write a data word from a data frame.
+    // - 'it' iterator should point to the payload area (not to the header).
+    // - 'offset' is expressed in number of words.
+    template<typename T>
+    void setWord(ris::FrameIterator it, std::size_t offset, T value)
+    {
+        union
+        {
+            T       w;
+            uint8_t b[sizeof(T)];
+        } temp;
 
-	    temp.w = value;
+        temp.w = value;
 
-	    for (std::size_t i{0}; i < sizeof(T); ++i)
-	        *(it + offset * sizeof(T) + i) = temp.b[i];
-	};
+        for (std::size_t i{0}; i < sizeof(T); ++i)
+            *(it + offset * sizeof(T) + i) = temp.b[i];
+    };
 }
 
 #endif
