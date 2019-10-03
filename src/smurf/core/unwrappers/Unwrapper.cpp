@@ -112,7 +112,7 @@ void scu::Unwrapper::rxtFrame(ris::FramePtr frame)
         in += SmurfHeader::SmurfHeaderSize;
         out += SmurfHeader::SmurfHeaderSize;
         for (std::size_t i{0}; i < 20; ++i)
-            std::cout << i << "  " << unsigned(*(in+i)) << "  " << unsigned(*(out+i)) << std::endl;
+            std::cout << i << std::hex << "  0x" << unsigned(*(in+i)) << "  0x" << unsigned(*(out+i)) << std::dec << std::endl;
     }
     std::cout << "=====================================" << std::endl;
 
