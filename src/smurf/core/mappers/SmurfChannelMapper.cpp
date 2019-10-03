@@ -153,7 +153,7 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     std::size_t i{0};
     for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
-        setWord<output_data_t>(outFrameIt, i, static_cast<output_data_t>(getWord<input_data_t>(inFrameIt, *maskIt)));
+        setWord<output_data_t>(outFrameIt, i++, static_cast<output_data_t>(getWord<input_data_t>(inFrameIt, *maskIt)));
         //smurfPacketOut->setDataWord(i++, smurfPacketIn->getDataWord(*maskIt));
         // Copy each data word, byte-by-byte
         // for (std::size_t i{0}; i < SmurfPacket::SmurfDataWordSize; ++i)
