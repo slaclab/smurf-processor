@@ -306,7 +306,7 @@ class LocalServer(pyrogue.Root):
             self.smurf_unwrapper = pysmurf.core.unwrappers.Unwrapper(name="DataUnwrapper")
             self.add(self.smurf_unwrapper)
 
-            self.smurf_filter = pysmurf.core.filters.GeneralAnalogFilter(name="DataFilter", size=10)
+            self.smurf_filter = pysmurf.core.filters.GeneralAnalogFilter(name="DataFilter")
             self.add(self.smurf_filter)
 
 

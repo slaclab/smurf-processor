@@ -25,8 +25,8 @@ class GeneralAnalogFilter(pysmurf.core.common.BaseMasterSlave):
     """
     SMuRF Data GeneralAnalogFilter Python Wrapper.
     """
-    def __init__(self, size, name, **kwargs):
-        self._filter = smurf.core.filters.GeneralAnalogFilter(size)
+    def __init__(self, name, **kwargs):
+        self._filter = smurf.core.filters.GeneralAnalogFilter()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._filter, description='SMuRF Data GeneralAnalogFilter', **kwargs)
 
         # Add the number of enabled channels  variable
