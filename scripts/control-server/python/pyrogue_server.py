@@ -31,12 +31,7 @@ import pyrogue
 import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 
-import pysmurf.core.counters
-import pysmurf.core.mappers
-import pysmurf.core.unwrappers
-import pysmurf.core.filters
-import pysmurf.core.transmitters
-
+import pysmurf.core.devices
 
 PIDFILE = '/tmp/smurf.pid'
 
@@ -289,34 +284,11 @@ class LocalServer(pyrogue.Root):
 
             # Our smurf_processor receiver
             # The data stream comes from TDEST 0xC1
-            # We use a FIFO between the stream data and the receiver:
-            # Stream -> FIFO -> smurf_processor receiver
-            # self.smurf_processor = Smurf.SmurfProcessor()
-            # self.smurf_processor.setDebug( False )
-            # self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
-            # pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
-            # pyrogue.streamConnect(self.smurf_processor_fifo, self.smurf_processor)
-
-            self.smurf_frame_stats = pysmurf.core.counters.FrameStatistics(name="FrameRxStats")
-            self.add(self.smurf_frame_stats)
-
-            self.smurf_mapper = pysmurf.core.mappers.SmurfChannelMapper(name="ChannelMapper")
-            self.add(self.smurf_mapper)
-
-            self.smurf_unwrapper = pysmurf.core.unwrappers.Unwrapper(name="DataUnwrapper")
-            self.add(self.smurf_unwrapper)
-
-            self.smurf_filter = pysmurf.core.filters.GeneralAnalogFilter(name="DataFilter")
-            self.add(self.smurf_filter)
-
-            self.test_data_writer = pyrogue.utilities.fileio.StreamWriter(name='testDataWriter')
-            self.add(self.test_data_writer)
-
-            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_frame_stats)
-            pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_mapper)
-            pyrogue.streamConnect(self.smurf_mapper, self.smurf_unwrapper)
-            pyrogue.streamConnect(self.smurf_unwrapper, self.smurf_filter)
-            pyrogue.streamConnect(self.smurf_filter, self.test_data_writer.getChannel(0))
+            self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
+                    name="SurfProcessor",
+                    description="Process the SMuRF Streaming Data Stream",
+                    master=self.streaming_streams[1])
+            self.add(self.smurf_processor)
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
