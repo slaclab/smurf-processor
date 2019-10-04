@@ -127,14 +127,14 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // The output packet has has the same 'SmurfPacketRaw' data structure as the input packet.
     // std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + SmurfPacketRaw::DataWordSize * maxNumOutCh;
     std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * maxNumOutCh;
-    ris::FramePtr newFrame = reqFrame(outFrameSize, true);
-    newFrame->setPayload(outFrameSize);
+    ris::FramePtr outFrame = reqFrame(outFrameSize, true);
+    outFrame->setPayload(outFrameSize);
 
     // Iterator to the input frame
     ris::FrameIterator inFrameIt = frame->beginRead();
 
     // Iterator to the output frame
-    ris::FrameIterator outFrameIt = newFrame->beginWrite();
+    ris::FrameIterator outFrameIt = outFrame->beginWrite();
 
     // Copy the header from the input frame to the output frame.
     for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderSize; ++i)
@@ -143,7 +143,7 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // Fill the output frame to zero.
     // This is only for convenience, as the header says the number of channel which have
     // valid data. The rest of payload will have only garbage.
-    std::fill(newFrame->beginWrite() + SmurfHeader::SmurfHeaderSize, newFrame->endWrite(), 0);
+    std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize, outFrame->endWrite(), 0);
 
     // Now map the data from the input frame to the output frame according to the map vector
     std::size_t i{0};
@@ -153,7 +153,7 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     }
 
     // Update the number of channel in the header of the output smurf frame
-    SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(newFrame));
+    SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(outFrame));
     smurfHeaderOut->setNumberChannels(numCh);
 
     // Print a few work to verify the mapping works
@@ -162,7 +162,7 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     std::cout << "=====================================" << std::endl;
     {
         ris::FrameIterator in = frame->beginRead();
-        ris::FrameIterator out = newFrame->beginRead();
+        ris::FrameIterator out = outFrame->beginRead();
 
         in += SmurfHeader::SmurfHeaderSize;
         out += SmurfHeader::SmurfHeaderSize;
@@ -170,7 +170,7 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
             std::cout << i << std::hex << "  0x" << unsigned(*(in+i)) << "  0x" << unsigned(*(out+i)) << std::dec << std::endl;
 
         SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
-        SmurfHeaderROPtr smurfHeaderOut(SmurfHeaderRO::create(newFrame));
+        SmurfHeaderROPtr smurfHeaderOut(SmurfHeaderRO::create(outFrame));
 
         std::cout << "In frame, number of channels  = " << smurfHeaderIn->getNumberChannels() << std::endl;
         std::cout << "Out frame, number of channels = " << smurfHeaderOut->getNumberChannels() << std::endl;
@@ -180,5 +180,5 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
     // as updating the Tx counters
-    txFrame(newFrame);
+    txFrame(outFrame);
 }
