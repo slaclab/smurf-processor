@@ -102,7 +102,8 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
     // Fill the output frame payload with zeros.
     // This is only for convenience, as the header says the number of channel which have
     // valid data. The rest of payload will have only garbage.
-    std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize, outFrame->endWrite(), 0);
+    std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
+        outFrame->endWrite(), 0);
 
     // Iterator to the input frame
     ris::FrameIterator inFrameIt = frame->beginRead();

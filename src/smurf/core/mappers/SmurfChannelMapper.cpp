@@ -143,7 +143,8 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     // Fill the output frame to zero.
     // This is only for convenience, as the header says the number of channel which have
     // valid data. The rest of payload will have only garbage.
-    std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize, outFrame->endWrite(), 0);
+    std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
+        outFrame->endWrite(), 0);
 
     // Now map the data from the input frame to the output frame according to the map vector
     std::size_t i{0};
