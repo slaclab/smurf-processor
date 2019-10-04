@@ -56,9 +56,9 @@ const std::size_t scu::Unwrapper::getNumCh() const
 
 void scu::Unwrapper::reset()
 {
-    currentData.resize(  numCh, 0 );
-    previousData.resize( numCh, 0 );
-    wrapCounter.resize(  numCh, 0 );
+    std::vector<output_data_t>(numCh).swap(currentData);
+    std::vector<output_data_t>(numCh).swap(previousData);
+    std::vector<output_data_t>(numCh).swap(wrapCounter);
 }
 
 void scu::Unwrapper::rxFrame (ris::FramePtr frame)
