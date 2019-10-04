@@ -60,6 +60,9 @@ namespace smurf
                 // Get the number of mapper channels
                 const std::size_t getNumCh() const;
 
+                // Resize and clear buffer
+                void reset();
+
             private:
                 // Data type used to read the data from the input frame
                 typedef int16_t input_data_t;

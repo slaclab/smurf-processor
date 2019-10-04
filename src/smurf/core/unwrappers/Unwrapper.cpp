@@ -54,6 +54,13 @@ const std::size_t scu::Unwrapper::getNumCh() const
     return numCh;
 }
 
+void scu::Unwrapper::reset()
+{
+    currentData.resize(  numCh, 0 );
+    previousData.resize( numCh, 0 );
+    wrapCounter.resize(  numCh, 0 );
+}
+
 void scu::Unwrapper::rxFrame (ris::FramePtr frame)
 {
     // If the processing block is disabled, do not process the frame
@@ -80,10 +87,8 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
         // Update the number of channels we are processing
         numCh = newNumCh;
 
-        // Resize and clear the data buffers
-        currentData.resize(  numCh, 0 );
-        previousData.resize( numCh, 0 );
-        wrapCounter.resize(  numCh, 0 );
+        // The new number of channel changes, reset the buffers
+        reset();
     }
 
     // Request a new frame, to hold the same payload as the input frame
