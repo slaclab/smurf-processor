@@ -309,11 +309,14 @@ class LocalServer(pyrogue.Root):
             self.smurf_filter = pysmurf.core.filters.GeneralAnalogFilter(name="DataFilter")
             self.add(self.smurf_filter)
 
+            self.test_data_writer = pyrogue.utilities.fileio.StreamWriter(name='testDataWriter')
+            self.add(self.test_data_writer)
 
             pyrogue.streamConnect(self.streaming_streams[1], self.smurf_frame_stats)
             pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_mapper)
             pyrogue.streamConnect(self.smurf_mapper, self.smurf_unwrapper)
             pyrogue.streamConnect(self.smurf_unwrapper, self.smurf_filter)
+            pyrogue.streamConnect(self.smurf_filter, self.test_data_writer.getChannel(0))
 
             # Add data streams (0-7) to file channels (0-7)
             for i in range(8):
