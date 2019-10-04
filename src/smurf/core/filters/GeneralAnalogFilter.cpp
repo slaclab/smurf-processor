@@ -281,7 +281,9 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
     }
 
     // Update the index to point to the now older point in the 'circular' buffer
-    dataIndex = (dataIndex + 1) % order;
+    // if the order > 0
+    if (order > 0)
+        dataIndex = (dataIndex + 1) % order;
 
 
     // Print a few work to verify the mapping works
