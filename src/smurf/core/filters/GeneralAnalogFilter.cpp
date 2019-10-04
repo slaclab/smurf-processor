@@ -122,6 +122,11 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
     // Update the a vector with the new values
     a.swap(temp);
 
+    // Check that the a coefficient vector size is at least 'order + 1'.
+    // If not, add expand it with zeros.
+    if ( a.size() < (order + 1) )
+        a.resize(order +  1, 0);
+
     std::cout << "A coefficients set to: " << std::endl;
     for (std::vector<double>::iterator it = a.begin(); it != a.end(); ++it)
         std::cout << *it << ", ";
@@ -155,6 +160,11 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
     // Update the a vector with the new values
     b.swap(temp);
 
+    // Check that the b coefficient vector size is at least 'order + 1'.
+    // If not, add expand it with zeros.
+    if ( b.size() < (order + 1) )
+        b.resize(order +  1, 0);
+
     std::cout << "B coefficients set to: " << std::endl;
     for (std::vector<double>::iterator it = b.begin(); it != b.end(); ++it)
         std::cout << *it << ", ";
@@ -182,12 +192,12 @@ void scf::GeneralAnalogFilter::reset()
     // Check that a coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
     if ( a.size() < (order + 1) )
-        a.resize( order +  1, 0);
+        a.resize(order +  1, 0);
 
     // Check that b coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
     if ( b.size() < (order + 1) )
-        b.resize( order +  1, 0);
+        b.resize(order +  1, 0);
 }
 
 void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
