@@ -99,7 +99,7 @@ namespace smurf
                 // Data buffers, needed to store all the pass data points.
                 // The outer vector's size will depend on the filter's order, and
                 // the inner vector's size will depend on the number of channels being processed
-                std::size_t dataIndex;                         // Index of older data point in the buffer
+                std::size_t lastPointIndex;                    // Index of older data point in the buffer
                 std::vector< std::vector<output_data_t> > x;   // pass inputs
                 std::vector< std::vector<output_data_t> > y;   // pass output
 

@@ -32,7 +32,7 @@ scf::GeneralAnalogFilter::GeneralAnalogFilter()
     gain(1),
     a(1,1),
     b(1,1),
-    dataIndex(0),
+    lastPointIndex(0),
     x( order, std::vector<output_data_t>(numCh) ),
     y( order, std::vector<output_data_t>(numCh) )
 {
@@ -267,7 +267,7 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
         for (std::size_t t{1}; t <= order; ++t)
         {
             // Compute the correct index in the 'circular' buffer
-            std::size_t i{ ( order + dataIndex - t ) % order };
+            std::size_t i{ ( order + lastPointIndex - t ) % order };
             out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
         }
 
@@ -285,15 +285,15 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
         // as the current input value into the data buffers
         if (order > 0)
         {
-            y.at(dataIndex).at(ch) = outCasted; // Output value, casted to 'output_data_t'
-            x.at(dataIndex).at(ch) = inCasted;  // Input value, casted to 'output_data_t'
+            y.at(lastPointIndex).at(ch) = outCasted; // Output value, casted to 'output_data_t'
+            x.at(lastPointIndex).at(ch) = inCasted;  // Input value, casted to 'output_data_t'
         }
     }
 
     // Update the index to point to the now older point in the 'circular' buffer
     // if the order > 0
     if (order > 0)
-        dataIndex = (dataIndex + 1) % order;
+        lastPointIndex = (lastPointIndex + 1) % order;
 
 
     // Print a few work to verify the mapping works
