@@ -247,8 +247,8 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
     for (std::size_t ch{0}; ch < numCh; ++ch)
     {
         // Get the new data from from the input frame
-        output_data_t inNotCasted = helpers::getWord<input_data_t>(inFrameIt, ch);
-        double in = static_cast<double>(inNotCasted);
+        output_data_t inCasted = static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, ch));
+        double in = static_cast<double>(inCasted);
 
         // Start computing the output value
         double out = b.at(0) * in;
@@ -267,14 +267,17 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
         // Multiply by the gain
         out *= gain;
 
-        // Copy the new output value into the output frame as well as
-        // into the data buffer
+        // Copy the new output value into the output frame
         output_data_t outCasted = static_cast<output_data_t>(out);
         helpers::setWord<output_data_t>(outFrameIt, ch, outCasted);
-        y.at(dataIndex).at(ch) = outCasted;
 
-        // Copy the current input value into the data buffer
-        x.at(dataIndex).at(ch) = inNotCasted;
+        // If the filter order > 0, copy the new output value as well
+        // as the current input value into the data buffers
+        if (order > 0)
+        {
+            y.at(dataIndex).at(ch) = outCasted; // Output value, casted to 'output_data_t'
+            x.at(dataIndex).at(ch) = inCasted;  // Input value, casted to 'output_data_t'
+        }
     }
 
     // Update the index to point to the now older point in the 'circular' buffer
