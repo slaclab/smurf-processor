@@ -55,12 +55,6 @@ class BaseMasterSlave(pyrogue.Device):
             pollInterval=1,
             localGet=self._device.getRxFrameSize))
 
-        # Command to clear all the counters
-        self.add(pyrogue.LocalCommand(
-            name='clearRxCnt',
-            description='Clear all Rx counters',
-            function=self._device.clearRxCnt))
-
         # Add "Disable" variable
         self.add(pyrogue.LocalVariable(
             name='DisableTx',
@@ -90,9 +84,14 @@ class BaseMasterSlave(pyrogue.Device):
 
         # Command to clear all the counters
         self.add(pyrogue.LocalCommand(
-            name='clearTxCnt',
-            description='Clear all Tx counters',
-            function=self._device.clearTxCnt))
+            name='clearCnt',
+            description='Clear all Rx and Tx counters',
+            function=self._clearCnt))
+
+    # Clear both Tx and Rx slave counters
+    def _clearCnt(self):
+        self._device.clearRxCnt()
+        self._device.clearTxCnt()
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
