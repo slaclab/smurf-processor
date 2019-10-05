@@ -19,7 +19,7 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/filters/Downsampler.h"
+#include "smurf/core/downsamplers/Downsampler.h"
 
 namespace scd = smurf::core::downsamplers;
 
