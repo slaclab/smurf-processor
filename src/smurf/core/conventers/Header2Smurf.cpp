@@ -51,7 +51,13 @@ void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
         // Update the frame header
         SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(frame));
 
+        // Stet he protocol version
         smurfHeaderOut->setVersion(1);
+
+        // Set the UNIX time
+        timespec tmp;
+        clock_gettime(CLOCK_REALTIME, &tmp);
+        smurfHeaderOut->setUnixTime(1000000000l * static_cast<uint64_t>(tmp.tv_sec) + static_cast<uint64_t>(tmp.tv_nsec));
     }
 
     // Send the frame to the next slave.
