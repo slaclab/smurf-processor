@@ -5,7 +5,7 @@
  *-----------------------------------------------------------------------------
  * Title         : SMuRF Data Downsampler
  * ----------------------------------------------------------------------------
- * File          : Downsamlper.h
+ * File          : Downsampler.h
  * Created       : 2019-09-27
  *-----------------------------------------------------------------------------
  * Description :
@@ -40,17 +40,17 @@ namespace smurf
     {
         namespace downsamplers
         {
-            class Downsamlper;
-            typedef boost::shared_ptr<Downsamlper> DownsamlperPtr;
+            class Downsampler;
+            typedef boost::shared_ptr<Downsampler> DownsamplerPtr;
 
             // This class implements a general data downsampler by the specific factor.
-            class Downsamlper : public scc::BaseSlave, public scc::BaseMaster
+            class Downsampler : public scc::BaseSlave, public scc::BaseMaster
             {
             public:
-                Downsamlper();
-                ~Downsamlper() {};
+                Downsampler();
+                ~Downsampler() {};
 
-                static DownsamlperPtr create();
+                static DownsamplerPtr create();
 
                 static void setup_python();
 

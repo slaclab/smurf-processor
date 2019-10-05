@@ -19,8 +19,8 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/filters/module.h"
-#include "smurf/core/filters/Downsampler.h"
+#include "smurf/core/downsamplers/module.h"
+#include "smurf/core/downsamplers/Downsampler.h"
 
 namespace bp  = boost::python;
 namespace scd = smurf::core::downsamplers;
@@ -36,5 +36,5 @@ void scd::setup_module()
     // set the current scope to the new sub-module
     bp::scope io_scope = module;
 
-    scd::GeneralAnalogFilter::setup_python();
+    scd::Downsampler::setup_python();
 }

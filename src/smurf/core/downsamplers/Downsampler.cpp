@@ -96,7 +96,7 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     // Increase the sampler counter. Don't do anything until the factor is reach.
     // When the factor is reach, send out the current frame and reset the downsampler.
     if (++sampleCnt >= factor)
-        return
+        return;
 
     // Request a new frame, to hold the same payload as the input frame
     //std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
