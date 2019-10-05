@@ -26,7 +26,7 @@ class Downsampler(pysmurf.core.common.BaseMasterSlave):
     SMuRF Data Downsampler Python Wrapper.
     """
     def __init__(self, name, **kwargs):
-        self._downsampler = smurf.core.Downsampler.Downsampler()
+        self._downsampler = smurf.core.downsamplers.Downsampler()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._downsampler, description='SMuRF Data Downsampler', **kwargs)
 
         # Add the number of enabled channels  variable
@@ -45,5 +45,5 @@ class Downsampler(pysmurf.core.common.BaseMasterSlave):
             mode='RW',
             value=1,
             localSet=lambda value : self._downsampler.setFactor(value),
-            localget=self._downsampler.getFactor))
+            localGet=self._downsampler.getFactor))
 

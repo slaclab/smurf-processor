@@ -57,7 +57,7 @@ class SmurfProcessor(pyrogue.Device):
         self.smurf_filter = pysmurf.core.filters.GeneralAnalogFilter(name="Filter")
         self.add(self.smurf_filter)
 
-        self.smurf_downsampler = pysmurf.core.downsampler.Downsampler(name="Downsampler")
+        self.smurf_downsampler = pysmurf.core.downsamplers.Downsampler(name="Downsampler")
         self.add(self.smurf_downsampler)
 
         self.test_data_writer = pyrogue.utilities.fileio.StreamWriter(name='FileWriter')
