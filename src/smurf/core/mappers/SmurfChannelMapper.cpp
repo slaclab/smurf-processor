@@ -150,7 +150,8 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     std::size_t i{0};
     for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
-        helpers::setWord<output_data_t>(outFrameIt, i++, static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, *maskIt)));
+        helpers::setWord<output_data_t>(outFrameIt, i++,
+            static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, *maskIt)));
     }
 
     // Update the number of channel in the header of the output smurf frame

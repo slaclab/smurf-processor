@@ -1,12 +1,12 @@
 /**
  *-----------------------------------------------------------------------------
- * Title      : SMuRF Data Filter
+ * Title      : Python Module for Filters
  * ----------------------------------------------------------------------------
- * File       : Filter.cpp
+ * File       : module.cpp
  * Created    : 2019-09-27
  * ----------------------------------------------------------------------------
  * Description:
- *   SMuRF Data Filter Class.
+ *   Python module setup
  * ----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory

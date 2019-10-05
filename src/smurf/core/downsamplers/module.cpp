@@ -1,12 +1,12 @@
 /**
  *-----------------------------------------------------------------------------
- * Title      : Python Module For Common Modules
+ * Title      : Python Module for Downsamplers
  * ----------------------------------------------------------------------------
  * File       : module.cpp
- * Created    : 2016-09-27
+ * Created    : 2019-09-27
  * ----------------------------------------------------------------------------
  * Description:
- * Python module setup
+ *   Python module setup
  * ----------------------------------------------------------------------------
  * This file is part of the smurf software platform. It is subject to
  * the license terms in the LICENSE.txt file found in the top-level directory
@@ -19,24 +19,22 @@
 **/
 
 #include <boost/python.hpp>
-#include "smurf/core/common/module.h"
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
+#include "smurf/core/filters/module.h"
+#include "smurf/core/filters/Downsampler.h"
 
 namespace bp  = boost::python;
-namespace scc = smurf::core::common;
+namespace scd = smurf::core::downsamplers;
 
-void scc::setup_module()
+void scd::setup_module()
 {
     // map the IO namespace to a sub-module
-    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.common"))));
+    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.downsamplers"))));
 
     // make "from mypackage import class1" work
-    bp::scope().attr("common") = module;
+    bp::scope().attr("downsamplers") = module;
 
     // set the current scope to the new sub-module
     bp::scope io_scope = module;
 
-    scc::BaseSlave::setup_python();
-    scc::BaseMaster::setup_python();
+    scd::GeneralAnalogFilter::setup_python();
 }

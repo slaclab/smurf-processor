@@ -1,8 +1,10 @@
+#ifndef _SMURF_CORE_DOWNSAMPLERS_MODULE_H_
+#define _SMURF_CORE_DOWNSAMPLERS_MODULE_H_
 /**
  *-----------------------------------------------------------------------------
- * Title      : Python Module For Common Modules
+ * Title      : Python Module
  * ----------------------------------------------------------------------------
- * File       : module.cpp
+ * File       : module.h
  * Created    : 2016-09-27
  * ----------------------------------------------------------------------------
  * Description:
@@ -18,25 +20,15 @@
  * ----------------------------------------------------------------------------
 **/
 
-#include <boost/python.hpp>
-#include "smurf/core/common/module.h"
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
-
-namespace bp  = boost::python;
-namespace scc = smurf::core::common;
-
-void scc::setup_module()
+namespace smurf
 {
-    // map the IO namespace to a sub-module
-    bp::object module(bp::handle<>(bp::borrowed(PyImport_AddModule("smurf.core.common"))));
-
-    // make "from mypackage import class1" work
-    bp::scope().attr("common") = module;
-
-    // set the current scope to the new sub-module
-    bp::scope io_scope = module;
-
-    scc::BaseSlave::setup_python();
-    scc::BaseMaster::setup_python();
+    namespace core
+    {
+        namespace downsamplers
+        {
+            void setup_module();
+        }
+    }
 }
+
+#endif
