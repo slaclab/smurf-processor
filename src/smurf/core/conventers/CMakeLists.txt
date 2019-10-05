@@ -13,13 +13,5 @@
 # contained in the LICENSE.txt file.
 # ----------------------------------------------------------------------------
 
-add_subdirectory(common)
-add_subdirectory(filters)
-add_subdirectory(mappers)
-add_subdirectory(transmitters)
-add_subdirectory(counters)
-add_subdirectory(unwrappers)
-add_subdirectory(downsamplers)
-add_subdirectory(conventers)
-
+target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Header2Smurf.cpp")
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/module.cpp")

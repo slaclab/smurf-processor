@@ -24,6 +24,7 @@ import pysmurf.core.mappers
 import pysmurf.core.unwrappers
 import pysmurf.core.filters
 import pysmurf.core.downsamplers
+import pysmurf.core.conventers
 import pysmurf.core.transmitters
 
 class SmurfProcessor(pyrogue.Device):
@@ -36,6 +37,7 @@ class SmurfProcessor(pyrogue.Device):
     - Data unwrap,
     - Data filter,
     - Data downsampler
+    - SMuRF header inserter
 
     After this, the data goes both to a Rogue data writer and to a
     transmitter block.
@@ -60,12 +62,16 @@ class SmurfProcessor(pyrogue.Device):
         self.smurf_downsampler = pysmurf.core.downsamplers.Downsampler(name="Downsampler")
         self.add(self.smurf_downsampler)
 
+        self.smurf_header2smurf = pysmurf.core.conventers.Header2Smurf(name="Header2Smurf")
+        self.add(self.smurf_header2smurf)
+
         self.test_data_writer = pyrogue.utilities.fileio.StreamWriter(name='FileWriter')
         self.add(self.test_data_writer)
 
-        pyrogue.streamConnect(self.master,            self.smurf_frame_stats)
-        pyrogue.streamConnect(self.smurf_frame_stats, self.smurf_mapper)
-        pyrogue.streamConnect(self.smurf_mapper,      self.smurf_unwrapper)
-        pyrogue.streamConnect(self.smurf_unwrapper,   self.smurf_filter)
-        pyrogue.streamConnect(self.smurf_filter,      self.smurf_downsampler)
-        pyrogue.streamConnect(self.smurf_downsampler, self.test_data_writer.getChannel(0))
+        pyrogue.streamConnect(self.master,             self.smurf_frame_stats)
+        pyrogue.streamConnect(self.smurf_frame_stats,  self.smurf_mapper)
+        pyrogue.streamConnect(self.smurf_mapper,       self.smurf_unwrapper)
+        pyrogue.streamConnect(self.smurf_unwrapper,    self.smurf_filter)
+        pyrogue.streamConnect(self.smurf_filter,       self.smurf_downsampler)
+        pyrogue.streamConnect(self.smurf_downsampler,  self.smurf_header2smurf)
+        pyrogue.streamConnect(self.smurf_header2smurf, self.test_data_writer.getChannel(0))
