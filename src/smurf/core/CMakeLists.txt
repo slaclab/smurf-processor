@@ -19,5 +19,6 @@ add_subdirectory(mappers)
 add_subdirectory(transmitters)
 add_subdirectory(counters)
 add_subdirectory(unwrappers)
+add_subdirectory(downsamplers)
 
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/module.cpp")

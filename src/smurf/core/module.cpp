@@ -26,6 +26,7 @@
 #include "smurf/core/transmitters/module.h"
 #include "smurf/core/counters/module.h"
 #include "smurf/core/unwrappers/module.h"
+#include "smurf/core/downsamplers/module.h"
 
 namespace bp  = boost::python;
 namespace sc = smurf::core;
@@ -38,4 +39,5 @@ void sc::setup_module()
    	sc::transmitters::setup_module();
    	sc::counters::setup_module();
    	sc::unwrappers::setup_module();
+    sc::downsamplers::setup_module();
 }
