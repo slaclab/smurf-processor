@@ -131,7 +131,7 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     reset();
 
     // Print a few work to verify the mapping works
-    std::cout << "  === FILTER === " << std::endl;
+    std::cout << "  === DOWNSAMPLER === " << std::endl;
     std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
     std::cout << "=====================================" << std::endl;
     {
