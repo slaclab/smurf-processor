@@ -65,8 +65,8 @@ class SmurfProcessor(pyrogue.Device):
         self.smurf_header2smurf = pysmurf.core.conventers.Header2Smurf(name="Header2Smurf")
         self.add(self.smurf_header2smurf)
 
-        self.test_data_writer = pyrogue.utilities.fileio.StreamWriter(name='FileWriter')
-        self.add(self.test_data_writer)
+        self.file_writer = pyrogue.utilities.fileio.StreamWriter(name='FileWriter')
+        self.add(self.file_writer)
 
         pyrogue.streamConnect(self.master,             self.smurf_frame_stats)
         pyrogue.streamConnect(self.smurf_frame_stats,  self.smurf_mapper)
@@ -74,4 +74,4 @@ class SmurfProcessor(pyrogue.Device):
         pyrogue.streamConnect(self.smurf_unwrapper,    self.smurf_filter)
         pyrogue.streamConnect(self.smurf_filter,       self.smurf_downsampler)
         pyrogue.streamConnect(self.smurf_downsampler,  self.smurf_header2smurf)
-        pyrogue.streamConnect(self.smurf_header2smurf, self.test_data_writer.getChannel(0))
+        pyrogue.streamConnect(self.smurf_header2smurf, self.file_writer.getChannel(0))
