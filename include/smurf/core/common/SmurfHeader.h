@@ -26,6 +26,7 @@
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include "smurf/core/common/TesBiasArray.h"
 
 namespace ris = rogue::interfaces::stream;
 
@@ -105,6 +106,9 @@ protected:
     static const std::size_t disableStreamBitOffset           = 1;
     static const std::size_t disableFileWriteBitOffset        = 2;
     static const std::size_t readConfigEachCycleBitOffset     = 3;
+
+    // TES Bias array object
+    TesBiasArrayPtr tba;
 
 private:
     // Prevent construction using the default or copy constructor.

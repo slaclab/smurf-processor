@@ -26,7 +26,8 @@
 
 SmurfHeaderRO::SmurfHeaderRO(ris::FramePtr frame)
 :
-    headerIt(frame->beginRead())
+    headerIt(frame->beginRead()),
+    tba(TesBiasArray::create(headerIt + headerTESDACOffset))
 {
 }
 
@@ -63,6 +64,7 @@ const uint32_t SmurfHeaderRO::getNumberChannels() const
 
 const int32_t SmurfHeaderRO::getTESBias(std::size_t index) const
 {
+    return tba->getWord(index);
 }
 
 const uint64_t SmurfHeaderRO::getUnixTime() const
@@ -277,6 +279,7 @@ void SmurfHeader::setNumberChannels(uint32_t value) const
 
 void SmurfHeader::setTESBias(std::size_t index, int32_t value) const
 {
+    tba->setWord(index, value);
 }
 
 void SmurfHeader::setUnixTime(uint64_t value) const

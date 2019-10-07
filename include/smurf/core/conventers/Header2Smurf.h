@@ -28,6 +28,7 @@
 #include "smurf/core/common/BaseSlave.h"
 #include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
+#include "smurf/core/common/TesBiasArray.h"
 #include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
@@ -58,6 +59,13 @@ namespace smurf
                 // This will be call by the BaseSlave class after updating
                 // the base counters
                 void rxFrame(ris::FramePtr frame);
+
+                // Receive the TesBias from pyrogue
+                void setTesBias(std::size_t index, int32_t value);
+
+            private:
+                ris::FramePtr   tesBias;
+                TesBiasArrayPtr tba;
             };
         }
     }

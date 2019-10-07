@@ -26,8 +26,11 @@ namespace scc = smurf::core::conventers;
 scc::Header2Smurf::Header2Smurf()
 :
     sccommon::BaseSlave(),
-    sccommon::BaseMaster()
+    sccommon::BaseMaster(),
+    tesBias(ris::Frame::create()),
+    tba(TesBiasArray::create(tesBias->beginWrite()))
 {
+    tesBias->setPayload(TesBiasArray::TesBiasBufferSize);
 }
 
 scc::Header2SmurfPtr scc::Header2Smurf::create()
@@ -38,9 +41,18 @@ scc::Header2SmurfPtr scc::Header2Smurf::create()
 void scc::Header2Smurf::setup_python()
 {
     bp::class_<scc::Header2Smurf, scc::Header2SmurfPtr, bp::bases<sccommon::BaseSlave,sccommon::BaseMaster>, boost::noncopyable >("Header2Smurf",bp::init<>())
+        .def("setTesBias", &Header2Smurf::setTesBias)
     ;
     bp::implicitly_convertible< scc::Header2SmurfPtr, sccommon::BaseSlavePtr  >();
     bp::implicitly_convertible< scc::Header2SmurfPtr, sccommon::BaseMasterPtr >();
+}
+
+void scc::Header2Smurf::setTesBias(std::size_t index, int32_t value)
+{
+    // Hold the mutex while the data tesBias array is being written to.
+    std::lock_guard<std::mutex> lock(*tba->getMutex());
+
+    tba->setWord(index, value);
 }
 
 void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
@@ -53,6 +65,15 @@ void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
 
         // Stet he protocol version
         smurfHeaderOut->setVersion(1);
+
+        // Copy the TES Bias values
+        {
+            // Hold the mutex while the data tesBias array is being written to.
+            std::lock_guard<std::mutex> lock(*tba->getMutex());
+
+            for(std::size_t i{0}; i < TesBiasArray::TesBiasCount; ++i)
+                smurfHeaderOut->setTESBias(i, tba->getWord(i));
+        }
 
         // Set the UNIX time
         timespec tmp;
