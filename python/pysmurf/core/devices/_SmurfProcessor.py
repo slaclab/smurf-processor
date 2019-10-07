@@ -42,7 +42,7 @@ class SmurfProcessor(pyrogue.Device):
     After this, the data goes both to a Rogue data writer and to a
     transmitter block.
     """
-    def __init__(self, name, description, root, master, **kwargs):
+    def __init__(self, name, description, master, **kwargs):
         pyrogue.Device.__init__(self, name=name, description=description, **kwargs)
 
         self.master = master
@@ -75,3 +75,8 @@ class SmurfProcessor(pyrogue.Device):
         pyrogue.streamConnect(self.smurf_filter,       self.smurf_downsampler)
         pyrogue.streamConnect(self.smurf_downsampler,  self.smurf_header2smurf)
         pyrogue.streamConnect(self.smurf_header2smurf, self.file_writer.getChannel(0))
+
+    # Method to set TES Bias values
+    def setTesBias(self, index, value):
+        self.smurf_header2smurf.setTesBias(index, value)
+

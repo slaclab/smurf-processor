@@ -287,7 +287,6 @@ class LocalServer(pyrogue.Root):
             self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
                     name="SmurfProcessor",
                     description="Process the SMuRF Streaming Data Stream",
-                    root=self,
                     master=self.streaming_streams[1])
             self.add(self.smurf_processor)
 
@@ -645,6 +644,7 @@ class LocalServer(pyrogue.Root):
 
                 # Send the difference value to smurf2mce
                 #self.smurf_processor.setTesBias(tes_bias_index, tes_bias_val)
+                self.smurf_processor.setTesBias(tes_bias_index, tes_bias_val)
 
 class PcieCard():
     """
