@@ -29,3 +29,6 @@ class Header2Smurf(pysmurf.core.common.BaseMasterSlave):
         self._header2smurf = smurf.core.conventers.Header2Smurf()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._header2smurf, description='Convert the frame header to the SMuRF server', **kwargs)
 
+    # Method to set TES Bias values
+    def setTesBias(self, index, value):
+        self._header2smurf.setTesBias(index, value)
