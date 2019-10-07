@@ -28,7 +28,6 @@ sct::BaseTransmitter::BaseTransmitter()
 :
     scc::BaseSlave()
 {
-    std::cout << "BaseTransmitter created" << std::endl;
 }
 
 sct::BaseTransmitterPtr sct::BaseTransmitter::create()
@@ -46,9 +45,6 @@ void sct::BaseTransmitter::setup_python()
 
 void sct::BaseTransmitter::rxFrame(ris::FramePtr frame)
 {
-    std::cout << "    BaseTransmitter. Frame received..." << std::endl;
-    std::cout << "    Size = " << frame->getPayload() << std::endl;
-
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     	return;

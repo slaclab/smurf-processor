@@ -130,21 +130,6 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     // Reset the downsampler
     reset();
 
-    // Print a few work to verify the mapping works
-    std::cout << "  === DOWNSAMPLER === " << std::endl;
-    std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
-    std::cout << "=====================================" << std::endl;
-    {
-        ris::FrameIterator in = frame->beginRead();
-        ris::FrameIterator out = outFrame->beginRead();
-
-        in += SmurfHeader::SmurfHeaderSize;
-        out += SmurfHeader::SmurfHeaderSize;
-        for (std::size_t i{0}; i < 20; ++i)
-            std::cout << i << std::hex << "  0x" << unsigned(*(in+i)) << "  0x" << unsigned(*(out+i)) << std::dec << std::endl;
-    }
-    std::cout << "=====================================" << std::endl;
-
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
     // as updating the Tx counters

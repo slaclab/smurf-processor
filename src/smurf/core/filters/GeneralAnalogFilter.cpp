@@ -65,22 +65,6 @@ void scf::GeneralAnalogFilter::setOrder(std::size_t o)
 
         // When the order it change, reset the filter
         reset();
-
-        std::cout << "Order set to: " << order << std::endl;
-
-        std::cout << "a.size() = " << a.size() << ". Elements are:" << std::endl;
-        for (std::vector<double>::iterator it = a.begin(); it != a.end(); ++it)
-                std::cout << *it << ", ";
-            std::cout << std::endl;
-
-        std::cout << "b.size() = " << b.size() << ". Elements are:" << std::endl;
-        for (std::vector<double>::iterator it = b.begin(); it != b.end(); ++it)
-                std::cout << *it << ", ";
-            std::cout << std::endl;
-
-            std::cout << "x.size() = " << x.size() << std::endl;
-            if (x.size() > 0)
-                std::cout << "x.at(0).size() = " << x.at(0).size() << std::endl;
     }
 }
 
@@ -126,11 +110,6 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
     // If not, add expand it with zeros.
     if ( a.size() < (order + 1) )
         a.resize(order +  1, 0);
-
-    std::cout << "A coefficients set to: " << std::endl;
-    for (std::vector<double>::iterator it = a.begin(); it != a.end(); ++it)
-        std::cout << *it << ", ";
-    std::cout << std::endl;
 }
 
 void scf::GeneralAnalogFilter::setB(boost::python::list l)
@@ -164,18 +143,11 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
     // If not, add expand it with zeros.
     if ( b.size() < (order + 1) )
         b.resize(order +  1, 0);
-
-    std::cout << "B coefficients set to: " << std::endl;
-    for (std::vector<double>::iterator it = b.begin(); it != b.end(); ++it)
-        std::cout << *it << ", ";
-    std::cout << std::endl;
 }
 
 void scf::GeneralAnalogFilter::setGain(double g)
 {
     gain = g;
-
-    std::cout << "Gain set to: " << gain << std::endl;
 }
 
 const std::size_t scf::GeneralAnalogFilter::getNumCh() const
@@ -227,10 +199,6 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
 
         // When the number of channel change, reset the filter
         reset();
-
-        std::cout << "x.size() = " << x.size() << std::endl;
-        if (x.size() > 0)
-            std::cout << "x.at(0).size() = " << x.at(0).size() << std::endl;
     }
 
     // Request a new frame, to hold the same payload as the input frame
@@ -300,22 +268,6 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
     // if the order > 0
     if (order > 0)
         lastPointIndex = (lastPointIndex + 1) % order;
-
-
-    // Print a few work to verify the mapping works
-    std::cout << "  === FILTER === " << std::endl;
-    std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
-    std::cout << "=====================================" << std::endl;
-    {
-        ris::FrameIterator in = frame->beginRead();
-        ris::FrameIterator out = outFrame->beginRead();
-
-        in += SmurfHeader::SmurfHeaderSize;
-        out += SmurfHeader::SmurfHeaderSize;
-        for (std::size_t i{0}; i < 20; ++i)
-            std::cout << i << std::hex << "  0x" << unsigned(*(in+i)) << "  0x" << unsigned(*(out+i)) << std::dec << std::endl;
-    }
-    std::cout << "=====================================" << std::endl;
 
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well

@@ -135,21 +135,6 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
         helpers::setWord(outFrameIt, i, currentData.at(i) + wrapCounter.at(i));
     }
 
-    // Print a few work to verify the mapping works
-    std::cout << "  === UNWRAPPER === " << std::endl;
-    std::cout << "INDEX    INPUT FRAME     OUTPUT FRAME" << std::endl;
-    std::cout << "=====================================" << std::endl;
-    {
-        ris::FrameIterator in = frame->beginRead();
-        ris::FrameIterator out = outFrame->beginRead();
-
-        in += SmurfHeader::SmurfHeaderSize;
-        out += SmurfHeader::SmurfHeaderSize;
-        for (std::size_t i{0}; i < numCh * sizeof(output_data_t); ++i)
-            std::cout << i << std::hex << "  0x" << unsigned(*(in+i)) << "  0x" << unsigned(*(out+i)) << std::dec << std::endl;
-    }
-    std::cout << "=====================================" << std::endl;
-
     // Now the current Data vector will be the previous data vector, so swap then
     previousData.swap(currentData);
 
