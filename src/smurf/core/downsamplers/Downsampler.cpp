@@ -27,7 +27,6 @@ scd::Downsampler::Downsampler()
 :
     scc::BaseSlave(),
     scc::BaseMaster(),
-    numCh(0),
     factor(1),
     sampleCnt(0)
 {
