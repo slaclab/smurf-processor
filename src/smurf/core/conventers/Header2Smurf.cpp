@@ -27,10 +27,11 @@ scc::Header2Smurf::Header2Smurf()
 :
     sccommon::BaseSlave(),
     sccommon::BaseMaster(),
-    tesBias(ris::Frame::create()),
+    tesBias(reqFrame(TesBiasArray::TesBiasBufferSize, true)),
     tba(TesBiasArray::create(tesBias->beginWrite()))
 {
     tesBias->setPayload(TesBiasArray::TesBiasBufferSize);
+    tba->setDataIt(tesBias->beginWrite());
 }
 
 scc::Header2SmurfPtr scc::Header2Smurf::create()
