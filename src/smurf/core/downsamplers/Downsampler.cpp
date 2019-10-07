@@ -54,7 +54,7 @@ void scd::Downsampler::setFactor(std::size_t f)
     {
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set factor = 0."<< std::endl;
-        return
+        return;
     }
 
     factor = f;
