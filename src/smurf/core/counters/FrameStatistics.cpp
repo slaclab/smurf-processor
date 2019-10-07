@@ -71,12 +71,13 @@ const std::size_t scc::FrameStatistics::getFrameOutOrderCnt() const
 
 void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
 {
-    // Acquire lock on frame.
-    rogue::interfaces::stream::FrameLockPtr lock{frame->lock()};
 
     // Only process the frame is the block is enable.
     if (!isRxDisabled())
     {
+        // Acquire lock on frame.
+        ris::FrameLockPtr lock{frame->lock()};
+
         // (smart) pointer to the smurf header in the input frame (Read-only)
         SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
 
@@ -112,5 +113,6 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
     // as updating the Tx counters
+    // It is outside the above scope of the lock, so that the lock is released at this point
     txFrame(frame);
 }

@@ -106,9 +106,6 @@ const std::size_t scm::SmurfChannelMapper::getNumCh() const
 
 void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
 {
-    // Acquire lock on frame.
-    rogue::interfaces::stream::FrameLockPtr lock{frame->lock()};
-
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {
@@ -119,6 +116,9 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
 
         return;
     }
+
+    // Acquire lock on frame.
+    ris::FrameLockPtr lock{frame->lock()};
 
     // Request a new frame, to hold the header + payload, and set its payload
     // Although the number of active channel can change, and will be indicated in the

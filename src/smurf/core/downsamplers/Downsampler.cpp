@@ -75,9 +75,6 @@ void scd::Downsampler::reset()
 
 void scd::Downsampler::rxFrame(ris::FramePtr frame)
 {
-    // Acquire lock on frame.
-    rogue::interfaces::stream::FrameLockPtr lock{frame->lock()};
-
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {
@@ -88,6 +85,9 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
 
         return;
     }
+
+    // Acquire lock on frame.
+    ris::FrameLockPtr lock{frame->lock()};
 
     // (smart) pointer to the smurf header in the input frame (Read-only)
     SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
