@@ -45,6 +45,9 @@ void sct::BaseTransmitter::setup_python()
 
 void sct::BaseTransmitter::rxFrame(ris::FramePtr frame)
 {
+    // Acquire lock on frame.
+    rogue::interfaces::stream::FrameLockPtr lock{frame->lock()};
+
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     	return;

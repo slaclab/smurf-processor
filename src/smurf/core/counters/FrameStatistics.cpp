@@ -71,6 +71,9 @@ const std::size_t scc::FrameStatistics::getFrameOutOrderCnt() const
 
 void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
 {
+    // Acquire lock on frame.
+    rogue::interfaces::stream::FrameLockPtr lock{frame->lock()};
+
     // Only process the frame is the block is enable.
     if (!isRxDisabled())
     {
