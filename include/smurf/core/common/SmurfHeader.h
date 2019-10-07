@@ -107,9 +107,6 @@ protected:
     static const std::size_t disableFileWriteBitOffset        = 2;
     static const std::size_t readConfigEachCycleBitOffset     = 3;
 
-    // TES Bias array object
-    TesBiasArrayPtr tba;
-
 private:
     // Prevent construction using the default or copy constructor.
     // Prevent an SmurfHeaderRO object to be assigned as well.
@@ -126,6 +123,9 @@ private:
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+
+    // TES Bias array object
+    TesBiasArrayPtr tba;
 };
 
 // SMuRF header class. This class give a read-write access
@@ -181,6 +181,9 @@ private:
 
     // Private variables
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+
+    // TES Bias array object
+    TesBiasArrayPtr tba;
 };
 
 #endif

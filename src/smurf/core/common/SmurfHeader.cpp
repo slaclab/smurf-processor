@@ -241,7 +241,8 @@ const bool SmurfHeaderRO::getWordBit(std::size_t offset, std::size_t index) cons
 SmurfHeader::SmurfHeader(ris::FramePtr frame)
 :
     SmurfHeaderRO(frame),
-    headerIt(frame->beginWrite())
+    headerIt(frame->beginWrite()),
+    tba(TesBiasArray::create(headerIt + headerTESDACOffset))
 {
 
 }
