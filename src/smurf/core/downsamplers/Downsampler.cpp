@@ -43,7 +43,6 @@ void scd::Downsampler::setup_python()
     bp::class_<scd::Downsampler, scd::DownsamplerPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("Downsampler",bp::init<>())
         .def("setFactor", &Downsampler::setFactor)
         .def("getFactor", &Downsampler::getFactor)
-        .def("getNumCh",  &Downsampler::getNumCh)
     ;
     bp::implicitly_convertible< scd::DownsamplerPtr, scc::BaseSlavePtr  >();
     bp::implicitly_convertible< scd::DownsamplerPtr, scc::BaseMasterPtr >();
@@ -61,11 +60,6 @@ void scd::Downsampler::setFactor(std::size_t f)
 const std::size_t scd::Downsampler::getFactor() const
 {
     return factor;
-}
-
-const std::size_t scd::Downsampler::getNumCh() const
-{
-    return numCh;
 }
 
 void scd::Downsampler::reset()

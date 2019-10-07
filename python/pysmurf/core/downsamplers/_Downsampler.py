@@ -29,15 +29,6 @@ class Downsampler(pysmurf.core.common.BaseMasterSlave):
         self._downsampler = smurf.core.downsamplers.Downsampler()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._downsampler, description='SMuRF Data Downsampler', **kwargs)
 
-        # Add the number of enabled channels  variable
-        self.add(pyrogue.LocalVariable(
-            name='NumChannels',
-            description='Number of channels being processed',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._downsampler.getNumCh))
-
         # Add the filter order variable
         self.add(pyrogue.LocalVariable(
             name='Factor',
