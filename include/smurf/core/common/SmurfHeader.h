@@ -50,6 +50,7 @@ public:
     const uint8_t  getTimingConfiguration()       const;  // Get timing configuration
     const uint32_t getNumberChannels()            const;  // Get number of channel in this packet
     const int32_t  getTESBias(std::size_t index)  const;  // Get TES DAC values 16X 20 bit
+    void           copyTESBiasArrayTo(ris::FrameIterator it) const;   // Copy the TES DAC full array to a destination iterator
     const uint64_t getUnixTime()                  const;  // Get 64 bit unix time nanoseconds
     const uint32_t getFluxRampIncrement()         const;  // Get signed 32 bit integer for increment
     const uint32_t getFluxRampOffset()            const;  // Get signed 32 it integer for offset
@@ -143,6 +144,7 @@ public:
     void setTimingConfiguration(uint8_t value) const;         // Set timing configuration
     void setNumberChannels(uint32_t value) const;             // Set number of channel in this packet
     void setTESBias(std::size_t index, int32_t value) const;  // Set TES DAC values 16X 20 bit
+    void copyTESBiasArrayFrom(ris::FrameIterator it) const;   // Copy the TES DAC full array from a source iterator
     void setUnixTime(uint64_t value) const;                   // Set 64 bit unix time nanoseconds
     void setFluxRampIncrement(uint32_t value) const;          // Set signed 32 bit integer for increment
     void setFluxRampOffset(uint32_t value) const;             // Set signed 32 it integer for offset

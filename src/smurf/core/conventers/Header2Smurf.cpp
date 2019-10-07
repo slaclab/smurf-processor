@@ -67,7 +67,7 @@ void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
     // If the processing block is disabled, do not process the frame
     if (!isRxDisabled())
     {
-        // Update the frame header
+        // Create a SmurfHeader object on the frame
         SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(frame));
 
         // Stet he protocol version
@@ -78,8 +78,7 @@ void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
             // Hold the mutex while the data tesBias array is being written to.
             std::lock_guard<std::mutex> lock(*tba->getMutex());
 
-            for(std::size_t i{0}; i < TesBiasArray::TesBiasCount; ++i)
-                smurfHeaderOut->setTESBias(i, tba->getWord(i));
+            smurfHeaderOut->copyTESBiasArrayFrom(tesBias->beginRead());
         }
 
         // Set the UNIX time

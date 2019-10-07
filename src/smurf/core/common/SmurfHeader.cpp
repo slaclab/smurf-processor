@@ -67,6 +67,13 @@ const int32_t SmurfHeaderRO::getTESBias(std::size_t index) const
     return tba->getWord(index);
 }
 
+void SmurfHeaderRO::copyTESBiasArrayTo(ris::FrameIterator it) const
+{
+    std::copy(it + headerTESDACOffset,
+        it + headerTESDACOffset + TesBiasArray::TesBiasBufferSize,
+        headerIt);
+}
+
 const uint64_t SmurfHeaderRO::getUnixTime() const
 {
     return getU64Word(headerUnixTimeOffset);
@@ -281,6 +288,13 @@ void SmurfHeader::setNumberChannels(uint32_t value) const
 void SmurfHeader::setTESBias(std::size_t index, int32_t value) const
 {
     tba->setWord(index, value);
+}
+
+void SmurfHeader::copyTESBiasArrayFrom(ris::FrameIterator it) const
+{
+    std::copy(headerIt + headerTESDACOffset,
+        headerIt + headerTESDACOffset + TesBiasArray::TesBiasBufferSize,
+        it);
 }
 
 void SmurfHeader::setUnixTime(uint64_t value) const
