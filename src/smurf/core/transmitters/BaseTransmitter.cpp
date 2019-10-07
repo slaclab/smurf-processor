@@ -45,6 +45,8 @@ void sct::BaseTransmitter::setup_python()
 
 void sct::BaseTransmitter::rxFrame(ris::FramePtr frame)
 {
+    rogue::GilRelease noGil;
+
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     	return;

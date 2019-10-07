@@ -75,6 +75,8 @@ void scd::Downsampler::reset()
 
 void scd::Downsampler::rxFrame(ris::FramePtr frame)
 {
+    rogue::GilRelease noGil;
+
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {

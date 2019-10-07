@@ -71,6 +71,7 @@ const std::size_t scc::FrameStatistics::getFrameOutOrderCnt() const
 
 void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
 {
+    rogue::GilRelease noGil;
 
     // Only process the frame is the block is enable.
     if (!isRxDisabled())

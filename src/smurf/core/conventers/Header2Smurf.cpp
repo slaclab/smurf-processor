@@ -64,6 +64,8 @@ void scc::Header2Smurf::setTesBias(std::size_t index, int32_t value)
 
 void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
 {
+    rogue::GilRelease noGil;
+
     // If the processing block is disabled, do not process the frame
     if (!isRxDisabled())
     {

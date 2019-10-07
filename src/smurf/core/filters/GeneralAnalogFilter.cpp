@@ -174,6 +174,8 @@ void scf::GeneralAnalogFilter::reset()
 
 void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
 {
+    rogue::GilRelease noGil;
+
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {

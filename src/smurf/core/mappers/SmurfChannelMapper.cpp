@@ -106,6 +106,8 @@ const std::size_t scm::SmurfChannelMapper::getNumCh() const
 
 void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
 {
+    rogue::GilRelease noGil;
+
     // If the processing block is disabled, do not process the frame
     if (isRxDisabled())
     {
