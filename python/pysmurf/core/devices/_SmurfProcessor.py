@@ -42,7 +42,7 @@ class SmurfProcessor(pyrogue.Device):
     After this, the data goes both to a Rogue data writer and to a
     transmitter block.
     """
-    def __init__(self, name, description, master, **kwargs):
+    def __init__(self, name, description, root, master, **kwargs):
         pyrogue.Device.__init__(self, name=name, description=description, **kwargs)
 
         self.master = master

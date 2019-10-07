@@ -287,6 +287,7 @@ class LocalServer(pyrogue.Root):
             self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
                     name="SmurfProcessor",
                     description="Process the SMuRF Streaming Data Stream",
+                    root=self,
                     master=self.streaming_streams[1])
             self.add(self.smurf_processor)
 
