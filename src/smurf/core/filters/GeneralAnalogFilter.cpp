@@ -91,7 +91,7 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set an empty set of a coefficients. Defaulting to 'a = [1.0]'"<< std::endl;
         temp.push_back(1.0);
-        b.swap(temp);
+        a.swap(temp);
 
         return;
     }
@@ -103,7 +103,7 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
         // This should go to a logger instead
         std::cerr << "ERROR: The first a coefficient can not be zero. Defaulting to 'a = [1.0]'"<< std::endl;
         temp.push_back(1.0);
-        b.swap(temp);
+        a.swap(temp);
         return;
     }
 
