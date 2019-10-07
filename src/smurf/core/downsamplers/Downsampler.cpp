@@ -50,7 +50,7 @@ void scd::Downsampler::setup_python()
 void scd::Downsampler::setFactor(std::size_t f)
 {
     // Check if the factor is 0
-    if (0 == factor)
+    if (0 == f)
     {
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set factor = 0."<< std::endl;
