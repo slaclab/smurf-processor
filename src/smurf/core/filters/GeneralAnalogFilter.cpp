@@ -61,6 +61,11 @@ void scf::GeneralAnalogFilter::setOrder(std::size_t o)
     // Check if the new order is different from the current one
     if ( o != order )
     {
+        // Take the mutex before changing the filter parameters
+        // This make sure that the new order value is not used before
+        // the a and b array are resized.
+        std::lock_guard<std::mutex> lock(mut);
+
         order = o;
 
         // When the order it change, reset the filter
@@ -73,6 +78,11 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
     std::vector<double> temp;
 
     std::size_t listSize = len(l);
+
+    // Take the mutex before changing the filter parameters
+    // This make sure that the 'a' array is not used before it has
+    // beem resized, if necessary.
+    std::lock_guard<std::mutex> lock(mut);
 
     // Verify that the input list is not empty.
     // If empty, set the coefficients vector to a = [1.0].
@@ -117,6 +127,11 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
     std::vector<double> temp;
 
     std::size_t listSize = len(l);
+
+    // Take the mutex before changing the filter parameters
+    // This make sure that the 'b' array is not used before it has
+    // beem resized, if necessary.
+    std::lock_guard<std::mutex> lock(mut);
 
     // Verify that the input list is not empty.
     // If empty, set the coefficients vector to a = [0.0].
@@ -188,7 +203,7 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
     }
 
     // Acquire lock on frame.
-    ris::FrameLockPtr lock{frame->lock()};
+    ris::FrameLockPtr lockFrame{frame->lock()};
 
     // (smart) pointer to the smurf header in the input frame (Read-only)
     SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
@@ -230,6 +245,9 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
     outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
 
     // Filter the data
+
+    // Acquire the lock while the filter parameters are used.
+    std::lock_guard<std::mutex> lockParams(mut);
 
     // Iterate over the channel sample
     for (std::size_t ch{0}; ch < numCh; ++ch)

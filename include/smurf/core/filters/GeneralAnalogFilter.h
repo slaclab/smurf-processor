@@ -96,6 +96,7 @@ namespace smurf
                 double              gain;   // Filter gain
                 std::vector<double> a;      // Filter's a coefficients
                 std::vector<double> b;      // Filter's b coefficients
+                std::mutex          mut;    // Mutex
 
                 // Data buffers, needed to store all the pass data points.
                 // The outer vector's size will depend on the filter's order, and
