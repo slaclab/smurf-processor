@@ -69,7 +69,6 @@ namespace smurf
                 void reset();
 
             private:
-                std::size_t numCh;     // Number of channels being processed
                 std::size_t factor;    // Downsample factor
                 std::size_t sampleCnt; // Sample counter
             };

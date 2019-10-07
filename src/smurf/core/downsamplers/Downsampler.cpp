@@ -86,16 +86,6 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
         return;
     }
 
-    // Acquire lock on frame.
-    ris::FrameLockPtr lock{frame->lock()};
-
-    // (smart) pointer to the smurf header in the input frame (Read-only)
-    SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
-
-    // Get the number of channels in the input frame. The number of output channel will be the same
-    std::size_t numCh = smurfHeaderIn->getNumberChannels();
-
-
     // Increase the sampler counter. Don't do anything until the factor is reach.
     // When the factor is reach, send out the current frame and reset the downsampler.
     if (++sampleCnt < factor)
