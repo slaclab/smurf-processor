@@ -30,8 +30,14 @@ scc::Header2Smurf::Header2Smurf()
     tesBias(reqFrame(TesBiasArray::TesBiasBufferSize, true)),
     tba(TesBiasArray::create(tesBias->beginWrite()))
 {
+    // Update the payload of the TES bias frame buffer
     tesBias->setPayload(TesBiasArray::TesBiasBufferSize);
+
+    // Update the iterator, just in case the method setPayload invalidated it
     tba->setDataIt(tesBias->beginWrite());
+
+    // Clear the buffer
+    std::fill(tesBias->beginWrite(), tesBias->endWrite(), 0);
 }
 
 scc::Header2SmurfPtr scc::Header2Smurf::create()
