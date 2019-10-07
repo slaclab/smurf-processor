@@ -285,7 +285,7 @@ class LocalServer(pyrogue.Root):
             # Our smurf_processor receiver
             # The data stream comes from TDEST 0xC1
             self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
-                    name="SurfProcessor",
+                    name="SmurfProcessor",
                     description="Process the SMuRF Streaming Data Stream",
                     master=self.streaming_streams[1])
             self.add(self.smurf_processor)
