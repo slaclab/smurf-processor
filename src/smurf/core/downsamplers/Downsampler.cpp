@@ -91,39 +91,11 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     if (++sampleCnt < factor)
         return;
 
-    // Request a new frame, to hold the same payload as the input frame
-    //std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
-    // For now we want to keep packet of the same size, so let's do this instead:
-    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize +
-        ( ( frame->getPayload() - SmurfHeader::SmurfHeaderSize )/sizeof(input_data_t) ) * sizeof(output_data_t);
-    ris::FramePtr outFrame = reqFrame(outFrameSize, true);
-    outFrame->setPayload(outFrameSize);
-
-    // Fill the output frame payload with zeros.
-    // This is only for convenience, as the header says the number of channel which have
-    // valid data. The rest of payload will have only garbage.
-    //std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
-    //    outFrame->endWrite(), 0);
-
-    // Iterator to the input frame
-    ris::FrameIterator inFrameIt = frame->beginRead();
-
-    // Iterator to the output frame
-    ris::FrameIterator outFrameIt = outFrame->beginWrite();
-
-    // Copy the header from the input frame to the output frame.
-    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
-
-    // Copy the data
-    for (std::size_t i{0}; i < numCh; ++i)
-        helpers::setWord<output_data_t>(outFrameIt, i,
-            static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, i)));
-
     // Reset the downsampler
     reset();
 
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
     // as updating the Tx counters
-    txFrame(outFrame);
+    txFrame(frame);
 }
