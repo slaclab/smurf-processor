@@ -284,10 +284,14 @@ class LocalServer(pyrogue.Root):
 
             # Our smurf_processor receiver
             # The data stream comes from TDEST 0xC1
+            # We use a FIFO between the stream data and the receiver:
+            # Stream -> FIFO -> smurf_processor receiver
+            self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(1000,0,True)
+            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
             self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
                     name="SmurfProcessor",
                     description="Process the SMuRF Streaming Data Stream",
-                    master=self.streaming_streams[1])
+                    master=self.smurf_processor_fifo)
             self.add(self.smurf_processor)
 
             # Add data streams (0-7) to file channels (0-7)
