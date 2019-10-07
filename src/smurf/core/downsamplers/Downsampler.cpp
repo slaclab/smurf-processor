@@ -109,8 +109,8 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     // Fill the output frame payload with zeros.
     // This is only for convenience, as the header says the number of channel which have
     // valid data. The rest of payload will have only garbage.
-    std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
-        outFrame->endWrite(), 0);
+    //std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
+    //    outFrame->endWrite(), 0);
 
     // Iterator to the input frame
     ris::FrameIterator inFrameIt = frame->beginRead();
@@ -119,8 +119,7 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     ris::FrameIterator outFrameIt = outFrame->beginWrite();
 
     // Copy the header from the input frame to the output frame.
-    for (std::size_t i{0}; i < SmurfHeader::SmurfHeaderSize; ++i)
-            *(++outFrameIt) = *(++inFrameIt);
+    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
 
     // Copy the data
     for (std::size_t i{0}; i < numCh; ++i)
