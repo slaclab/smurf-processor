@@ -47,7 +47,6 @@ void scd::Downsampler::setup_python()
     bp::implicitly_convertible< scd::DownsamplerPtr, scc::BaseMasterPtr >();
 }
 
-
 void scd::Downsampler::setFactor(std::size_t f)
 {
     // Check if the factor is 0
