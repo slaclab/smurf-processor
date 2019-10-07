@@ -69,12 +69,6 @@ namespace smurf
                 void reset();
 
             private:
-                // Data type used to read the data from the input frame
-                typedef int32_t input_data_t;
-
-                // Data type used to write data to the output frame
-                typedef int32_t output_data_t;
-
                 std::size_t numCh;     // Number of channels being processed
                 std::size_t factor;    // Downsample factor
                 std::size_t sampleCnt; // Sample counter
