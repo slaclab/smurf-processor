@@ -151,10 +151,6 @@ const bp::list scf::GeneralAnalogFilter::getA() const
 {
     bp::list temp;
 
-    // Take the mutex before reading the  filter parameters
-    // in case it is resized while we are trying to read it
-    std::lock_guard<std::mutex> lock(mut);
-
     for (auto const &v : a)
         temp.append(v);
 
@@ -202,10 +198,6 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
 const bp::list scf::GeneralAnalogFilter::getB() const
 {
     bp::list temp;
-
-    // Take the mutex before reading the  filter parameters
-    // in case it is resized while we are trying to read it
-    std::lock_guard<std::mutex> lock(mut);
 
     for (auto const &v : b)
         temp.append(v);
