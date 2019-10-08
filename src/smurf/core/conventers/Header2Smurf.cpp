@@ -25,8 +25,9 @@ namespace scc = smurf::core::conventers;
 
 scc::Header2Smurf::Header2Smurf()
 :
-    sccommon::BaseSlave(),
-    sccommon::BaseMaster(),
+    ris::Slave(),
+    ris::Master(),
+    disable(false),
     tesBias(reqFrame(TesBiasArray::TesBiasBufferSize, true)),
     tba(TesBiasArray::create(tesBias->beginWrite()))
 {
@@ -47,11 +48,27 @@ scc::Header2SmurfPtr scc::Header2Smurf::create()
 
 void scc::Header2Smurf::setup_python()
 {
-    bp::class_<scc::Header2Smurf, scc::Header2SmurfPtr, bp::bases<sccommon::BaseSlave,sccommon::BaseMaster>, boost::noncopyable >("Header2Smurf",bp::init<>())
+    bp::class_< scc::Header2Smurf,
+                scc::Header2SmurfPtr,
+                bp::bases<ris::Slave,ris::Master>,
+                boost::noncopyable >
+                ("Header2Smurf",bp::init<>())
+        .def("setDisable", &Header2Smurf::setDisable)
+        .def("getDisable", &Header2Smurf::getDisable)
         .def("setTesBias", &Header2Smurf::setTesBias)
     ;
-    bp::implicitly_convertible< scc::Header2SmurfPtr, sccommon::BaseSlavePtr  >();
-    bp::implicitly_convertible< scc::Header2SmurfPtr, sccommon::BaseMasterPtr >();
+    bp::implicitly_convertible< scc::Header2SmurfPtr, ris::SlavePtr  >();
+    bp::implicitly_convertible< scc::Header2SmurfPtr, ris::MasterPtr >();
+}
+
+void scc::Header2Smurf::setDisable(bool d)
+{
+    disable = d;
+}
+
+const bool scc::Header2Smurf::getDisable() const
+{
+    return disable;
 }
 
 void scc::Header2Smurf::setTesBias(std::size_t index, int32_t value)
@@ -62,12 +79,12 @@ void scc::Header2Smurf::setTesBias(std::size_t index, int32_t value)
     tba->setWord(index, value);
 }
 
-void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
+void scc::Header2Smurf::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // If the processing block is disabled, do not process the frame
-    if (!isRxDisabled())
+    if (!disable)
     {
         // Create a SmurfHeader object on the frame
         SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(frame));
@@ -90,7 +107,5 @@ void scc::Header2Smurf::rxFrame(ris::FramePtr frame)
     }
 
     // Send the frame to the next slave.
-    // This method will check if the Tx block is disabled, as well
-    // as updating the Tx counters
-    txFrame(frame);
+    sendFrame(frame);
 }

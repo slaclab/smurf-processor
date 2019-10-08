@@ -25,8 +25,9 @@ namespace scd = smurf::core::downsamplers;
 
 scd::Downsampler::Downsampler()
 :
-    scc::BaseSlave(),
-    scc::BaseMaster(),
+    ris::Slave(),
+    ris::Master(),
+    disable(false),
     factor(1),
     sampleCnt(0)
 {
@@ -39,12 +40,28 @@ scd::DownsamplerPtr scd::Downsampler::create()
 
 void scd::Downsampler::setup_python()
 {
-    bp::class_<scd::Downsampler, scd::DownsamplerPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("Downsampler",bp::init<>())
-        .def("setFactor", &Downsampler::setFactor)
-        .def("getFactor", &Downsampler::getFactor)
+    bp::class_< scd::Downsampler,
+                scd::DownsamplerPtr,
+                bp::bases<ris::Slave,ris::Master>,
+                boost::noncopyable >
+                ("Downsampler",bp::init<>())
+        .def("setDisable", &Downsampler::setDisable)
+        .def("getDisable", &Downsampler::getDisable)
+        .def("setFactor",  &Downsampler::setFactor)
+        .def("getFactor",  &Downsampler::getFactor)
     ;
-    bp::implicitly_convertible< scd::DownsamplerPtr, scc::BaseSlavePtr  >();
-    bp::implicitly_convertible< scd::DownsamplerPtr, scc::BaseMasterPtr >();
+    bp::implicitly_convertible< scd::DownsamplerPtr, ris::SlavePtr  >();
+    bp::implicitly_convertible< scd::DownsamplerPtr, ris::MasterPtr >();
+}
+
+void scd::Downsampler::setDisable(bool d)
+{
+    disable = d;
+}
+
+const bool scd::Downsampler::getDisable() const
+{
+    return disable;
 }
 
 void scd::Downsampler::setFactor(std::size_t f)
@@ -73,17 +90,15 @@ void scd::Downsampler::reset()
     sampleCnt = 0;
 }
 
-void scd::Downsampler::rxFrame(ris::FramePtr frame)
+void scd::Downsampler::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // If the processing block is disabled, do not process the frame
-    if (isRxDisabled())
+    if (disable)
     {
         // Send the frame to the next slave.
-        // This method will check if the Tx block is disabled, as well
-        // as updating the Tx counters
-        txFrame(frame);
+        sendFrame(frame);
 
         return;
     }
@@ -97,7 +112,5 @@ void scd::Downsampler::rxFrame(ris::FramePtr frame)
     reset();
 
     // Send the frame to the next slave.
-    // This method will check if the Tx block is disabled, as well
-    // as updating the Tx counters
-    txFrame(frame);
+    sendFrame(frame);
 }

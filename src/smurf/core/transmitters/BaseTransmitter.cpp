@@ -26,7 +26,8 @@ namespace sct = smurf::core::transmitters;
 
 sct::BaseTransmitter::BaseTransmitter()
 :
-    scc::BaseSlave()
+    ris::Slave(),
+    disable(false)
 {
 }
 
@@ -38,16 +39,32 @@ sct::BaseTransmitterPtr sct::BaseTransmitter::create()
 // Setup Class in python
 void sct::BaseTransmitter::setup_python()
 {
-    bp::class_<sct::BaseTransmitter, sct::BaseTransmitterPtr, bp::bases<scc::BaseSlave>, boost::noncopyable >("BaseTransmitter",bp::init<>())
+    bp::class_< sct::BaseTransmitter,
+                sct::BaseTransmitterPtr,
+                bp::bases<ris::Slave>,
+                boost::noncopyable >
+                ("BaseTransmitter",bp::init<>())
+        .def("setDisable", &BaseTransmitter::setDisable)
+        .def("getDisable", &BaseTransmitter::getDisable)
     ;
-    bp::implicitly_convertible< sct::BaseTransmitterPtr, scc::BaseSlavePtr >();
+    bp::implicitly_convertible< sct::BaseTransmitterPtr, ris::SlavePtr >();
 }
 
-void sct::BaseTransmitter::rxFrame(ris::FramePtr frame)
+void sct::BaseTransmitter::setDisable(bool d)
+{
+    disable = d;
+}
+
+const bool sct::BaseTransmitter::getDisable() const
+{
+    return disable;
+}
+
+void sct::BaseTransmitter::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // If the processing block is disabled, do not process the frame
-    if (isRxDisabled())
+    if (disable)
     	return;
 }

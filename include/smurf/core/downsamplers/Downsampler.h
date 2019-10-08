@@ -25,15 +25,14 @@
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include <rogue/interfaces/stream/Slave.h>
+#include <rogue/interfaces/stream/Master.h>
 #include <rogue/GilRelease.h>
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
-namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -45,7 +44,7 @@ namespace smurf
             typedef boost::shared_ptr<Downsampler> DownsamplerPtr;
 
             // This class implements a general data downsampler by the specific factor.
-            class Downsampler : public scc::BaseSlave, public scc::BaseMaster
+            class Downsampler : public ris::Slave, public ris::Master
             {
             public:
                 Downsampler();
@@ -55,9 +54,10 @@ namespace smurf
 
                 static void setup_python();
 
-                // This will be call by the BaseSlave class after updating
-                // the base counters
-                void rxFrame(ris::FramePtr frame);
+                // Disable the processing block. The data
+                // will just pass through to the next slave
+                void       setDisable(bool d);
+                const bool getDisable() const;
 
                 // Get the number of channels being processed
                 const std::size_t getNumCh() const;
@@ -69,7 +69,11 @@ namespace smurf
                 // Reset the downsampler. Resets the sampler counter.
                 void reset();
 
+                // Accept new frames
+                void acceptFrame(ris::FramePtr frame);
+
             private:
+                bool        disable;   // Disable flag
                 std::size_t factor;    // Downsample factor
                 std::size_t sampleCnt; // Sample counter
             };

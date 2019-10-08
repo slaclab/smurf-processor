@@ -19,13 +19,24 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
-class BaseTransmitter(pysmurf.core.common.BaseSlave):
+class BaseTransmitter(pyrogue.Device):
     """
     SMuRF Data BaseTransmitter Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Data BaseTransmitter', **kwargs)
         self._transmitter = smurf.core.transmitters.BaseTransmitter()
-        pysmurf.core.common.BaseSlave.__init__(self, name=name, slave=self._transmitter, description='SMuRF Data BaseTransmitter', **kwargs)
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._transmitter.setDisable(value),
+            localGet=self._transmitter.getDisable))
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._transmitter

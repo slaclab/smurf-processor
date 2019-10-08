@@ -19,24 +19,23 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
-class GeneralAnalogFilter(pysmurf.core.common.BaseMasterSlave):
+class GeneralAnalogFilter(pyrogue.Device):
     """
     SMuRF Data GeneralAnalogFilter Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         self._filter = smurf.core.filters.GeneralAnalogFilter()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._filter, description='SMuRF Data GeneralAnalogFilter', **kwargs)
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data GeneralAnalogFilter', **kwargs)
 
-        # Add the number of enabled channels  variable
+        # Add "Disable" variable
         self.add(pyrogue.LocalVariable(
-            name='NumChannels',
-            description='Number of channels being processed',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._filter.getNumCh))
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._filter.setDisable(value),
+            localGet=self._filter.getDisable))
 
         # Add the filter order variable
         self.add(pyrogue.LocalVariable(
@@ -69,4 +68,12 @@ class GeneralAnalogFilter(pysmurf.core.common.BaseMasterSlave):
             mode='RW',
             value=[1.0],  # Rogue doesn't allow to have an empty list here.
             localSet=lambda value: self._filter.setB(value)))
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._filter
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
+    def _getStreamMaster(self):
+        return self._filter
 

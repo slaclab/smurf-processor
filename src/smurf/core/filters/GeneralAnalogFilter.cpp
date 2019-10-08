@@ -25,8 +25,9 @@ namespace scf = smurf::core::filters;
 
 scf::GeneralAnalogFilter::GeneralAnalogFilter()
 :
-    scc::BaseSlave(),
-    scc::BaseMaster(),
+    ris::Slave(),
+    ris::Master(),
+    disable(false),
     numCh(0),
     order(0),
     gain(1),
@@ -45,15 +46,30 @@ scf::GeneralAnalogFilterPtr scf::GeneralAnalogFilter::create()
 
 void scf::GeneralAnalogFilter::setup_python()
 {
-    bp::class_<scf::GeneralAnalogFilter, scf::GeneralAnalogFilterPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("GeneralAnalogFilter",bp::init<>())
-        .def("setOrder", &GeneralAnalogFilter::setOrder)
-        .def("setA",     &GeneralAnalogFilter::setA)
-        .def("setB",     &GeneralAnalogFilter::setB)
-        .def("setGain",  &GeneralAnalogFilter::setGain)
-        .def("getNumCh", &GeneralAnalogFilter::getNumCh)
+    bp::class_< scf::GeneralAnalogFilter,
+                scf::GeneralAnalogFilterPtr,
+                bp::bases<ris::Slave,ris::Master>,
+                boost::noncopyable >
+                ("GeneralAnalogFilter",bp::init<>())
+        .def("setDisable", &GeneralAnalogFilter::setDisable)
+        .def("getDisable", &GeneralAnalogFilter::getDisable)
+        .def("setOrder",   &GeneralAnalogFilter::setOrder)
+        .def("setA",       &GeneralAnalogFilter::setA)
+        .def("setB",       &GeneralAnalogFilter::setB)
+        .def("setGain",    &GeneralAnalogFilter::setGain)
     ;
-    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, scc::BaseSlavePtr  >();
-    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, scc::BaseMasterPtr >();
+    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::SlavePtr  >();
+    bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::MasterPtr >();
+}
+
+void scf::GeneralAnalogFilter::setDisable(bool d)
+{
+    disable = d;
+}
+
+const bool scf::GeneralAnalogFilter::getDisable() const
+{
+    return disable;
 }
 
 void scf::GeneralAnalogFilter::setOrder(std::size_t o)
@@ -165,11 +181,6 @@ void scf::GeneralAnalogFilter::setGain(double g)
     gain = g;
 }
 
-const std::size_t scf::GeneralAnalogFilter::getNumCh() const
-{
-    return numCh;
-}
-
 void scf::GeneralAnalogFilter::reset()
 {
     // Resize and re-initialize the data buffer
@@ -187,17 +198,15 @@ void scf::GeneralAnalogFilter::reset()
         b.resize(order +  1, 0);
 }
 
-void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
+void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // If the processing block is disabled, do not process the frame
-    if (isRxDisabled())
+    if (disable)
     {
         // Send the frame to the next slave.
-        // This method will check if the Tx block is disabled, as well
-        // as updating the Tx counters
-        txFrame(frame);
+        sendFrame(frame);
 
         return;
     }
@@ -292,7 +301,5 @@ void scf::GeneralAnalogFilter::rxFrame(ris::FramePtr frame)
         lastPointIndex = (lastPointIndex + 1) % order;
 
     // Send the frame to the next slave.
-    // This method will check if the Tx block is disabled, as well
-    // as updating the Tx counters
-    txFrame(outFrame);
+    sendFrame(outFrame);
 }

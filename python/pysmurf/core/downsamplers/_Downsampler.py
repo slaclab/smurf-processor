@@ -19,15 +19,23 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
-class Downsampler(pysmurf.core.common.BaseMasterSlave):
+class Downsampler(pyrogue.Device):
     """
     SMuRF Data Downsampler Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         self._downsampler = smurf.core.downsamplers.Downsampler()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._downsampler, description='SMuRF Data Downsampler', **kwargs)
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data Downsampler', **kwargs)
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._downsampler.setDisable(value),
+            localGet=self._downsampler.getDisable))
 
         # Add the filter order variable
         self.add(pyrogue.LocalVariable(
@@ -37,4 +45,12 @@ class Downsampler(pysmurf.core.common.BaseMasterSlave):
             value=1,
             localSet=lambda value : self._downsampler.setFactor(value),
             localGet=self._downsampler.getFactor))
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._downsampler
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
+    def _getStreamMaster(self):
+        return self._downsampler
 

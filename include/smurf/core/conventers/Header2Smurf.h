@@ -25,17 +25,15 @@
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include <rogue/interfaces/stream/Slave.h>
+#include <rogue/interfaces/stream/Master.h>
 #include <rogue/GilRelease.h>
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/TesBiasArray.h"
 #include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
-namespace sccommon = smurf::core::common;   // sccommon would conflict with smurf::core::counters
-
 
 namespace smurf
 {
@@ -47,7 +45,7 @@ namespace smurf
             typedef boost::shared_ptr<Header2Smurf> Header2SmurfPtr;
 
             // This class converts the header in the frame to the Smurf Header
-            class Header2Smurf : public sccommon::BaseSlave, public sccommon::BaseMaster
+            class Header2Smurf : public ris::Slave, public ris::Master
             {
             public:
                 Header2Smurf();
@@ -57,14 +55,19 @@ namespace smurf
 
                 static void setup_python();
 
-                // This will be call by the BaseSlave class after updating
-                // the base counters
-                void rxFrame(ris::FramePtr frame);
+                // Disable the processing block. The data
+                // will just pass through to the next slave
+                void       setDisable(bool d);
+                const bool getDisable() const;
 
                 // Receive the TesBias from pyrogue
                 void setTesBias(std::size_t index, int32_t value);
 
+                // Accept new frames
+                void acceptFrame(ris::FramePtr frame);
+
             private:
+                bool            disable; // Disable flag
                 ris::FramePtr   tesBias;
                 TesBiasArrayPtr tba;
             };

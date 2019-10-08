@@ -19,16 +19,32 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
-class Header2Smurf(pysmurf.core.common.BaseMasterSlave):
+class Header2Smurf(pyrogue.Device):
     """
     SMuRF Data Header2Smurf Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         self._header2smurf = smurf.core.conventers.Header2Smurf()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._header2smurf, description='Convert the frame header to the SMuRF server', **kwargs)
+        pyrogue.Device.__init__(self, name=name, description='Convert the frame header to the SMuRF server', **kwargs)
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._header2smurf.setDisable(value),
+            localGet=self._header2smurf.getDisable))
 
     # Method to set TES Bias values
     def setTesBias(self, index, value):
         self._header2smurf.setTesBias(index, value)
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._header2smurf
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
+    def _getStreamMaster(self):
+        return self._header2smurf
