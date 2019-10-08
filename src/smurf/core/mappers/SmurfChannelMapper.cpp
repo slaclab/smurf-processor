@@ -163,7 +163,9 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     // Now map the data from the input frame to the output frame according to the map vector
     for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
-        outFrameIt = std::copy(inFrameIt + *maskIt, inFrameIt + *maskIt + dataSize, outFrameIt);
+        outFrameIt = std::copy(inFrameIt + *maskIt * dataSize,
+            inFrameIt + *maskIt * dataSize + dataSize,
+            outFrameIt);
     }
 
     // Update the number of channel in the header of the output smurf frame
