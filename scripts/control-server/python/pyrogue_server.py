@@ -90,7 +90,7 @@ def usage(name):
         " Start a local rogure server, without GUI, with Pyro and EPICS servers")
     print("")
 
-# Cretae gui interface
+# Create gui interface
 def create_gui(root, title=""):
     app_top = pyrogue.gui.application(sys.argv)
     app_top.setApplicationName(title)
@@ -115,123 +115,6 @@ def exit_message(message):
 # Get the hostname of this PC
 def get_host_name():
     return subprocess.check_output("hostname").strip().decode("utf-8")
-
-class DataBuffer(rogue.interfaces.stream.Slave):
-    """
-    Data buffer class use to capture data comming from the stream FIFO \
-    and copy it into a local buffer using a especific data format.
-    """
-    def __init__(self, size, data_type):
-        rogue.interfaces.stream.Slave.__init__(self)
-        self._buf = [0] * size
-
-        # Supported data format and byte order
-        self._data_format_dict = {
-            'B': 'unsigned 8-bit',
-            'b': 'signed 8-bit',
-            'H': 'unsigned 16-bit',
-            'h': 'signed 16-bit',
-            'I': 'unsigned 32-bit',
-            'i': 'signed 32-bit'}
-
-        self._data_byte_order_dict = {
-            '<': 'little-endian',
-            '>': 'big-endian'}
-
-        # Get data format and size from data type
-        if data_type == 'UInt16':
-            self._data_format = 'H'
-            self._data_size = 2
-        elif data_type == 'Int16':
-            self._data_format = 'h'
-            self._data_size = 2
-        elif data_type == 'UInt32':
-            self._data_format = 'I'
-            self._data_size = 4
-        else:
-            self._data_format = 'i'
-            self._data_size = 4
-
-        # Byte order: LE
-        self._data_byte_order = '<'
-
-        # Callback function
-        self._callback = lambda: None
-
-    def _acceptFrame(self, frame):
-        """
-        This method is called when a stream frame is received
-        """
-        data = bytearray(frame.getPayload())
-        frame.read(data, 0)
-        self._buf = struct.unpack('{}{}{}'.format((self._data_byte_order, \
-            (len(data)//self._data_size), self._data_format), data))
-        self._callback()
-
-    def set_callback(self, callback):
-        """
-        Function to set the callback function
-        """
-        self._callback = callback
-
-    def read(self):
-        """
-        Function to read the data buffer
-        """
-        return self._buf
-
-    def get_data_format_string(self):
-        """
-        Function to get the current format string
-        """
-        return '{}{}'.format(self._data_byte_order, self._data_format)
-
-    def get_data_format_list(self):
-        """
-        Function to get a list of supported data formats
-        """
-        return list(self._data_format_dict.values())
-
-    def get_data_byte_order_list(self):
-        """
-        Function to get a list of supported data byte order options
-        """
-        return list(self._data_byte_order_dict.values())
-
-    def set_data_format(self, dev, var, value):
-        """
-        Function to set the data format
-        """
-        if (value < len(self._data_format_dict)):
-            data_format = (list(self._data_format_dict)[value])
-            if data_format == 'B' or data_format == 'b':      # uint8, int8
-                self._data_format = data_format
-                self._data_size = 1
-            elif data_format == 'H' or  data_format == 'h':     # uint16, int16
-                self._data_format = data_format
-                self._data_size = 2
-            elif data_format == 'I' or data_format == 'i':    # uint32, int32
-                self._data_format = data_format
-                self._data_size = 4
-
-    def get_data_format(self):
-        """
-        Function to read the data format
-        """
-        return list(self._data_format_dict).index(self._data_format)
-
-    def set_data_byte_order(self, dev, var, value):
-        """
-        Function to set the data byte order
-        """
-        if (value < len(self._data_byte_order_dict)):
-            self._data_byte_order = list(self._data_byte_order_dict)[value]
-
-    def get_data_byte_order(self):
-        """
-        Function to read the data byte order
-        """
-        return list(self._data_byte_order_dict).index(self._data_byte_order)
 
 class LocalServer(pyrogue.Root):
     """
