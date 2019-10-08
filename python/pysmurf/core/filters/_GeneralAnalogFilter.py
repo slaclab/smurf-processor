@@ -56,20 +56,26 @@ class GeneralAnalogFilter(pyrogue.Device):
             localGet=self._filter.getGain))
 
         # Add the filter a coefficients variable
+        # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
+        # with the initial size of this list, and can not be changed, so we are doing it
+        # big enough at this point (we are probably not going to use an order > 10)
         self.add(pyrogue.LocalVariable(
             name='A',
             description='Filter a coefficients',
             mode='RW',
-            value=[1.0],  # Rogue doesn't allow to have an empty list here.
+            value=[1.0]+[0]*9,
             localSet=lambda value: self._filter.setA(value),
             localGet=self._filter.getA))
 
         # Add the filter b coefficients variable
+        # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
+        # with the initial size of this list, and can not be changed, so we are doing it
+        # big enough at this point (we are probably not going to use an order > 10)
         self.add(pyrogue.LocalVariable(
             name='B',
             description='Filter b coefficients',
             mode='RW',
-            value=[1.0],  # Rogue doesn't allow to have an empty list here.
+            value=[0.0]*10,
             localSet=lambda value: self._filter.setB(value),
             localGet=self._filter.getB))
 
