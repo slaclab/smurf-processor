@@ -45,8 +45,10 @@ void scm::SmurfChannelMapper::setup_python()
                 bp::bases<ris::Slave,ris::Master>,
                 boost::noncopyable >
                 ("SmurfChannelMapper", bp::init<>())
-        .def("getNumCh", &SmurfChannelMapper::getNumCh)
-        .def("setMask",  &SmurfChannelMapper::setMask)
+        .def("setDisable", &SmurfChannelMapper::setDisable)
+        .def("getDisable", &SmurfChannelMapper::getDisable)
+        .def("getNumCh",   &SmurfChannelMapper::getNumCh)
+        .def("setMask",    &SmurfChannelMapper::setMask)
     ;
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::SlavePtr  >();
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
