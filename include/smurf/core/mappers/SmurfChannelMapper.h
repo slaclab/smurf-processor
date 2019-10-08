@@ -58,14 +58,14 @@ namespace smurf
                 void       setDisable(bool d);
                 const bool getDisable() const;
 
-                // Accept new frames
-                void acceptFrame(ris::FramePtr frame);
-
                 // Set the Channel mask vector
                 void setMask(boost::python::list m);
 
                 // Get the number of mapper channels
                 const std::size_t getNumCh() const;
+
+                // Accept new frames
+                void acceptFrame(ris::FramePtr frame);
 
             private:
 

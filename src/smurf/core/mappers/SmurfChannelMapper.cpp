@@ -27,6 +27,7 @@ scm::SmurfChannelMapper::SmurfChannelMapper()
 :
     ris::Slave(),
     ris::Master(),
+    disable(false),
     numCh(0),
     mask(0)
 {

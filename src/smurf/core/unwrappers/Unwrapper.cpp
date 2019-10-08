@@ -25,8 +25,9 @@ namespace scu  = smurf::core::unwrappers;
 
 scu::Unwrapper::Unwrapper()
 :
-    scc::BaseSlave(),
-    scc::BaseMaster(),
+    ris::Slave(),
+    ris::Master(),
+    disable(false),
     numCh(0),
     currentData(0),
     previousData(0),
@@ -42,16 +43,25 @@ scu::UnwrapperPtr scu::Unwrapper::create()
 // Setup Class in python
 void scu::Unwrapper::setup_python()
 {
-    bp::class_<scu::Unwrapper, scu::UnwrapperPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("Unwrapper", bp::init<>())
-        .def("getNumCh", &Unwrapper::getNumCh)
+    bp::class_< scu::Unwrapper, scu::UnwrapperPtr,
+                bp::bases<ris::Slave,ris::Master>,
+                boost::noncopyable >
+                ("Unwrapper", bp::init<>())
+        .def("setDisable", &Unwrapper::setDisable)
+        .def("getDisable", &Unwrapper::getDisable)
     ;
-    bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseSlavePtr  >();
-    bp::implicitly_convertible< scu::UnwrapperPtr, scc::BaseMasterPtr >();
+    bp::implicitly_convertible< scu::UnwrapperPtr, ris::SlavePtr  >();
+    bp::implicitly_convertible< scu::UnwrapperPtr, ris::MasterPtr >();
 }
 
-const std::size_t scu::Unwrapper::getNumCh() const
+void scu::Unwrapper::setDisable(bool d)
 {
-    return numCh;
+    disable = d;
+}
+
+const bool scu::Unwrapper::getDisable() const
+{
+    return disable;
 }
 
 void scu::Unwrapper::reset()
@@ -61,17 +71,17 @@ void scu::Unwrapper::reset()
     std::vector<output_data_t>(numCh).swap(wrapCounter);
 }
 
-void scu::Unwrapper::rxFrame (ris::FramePtr frame)
+void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // If the processing block is disabled, do not process the frame
-    if (isRxDisabled())
+    if (disable)
     {
         // Send the frame to the next slave.
         // This method will check if the Tx block is disabled, as well
         // as updating the Tx counters
-        txFrame(frame);
+        sendFrame(frame);
 
         return;
     }
@@ -145,5 +155,5 @@ void scu::Unwrapper::rxFrame (ris::FramePtr frame)
     // Send the frame to the next slave.
     // This method will check if the Tx block is disabled, as well
     // as updating the Tx counters
-    txFrame(outFrame);
+    sendFrame(outFrame);
 }

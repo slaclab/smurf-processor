@@ -25,15 +25,14 @@
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include <rogue/interfaces/stream/Slave.h>
+#include <rogue/interfaces/stream/Master.h>
 #include <rogue/GilRelease.h>
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
-namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -44,7 +43,7 @@ namespace smurf
             class Unwrapper;
             typedef boost::shared_ptr<Unwrapper> UnwrapperPtr;
 
-            class Unwrapper : public scc::BaseSlave, public scc::BaseMaster
+            class Unwrapper : public ris::Slave, public ris::Master
             {
             public:
                 Unwrapper();
@@ -54,15 +53,16 @@ namespace smurf
 
                 static void setup_python();
 
-                // This will be call by the BaseSlave class after updating
-                // the base counters
-                void rxFrame(ris::FramePtr frame);
-
-                // Get the number of mapper channels
-                const std::size_t getNumCh() const;
+                // Disable the processing block. The data
+                // will just pass through to the next slave
+                void       setDisable(bool d);
+                const bool getDisable() const;
 
                 // Resize and clear buffer
                 void reset();
+
+                // Accept new frames
+                void acceptFrame(ris::FramePtr frame);
 
             private:
                 // Data type used to read the data from the input frame
@@ -71,6 +71,12 @@ namespace smurf
                 // Data type used to write data to the output frame
                 typedef int32_t output_data_t;
 
+                // Size of the input data type.
+                const std::size_t inDataSize = sizeof(input_data_t);
+
+                // Size of the outut data type.
+                const std::size_t outDataSize = sizeof(output_data_t);
+
                 // If we are above/below these and jump, assume a wrap
                 const input_data_t upperUnwrap =  0x6000;
                 const input_data_t lowerUnwrap = -0x6000;
@@ -78,13 +84,11 @@ namespace smurf
                 // Wrap counter steps
                 const output_data_t stepUnwrap = 0x10000;
 
-                // Number of channels being processed
-                std::size_t numCh;
-
-                // Data buffer
-                std::vector<output_data_t> currentData;
-                std::vector<output_data_t> previousData;
-                std::vector<output_data_t> wrapCounter;
+                bool                       disable;      // Disable flag
+                std::size_t                numCh;        // Number of channels being processed
+                std::vector<output_data_t> currentData;  // Current data buffer
+                std::vector<output_data_t> previousData; // Previous data buffer
+                std::vector<output_data_t> wrapCounter;  // Wrap counters
             };
         }
     }

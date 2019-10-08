@@ -19,21 +19,28 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
-class Unwrapper(pysmurf.core.common.BaseMasterSlave):
+class Unwrapper(pyrogue.Device):
     """
     SMuRF Data Unwrapper Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         self._unwrapper = smurf.core.unwrappers.Unwrapper()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._unwrapper, description='SMuRF Data Unwrapper', **kwargs)
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data Unwrapper', **kwargs)
 
-        # Add the number of enabled channels  variable
+        # Add "Disable" variable
         self.add(pyrogue.LocalVariable(
-            name='NumChannels',
-            description='Number of channels being processed',
-            mode='RO',
-            value=0,
-            pollInterval=1,
-            localGet=self._unwrapper.getNumCh))
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._unwrapper.setDisable(value),
+            localGet=self._unwrapper.getDisable))
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._unwrapper
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
+    def _getStreamMaster(self):
+        return self._unwrapper
