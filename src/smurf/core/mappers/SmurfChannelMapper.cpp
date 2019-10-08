@@ -109,8 +109,8 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
     // Update the mask vector
     mask.swap(temp);
 
-    // mask = m;
-    numCh = mask.size();
+    // Update the number of mapped channels
+    numCh = listSize;
 }
 
 const std::size_t scm::SmurfChannelMapper::getNumCh() const
