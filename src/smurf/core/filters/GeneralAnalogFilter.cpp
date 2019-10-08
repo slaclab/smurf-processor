@@ -93,12 +93,12 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
 {
     std::vector<double> temp;
 
-    std::size_t listSize = len(l);
-
     // Take the mutex before changing the filter parameters
     // This make sure that the 'a' array is not used before it has
     // beem resized, if necessary.
     std::lock_guard<std::mutex> lock(mut);
+
+    std::size_t listSize = len(l);
 
     // Verify that the input list is not empty.
     // If empty, set the coefficients vector to a = [1.0].
@@ -142,12 +142,12 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
 {
     std::vector<double> temp;
 
-    std::size_t listSize = len(l);
-
     // Take the mutex before changing the filter parameters
     // This make sure that the 'b' array is not used before it has
     // beem resized, if necessary.
     std::lock_guard<std::mutex> lock(mut);
+
+    std::size_t listSize = len(l);
 
     // Verify that the input list is not empty.
     // If empty, set the coefficients vector to a = [0.0].
@@ -214,94 +214,101 @@ void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
         return;
     }
 
-    // Acquire lock on frame.
-    ris::FrameLockPtr lockFrame{frame->lock()};
+    // Output frame
+    ris::FramePtr outFrame;
 
-    // (smart) pointer to the smurf header in the input frame (Read-only)
-    SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
+    { // frame lock scope
+        // Acquire lock on frame.
+        ris::FrameLockPtr lockFrame{frame->lock()};
 
-    // Get the number of channels in the input frame. The number of output channel will be the same
-    std::size_t newNumCh = smurfHeaderIn->getNumberChannels();
+        // (smart) pointer to the smurf header in the input frame (Read-only)
+        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
 
-    // Verify if the frame size has changed
-    if (numCh != newNumCh)
-    {
-        // Update the number of channels we are processing
-        numCh = newNumCh;
+        // Get the number of channels in the input frame. The number of output channel will be the same
+        std::size_t newNumCh = smurfHeaderIn->getNumberChannels();
 
-        // When the number of channel change, reset the filter
-        reset();
-    }
-
-    // Request a new frame, to hold the same payload as the input frame
-    //std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
-    // For now we want to keep packet of the same size, so let's do this instead:
-    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize +
-        ( ( frame->getPayload() - SmurfHeader::SmurfHeaderSize )/sizeof(input_data_t) ) * sizeof(output_data_t);
-    ris::FramePtr outFrame = reqFrame(outFrameSize, true);
-    outFrame->setPayload(outFrameSize);
-
-    // Fill the output frame payload with zeros.
-    // This is only for convenience, as the header says the number of channel which have
-    // valid data. The rest of payload will have only garbage.
-    //std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
-    //    outFrame->endWrite(), 0);
-
-    // Iterator to the input frame
-    ris::FrameIterator inFrameIt = frame->beginRead();
-
-    // Iterator to the output frame
-    ris::FrameIterator outFrameIt = outFrame->beginWrite();
-
-    // Copy the header from the input frame to the output frame.
-    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
-
-    // Filter the data
-
-    // Acquire the lock while the filter parameters are used.
-    std::lock_guard<std::mutex> lockParams(mut);
-
-    // Iterate over the channel sample
-    for (std::size_t ch{0}; ch < numCh; ++ch)
-    {
-        // Get the new data from from the input frame
-        output_data_t inCasted = static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, ch));
-        double in = static_cast<double>(inCasted);
-
-        // Start computing the output value
-        double out = b.at(0) * in;
-
-        // Iterate over the pass samples
-        for (std::size_t t{1}; t <= order; ++t)
+        // Verify if the frame size has changed
+        if (numCh != newNumCh)
         {
-            // Compute the correct index in the 'circular' buffer
-            std::size_t i{ ( order + lastPointIndex - t ) % order };
-            out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+            // Update the number of channels we are processing
+            numCh = newNumCh;
+
+            // When the number of channel change, reset the filter
+            reset();
         }
 
-        // Divide the resulting value by the first a coefficient
-        out /= a.at(0);
+        // Request a new frame, to hold the same payload as the input frame
+        //std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
+        // For now we want to keep packet of the same size, so let's do this instead:
+        std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize +
+            ( ( frame->getPayload() - SmurfHeader::SmurfHeaderSize )/sizeof(input_data_t) ) * sizeof(output_data_t);
+        outFrame = reqFrame(outFrameSize, true);
+        outFrame->setPayload(outFrameSize);
 
-        // Multiply by the gain
-        out *= gain;
+        // Fill the output frame payload with zeros.
+        // This is only for convenience, as the header says the number of channel which have
+        // valid data. The rest of payload will have only garbage.
+        //std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
+        //    outFrame->endWrite(), 0);
 
-        // Copy the new output value into the output frame
-        output_data_t outCasted = static_cast<output_data_t>(out);
-        helpers::setWord<output_data_t>(outFrameIt, ch, outCasted);
+        // Iterator to the input frame
+        ris::FrameIterator inFrameIt = frame->beginRead();
 
-        // If the filter order > 0, copy the new output value as well
-        // as the current input value into the data buffers
-        if (order > 0)
-        {
-            y.at(lastPointIndex).at(ch) = outCasted; // Output value, casted to 'output_data_t'
-            x.at(lastPointIndex).at(ch) = inCasted;  // Input value, casted to 'output_data_t'
-        }
-    }
+        // Iterator to the output frame
+        ris::FrameIterator outFrameIt = outFrame->beginWrite();
 
-    // Update the index to point to the now older point in the 'circular' buffer
-    // if the order > 0
-    if (order > 0)
-        lastPointIndex = (lastPointIndex + 1) % order;
+        // Copy the header from the input frame to the output frame.
+        outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
+
+        // Filter the data
+
+        { // filter parameter lock scope
+            // Acquire the lock while the filter parameters are used.
+            std::lock_guard<std::mutex> lockParams(mut);
+
+            // Iterate over the channel sample
+            for (std::size_t ch{0}; ch < numCh; ++ch)
+            {
+                // Get the new data from from the input frame
+                output_data_t inCasted = static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, ch));
+                double in = static_cast<double>(inCasted);
+
+                // Start computing the output value
+                double out = b.at(0) * in;
+
+                // Iterate over the pass samples
+                for (std::size_t t{1}; t <= order; ++t)
+                {
+                    // Compute the correct index in the 'circular' buffer
+                    std::size_t i{ ( order + lastPointIndex - t ) % order };
+                    out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+                }
+
+                // Divide the resulting value by the first a coefficient
+                out /= a.at(0);
+
+                // Multiply by the gain
+                out *= gain;
+
+                // Copy the new output value into the output frame
+                output_data_t outCasted = static_cast<output_data_t>(out);
+                helpers::setWord<output_data_t>(outFrameIt, ch, outCasted);
+
+                // If the filter order > 0, copy the new output value as well
+                // as the current input value into the data buffers
+                if (order > 0)
+                {
+                    y.at(lastPointIndex).at(ch) = outCasted; // Output value, casted to 'output_data_t'
+                    x.at(lastPointIndex).at(ch) = inCasted;  // Input value, casted to 'output_data_t'
+                }
+            }
+
+            // Update the index to point to the now older point in the 'circular' buffer
+            // if the order > 0
+            if (order > 0)
+                lastPointIndex = (lastPointIndex + 1) % order;
+        } // filter parameter lock scope
+    } // frame lock scope
 
     // Send the frame to the next slave.
     sendFrame(outFrame);
