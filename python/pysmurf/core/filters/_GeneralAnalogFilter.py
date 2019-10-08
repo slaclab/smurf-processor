@@ -43,7 +43,8 @@ class GeneralAnalogFilter(pyrogue.Device):
             description='Filter order',
             mode='RW',
             value=1,
-            localSet=lambda value : self._filter.setOrder(value)))
+            localSet=lambda value : self._filter.setOrder(value),
+            localGet=self._filter.getOrder))
 
         # Add the filter gain variable
         self.add(pyrogue.LocalVariable(
@@ -51,7 +52,8 @@ class GeneralAnalogFilter(pyrogue.Device):
             description='Filter gain',
             mode='RW',
             value=1.0,
-            localSet=lambda value : self._filter.setGain(value)))
+            localSet=lambda value : self._filter.setGain(value),
+            localGet=self._filter.getGain))
 
         # Add the filter a coefficients variable
         self.add(pyrogue.LocalVariable(
@@ -59,7 +61,8 @@ class GeneralAnalogFilter(pyrogue.Device):
             description='Filter a coefficients',
             mode='RW',
             value=[1.0],  # Rogue doesn't allow to have an empty list here.
-            localSet=lambda value: self._filter.setA(value)))
+            localSet=lambda value: self._filter.setA(value),
+            localGet=self._filter.getA))
 
         # Add the filter b coefficients variable
         self.add(pyrogue.LocalVariable(
@@ -67,7 +70,8 @@ class GeneralAnalogFilter(pyrogue.Device):
             description='Filter b coefficients',
             mode='RW',
             value=[1.0],  # Rogue doesn't allow to have an empty list here.
-            localSet=lambda value: self._filter.setB(value)))
+            localSet=lambda value: self._filter.setB(value),
+            localGet=self._filter.getB))
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):
