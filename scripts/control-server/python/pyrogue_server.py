@@ -34,54 +34,53 @@ import pysmurf.core.devices
 
 # Print the usage message
 def usage(name):
-    # Number of space of the string "Usage: {name} ". Use to align the following lines.
-    num_spaces=len(name) + 8
-
-    print("Usage: {} [-a|--addr IP_address] [-d|--defaults config_file]".format(name))
-    print("{s: <{c}}[-s|--server] [-e|--epics prefix] [-n|--nopoll] [-b|--stream-size byte_size]".format(s='', c=num_spaces))
-    print("{s: <{c}}[-f|--stream-type data_type] [-c|--commType comm_type] [-l|--pcie-rssi-link index]".format(s='', c=num_spaces))
-    print("{s: <{c}}[-b|--stream-size data_size] [-f|--stream-type data_type] [-u|--dump-pvs file_name]".format(s='', c=num_spaces))
-    print("{s: <{c}}[--disable-bay0] [--disable-bay1] [--disable-gc] [-w|--windows-title title]".format(s='', c=num_spaces))
-    print("{s: <{c}}[--pcie-dev pice_device]".format(s='', c=num_spaces))
-    print("{s: <{c}}[-h|--help]".format(s='', c=num_spaces))
+    print("Usage: {}".format(name))
+    print("        [-a|--addr IP_address] [-s|--server] [-e|--epics prefix]")
+    print("        [-n|--nopoll] [-c|--commType comm_type] [-l|--pcie-rssi-lane index]")
+    print("        [-f|--stream-type data_type] [-b|--stream-size byte_size]")
+    print("        [-d|--defaults config_file] [-u|--dump-pvs file_name] [--disable-gc]")
+    print("        [--disable-bay0] [--disable-bay1] [-w|--windows-title title]")
+    print("        [--pcie-dev-rssi pice_device] [--pcie-dev-data pice_device] [-h|--help]")
     print("")
-    print("    -h|--help                  : Show this message")
-    print("    -a|--addr IP_address       : FPGA IP address. Required when"\
+    print("    -h|--help                   : Show this message")
+    print("    -a|--addr IP_address        : FPGA IP address. Required when"\
         "the communication type is based on Ethernet.")
-    print("    -d|--defaults config_file  : Default configuration file")
-    print("    -e|--epics prefix          : Start an EPICS server with",\
+    print("    -d|--defaults config_file   : Default configuration file")
+    print("    -e|--epics prefix           : Start an EPICS server with",\
         "PV name prefix \"prefix\"")
-    print("    -s|--server                : Server mode, without staring",\
+    print("    -s|--server                 : Server mode, without staring",\
         "a GUI (Must be used with -p and/or -e)")
-    print("    -n|--nopoll                : Disable all polling")
-    print("    -c|--commType comm_type    : Communication type with the FPGA",\
+    print("    -n|--nopoll                 : Disable all polling")
+    print("    -c|--commType comm_type     : Communication type with the FPGA",\
         "(defaults to \"eth-rssi-non-interleaved\"")
-    print("    -l|--pcie-rssi-link index  : PCIe RSSI link (only needed with"\
+    print("    -l|--pcie-rssi-lane index   : PCIe RSSI lane (only needed with"\
         "PCIe). Supported values are 0 to 5")
-    print("    -b|--stream-size data_size : Expose the stream data as EPICS",\
+    print("    -b|--stream-size data_size  : Expose the stream data as EPICS",\
         "PVs. Only the first \"data_size\" points will be exposed.",\
         "(Must be used with -e)")
-    print("    -f|--stream-type data_type : Stream data type (UInt16, Int16,",\
+    print("    -f|--stream-type data_type  : Stream data type (UInt16, Int16,",\
         "UInt32 or Int32). Default is UInt16. (Must be used with -e and -b)")
-    print("    -u|--dump-pvs file_name    : Dump the PV list to \"file_name\".",\
+    print("    -u|--dump-pvs file_name     : Dump the PV list to \"file_name\".",\
         "(Must be used with -e)")
-    print("    --disable-bay0             : Disable the instantiation of the"\
+    print("    --disable-bay0              : Disable the instantiation of the"\
         "devices for Bay0")
-    print("    --disable-bay1             : Disable the instantiation of the"\
+    print("    --disable-bay1              : Disable the instantiation of the"\
         "devices for Bay1")
-    print("    --disable-gc               : Disable python's garbage collection"\
+    print("    --disable-gc                : Disable python's garbage collection"\
         "(enabled by default)")
-    print("    -w|--windows-title title   : Set the GUI windows title. If not"\
+    print("    -w|--windows-title title    : Set the GUI windows title. If not"\
         "specified, the default windows title will be the name of this script."\
         "This value will be ignored when running in server mode.")
-    print("    --pcie-dev pice_device     : Set the PCIe card device name"\
-        "(defaults to '/dev/datadev_0')")
+    print("    --pcie-dev-rssi pice_device : Set the PCIe card device name"\
+        "used for RSSI (defaults to '/dev/datadev_0')")
+    print("    --pcie-dev-data pice_device : Set the PCIe card device name"\
+        "used for data (defaults to '/dev/datadev_1')")
     print("")
     print("Examples:")
-    print("    {} -a IP_address                            :".format(name),\
-        " Start a local rogue server, with GUI, without EPICS servers")
-    print("    {} -a IP_address -e prefix                  :".format(name),\
-        " Start a local rogue server, with GUI, with EPICS server")
+    print("    {} -a IP_address              :".format(name),\
+        " Start a local rogue server, with GUI, without an EPICS servers")
+    print("    {} -a IP_address -e prefix    :".format(name),\
+        " Start a local rogue server, with GUI, with and EPICS server")
     print("    {} -a IP_address -e prefix -s :".format(name),\
         " Start a local rogue server, without GUI, with an EPICS servers")
     print("")
