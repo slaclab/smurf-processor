@@ -34,7 +34,7 @@ class FrameStatistics(pyrogue.Device):
             description='Disable the processing block. Data will just pass thorough to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self._slave.setDisable(value),
+            localSet=lambda value: self._FrameStatistics.setDisable(value),
             localGet=self._FrameStatistics.getDisable))
 
         # Add the frame counter variable
