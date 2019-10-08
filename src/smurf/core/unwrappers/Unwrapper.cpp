@@ -56,6 +56,9 @@ void scu::Unwrapper::setup_python()
 
 void scu::Unwrapper::setDisable(bool d)
 {
+    // Reset the counter when the module is re-enabled
+    reset();
+
     disable = d;
 }
 
