@@ -25,8 +25,8 @@ namespace scm  = smurf::core::mappers;
 
 scm::SmurfChannelMapper::SmurfChannelMapper()
 :
-    scc::BaseSlave(),
-    scc::BaseMaster(),
+    ris::Slave(),
+    ris::Master(),
     numCh(0),
     mask(0)
 {
@@ -40,12 +40,26 @@ scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 // Setup Class in python
 void scm::SmurfChannelMapper::setup_python()
 {
-    bp::class_<scm::SmurfChannelMapper, scm::SmurfChannelMapperPtr, bp::bases<scc::BaseSlave,scc::BaseMaster>, boost::noncopyable >("SmurfChannelMapper", bp::init<>())
+    bp::class_< scm::SmurfChannelMapper,
+                scm::SmurfChannelMapperPtr,
+                bp::bases<ris::Slave,ris::Master>,
+                boost::noncopyable >
+                ("SmurfChannelMapper", bp::init<>())
         .def("getNumCh", &SmurfChannelMapper::getNumCh)
         .def("setMask",  &SmurfChannelMapper::setMask)
     ;
-    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, scc::BaseSlavePtr  >();
-    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, scc::BaseMasterPtr >();
+    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::SlavePtr  >();
+    bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
+}
+
+void scm::SmurfChannelMapper::setDisable(bool d)
+{
+    disable = d;
+}
+
+const bool scm::SmurfChannelMapper::getDisable() const
+{
+    return disable;
 }
 
 void scm::SmurfChannelMapper::setMask(boost::python::list m)
@@ -104,17 +118,17 @@ const std::size_t scm::SmurfChannelMapper::getNumCh() const
     return numCh;
 }
 
-void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
+void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // If the processing block is disabled, do not process the frame
-    if (isRxDisabled())
+    if (disable)
     {
         // Send the frame to the next slave.
         // This method will check if the Tx block is disabled, as well
         // as updating the Tx counters
-        txFrame(frame);
+        sendFrame(frame);
 
         return;
     }
@@ -159,7 +173,5 @@ void scm::SmurfChannelMapper::rxFrame(ris::FramePtr frame)
     smurfHeaderOut->setNumberChannels(numCh);
 
     // Send the frame to the next slave.
-    // This method will check if the Tx block is disabled, as well
-    // as updating the Tx counters
-    txFrame(outFrame);
+    sendFrame(outFrame);
 }

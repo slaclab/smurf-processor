@@ -25,15 +25,14 @@
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
+#include <rogue/interfaces/stream/Slave.h>
+#include <rogue/interfaces/stream/Master.h>
 #include <rogue/GilRelease.h>
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
 #include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
-namespace scc = smurf::core::common;
 
 namespace smurf
 {
@@ -44,7 +43,7 @@ namespace smurf
             class SmurfChannelMapper;
             typedef boost::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
 
-            class SmurfChannelMapper : public scc::BaseSlave, public scc::BaseMaster
+            class SmurfChannelMapper : public ris::Slave, public ris::Master
             {
             public:
                 SmurfChannelMapper();
@@ -54,9 +53,13 @@ namespace smurf
 
                 static void setup_python();
 
-                // This will be call by the BaseSlave class after updating
-                // the base counters
-                void rxFrame(ris::FramePtr frame);
+                // Disable the processing block. The data
+                // will just pass through to the next slave
+                void       setDisable(bool d);
+                const bool getDisable() const;
+
+                // Accept new frames
+                void acceptFrame(ris::FramePtr frame);
 
                 // Set the Channel mask vector
                 void setMask(boost::python::list m);
@@ -81,8 +84,9 @@ namespace smurf
                 static const std::size_t maxNumOutCh = 528;
 
                 // Private data members
-                std::size_t              numCh; // Number of mapped channels
-                std::vector<std::size_t> mask;  // Channel mask file
+                bool                     disable; // Disable flag
+                std::size_t              numCh;   // Number of mapped channels
+                std::vector<std::size_t> mask;    // Channel mask file
             };
         }
     }

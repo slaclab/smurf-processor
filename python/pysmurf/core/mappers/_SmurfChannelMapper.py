@@ -19,15 +19,23 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
-class SmurfChannelMapper(pysmurf.core.common.BaseMasterSlave):
+class SmurfChannelMapper(pyrogue.Device):
     """
     SMuRF Channel Mapper Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         self._mapper = smurf.core.mappers.SmurfChannelMapper()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._mapper, description='SMuRF Channel Mapper', **kwargs)
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Channel Mapper', **kwargs)
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._mapper.setDisable(value),
+            localGet=self._mapper.getDisable))
 
         # Add the number of enabled channels  variable
         self.add(pyrogue.LocalVariable(
