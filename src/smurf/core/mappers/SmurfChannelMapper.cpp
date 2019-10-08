@@ -50,6 +50,7 @@ void scm::SmurfChannelMapper::setup_python()
         .def("getDisable", &SmurfChannelMapper::getDisable)
         .def("getNumCh",   &SmurfChannelMapper::getNumCh)
         .def("setMask",    &SmurfChannelMapper::setMask)
+        .def("getMask",    &SmurfChannelMapper::getMask)
     ;
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::SlavePtr  >();
     bp::implicitly_convertible< scm::SmurfChannelMapperPtr, ris::MasterPtr >();
@@ -65,7 +66,7 @@ const bool scm::SmurfChannelMapper::getDisable() const
     return disable;
 }
 
-void scm::SmurfChannelMapper::setMask(boost::python::list m)
+void scm::SmurfChannelMapper::setMask(bp::list m)
 {
     std::size_t listSize = len(m);
 
@@ -89,7 +90,7 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
 
     for (std::size_t i{0}; i < listSize; ++i)
     {
-        std::size_t val = boost::python::extract<std::size_t>(m[i]);
+        std::size_t val = bp::extract<std::size_t>(m[i]);
 
         // Check if the mask value is not greater than
         // the number of channel we received in the incoming frame
@@ -117,6 +118,16 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
 
     // Update the number of mapped channels
     numCh = listSize;
+}
+
+const bp::list scm::SmurfChannelMapper::getMask() const
+{
+    bp::list temp;
+
+    for (auto const &v : mask)
+        temp.append(v);
+
+    return temp;
 }
 
 const std::size_t scm::SmurfChannelMapper::getNumCh() const

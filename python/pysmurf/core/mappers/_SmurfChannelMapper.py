@@ -52,7 +52,8 @@ class SmurfChannelMapper(pyrogue.Device):
             description='Set the mapping mask',
             mode='RW',
             value=[0],  # Rogue doesn't allow to have an empty list here.
-            localSet=lambda value: self._mapper.setMask(value)))
+            localSet=lambda value: self._mapper.setMask(value),
+            localGet=self._mapper.getMask))
 
     # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
     def _getStreamSlave(self):

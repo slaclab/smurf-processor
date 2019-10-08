@@ -58,8 +58,9 @@ namespace smurf
                 void       setDisable(bool d);
                 const bool getDisable() const;
 
-                // Set the Channel mask vector
-                void setMask(boost::python::list m);
+                // Set/Get the Channel mask vector
+                void           setMask(bp::list m);
+                const bp::list getMask() const;
 
                 // Get the number of mapper channels
                 const std::size_t getNumCh() const;

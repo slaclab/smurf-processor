@@ -98,7 +98,7 @@ const std::size_t scf::GeneralAnalogFilter::getOrder() const
     return order;
 }
 
-void scf::GeneralAnalogFilter::setA(boost::python::list l)
+void scf::GeneralAnalogFilter::setA(bp::list l)
 {
     std::vector<double> temp;
 
@@ -135,7 +135,7 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
     // Extract the coefficients coming from python into a temporal vector
     for (std::size_t i{0}; i < listSize; ++i)
     {
-        temp.push_back(boost::python::extract<double>(l[i]));
+        temp.push_back(bp::extract<double>(l[i]));
     }
 
     // Update the a vector with the new values
@@ -157,7 +157,7 @@ const bp::list scf::GeneralAnalogFilter::getA() const
     return temp;
 }
 
-void scf::GeneralAnalogFilter::setB(boost::python::list l)
+void scf::GeneralAnalogFilter::setB(bp::list l)
 {
     std::vector<double> temp;
 
@@ -183,7 +183,7 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
     // Extract the coefficients coming from python into a temporal vector
     for (std::size_t i{0}; i < len(l); ++i)
     {
-        temp.push_back(boost::python::extract<double>(l[i]));
+        temp.push_back(bp::extract<double>(l[i]));
     }
 
     // Update the a vector with the new values
