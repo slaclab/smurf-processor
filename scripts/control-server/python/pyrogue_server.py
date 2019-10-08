@@ -152,15 +152,16 @@ class LocalServer(pyrogue.Root):
 
             # If the packetizer is being used, the FpgaTopLevel class will defined a 'stream' interface exposing it.
             # Otherwise, we are using DMA engine without packetizer. Create the stream interface accordingly.
+            # We are only using the first 2 channel of each AMC daughter card, i.e. channels 0, 1, 4, 5.
             if hasattr(fpga, 'stream'):
-                for i in range(8):
+                for i in [0, 1, 4, 5]:
                     self.ddr_streams.append(fpga.stream.application(0x80 + i))
 
                 # Streaming interface stream
                 self.streaming_stream = fpga.stream.application(0xC1)
 
             else:
-                for i in range(8):
+                for i in [0, 1, 4, 5]:
                     self.ddr_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0x80 + i), True))
 
                 # Streaming interface stream
@@ -178,8 +179,8 @@ class LocalServer(pyrogue.Root):
                     master=self.smurf_processor_fifo)
             self.add(self.smurf_processor)
 
-            # Add data streams (0-7) to file channels (0-7)
-            for i in range(8):
+            # Add data streams (0-3) to file channels (0-3)
+            for i in range(4):
 
                 ## DDR streams
                 pyrogue.streamConnect(self.ddr_streams[i],
@@ -236,7 +237,7 @@ class LocalServer(pyrogue.Root):
                     # Also add PVs to select the data format
                     self.stream_fifos = []
                     self.data_buffers = []
-                    for i in range(8):
+                    for i in range(4):
 
                         # Calculate number of bytes needed on the fifo
                         if '16' in stream_pv_type:
