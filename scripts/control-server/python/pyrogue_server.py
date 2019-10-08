@@ -32,8 +32,6 @@ import rogue.interfaces.stream
 
 import pysmurf.core.devices
 
-PIDFILE = '/tmp/smurf.pid'
-
 # Print the usage message
 def usage(name):
     # Number of space of the string "Usage: {name} ". Use to align the following lines.
@@ -532,31 +530,6 @@ class LocalServer(pyrogue.Root):
                 #self.smurf_processor.setTesBias(tes_bias_index, tes_bias_val)
                 self.smurf_processor.setTesBias(tes_bias_index, tes_bias_val)
 
-def kill_old_process():
-    try:
-        finp = open(PIDFILE)
-        pid = int(finp.readlines()[0][:-1])
-        finp.close()
-        cmd = "kill -9 %d" % pid
-        os.system(cmd)
-        print(' ')
-        print(' ')
-        print(' ')
-        print(' ')
-        print(' SMURF already running: killing pid=', str(pid), ' at ', str(time.ctime()))
-        print(' ')
-        print(' ')
-        print(' ')
-        print(' ')
-    except:
-        pass
-
-def save_pid():
-    """ save pid for later killing """
-    fpid = open(PIDFILE, 'w')
-    fpid.write("%d\n" % os.getpid() )
-    fpid.close()
-
 # Main body
 if __name__ == "__main__":
     ip_addr = ""
@@ -601,7 +574,6 @@ if __name__ == "__main__":
             group_name = arg
         elif opt in ("-e", "--epics"):       # EPICS prefix
             epics_prefix = arg
-            PIDFILE = '/tmp/smurf_%s.pid'%epics_prefix
         elif opt in ("-n", "--nopoll"):      # Disable all polling
             polling_en = False
         elif opt in ("-b", "--stream-size"): # Stream data size (on PVs)
@@ -644,10 +616,6 @@ if __name__ == "__main__":
         import gc
         gc.disable()
         print("GARBAGE COLLECTION DISABLED")
-
-    # kill/save here so we get the epics_prefix tag from the above option parsing
-    kill_old_process()
-    save_pid()
 
     # Verify if IP address is valid
     if ip_addr:
@@ -729,7 +697,5 @@ if __name__ == "__main__":
 
     # Stop server
     server.stop()
-
-    os.remove(PIDFILE)
 
     print("")
