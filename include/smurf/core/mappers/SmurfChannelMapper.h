@@ -69,11 +69,11 @@ namespace smurf
 
             private:
 
-                // Data type used to read the data from the input frame
-                typedef int16_t input_data_t;
+                // Data type to be move
+                typedef int16_t data_t;
 
-                // Data type used to write data to the output frame
-                typedef int16_t output_data_t;
+                // Size of the data type.
+                const std::size_t dataSize = sizeof(data_t);
 
                 // This is the maximum number of channel we expect from an input frame.
                 static const std::size_t maxNumInCh = 4095;

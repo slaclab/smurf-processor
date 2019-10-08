@@ -138,10 +138,8 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 
     // Request a new frame, to hold the header + payload, and set its payload
     // Although the number of active channel can change, and will be indicated in the
-    // header of the packet, we will send frames of fix size.
-    // The output packet has has the same 'SmurfPacketRaw' data structure as the input packet.
-    // std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + SmurfPacketRaw::DataWordSize * maxNumOutCh;
-    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * maxNumOutCh;
+    // header of the packet, we will send frames of fixed size.
+    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + dataSize * maxNumOutCh;
     ris::FramePtr outFrame = reqFrame(outFrameSize, true);
     outFrame->setPayload(outFrameSize);
 
@@ -161,11 +159,9 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     //    outFrame->endWrite(), 0);
 
     // Now map the data from the input frame to the output frame according to the map vector
-    std::size_t i{0};
     for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
-        helpers::setWord<output_data_t>(outFrameIt, i++,
-            static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, *maskIt)));
+        outFrameIt = std::copy(inFrameIt + *maskIt, inFrameIt + *maskIt + dataSize, outFrameIt);
     }
 
     // Update the number of channel in the header of the output smurf frame
