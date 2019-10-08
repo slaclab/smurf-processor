@@ -18,3 +18,4 @@
 #-----------------------------------------------------------------------------
 
 from pysmurf.core.devices._SmurfProcessor import *
+from pysmurf.core.devices._PcieCard import *
