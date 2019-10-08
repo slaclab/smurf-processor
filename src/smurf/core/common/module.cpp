@@ -20,8 +20,6 @@
 
 #include <boost/python.hpp>
 #include "smurf/core/common/module.h"
-#include "smurf/core/common/BaseSlave.h"
-#include "smurf/core/common/BaseMaster.h"
 
 namespace bp  = boost::python;
 namespace scc = smurf::core::common;
@@ -36,7 +34,4 @@ void scc::setup_module()
 
     // set the current scope to the new sub-module
     bp::scope io_scope = module;
-
-    scc::BaseSlave::setup_python();
-    scc::BaseMaster::setup_python();
 }
