@@ -47,11 +47,14 @@ class SmurfChannelMapper(pyrogue.Device):
             localGet=self._mapper.getNumCh))
 
         # Add variable to set the mapping mask
+        # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
+        # with the initial size of this list, and can not be changed later, so we are doing
+        # it big enough at this point using the maximum number of channels
         self.add(pyrogue.LocalVariable(
             name='Mask',
             description='Set the mapping mask',
             mode='RW',
-            value=[0],  # Rogue doesn't allow to have an empty list here.
+            value=[0]*528,
             localSet=lambda value: self._mapper.setMask(value),
             localGet=self._mapper.getMask))
 
