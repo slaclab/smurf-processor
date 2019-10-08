@@ -1,5 +1,3 @@
-setup.sh
-joe_run.sh 
 build
 lib
 *~
@@ -7,7 +5,4 @@ lib
 *.pyc
 __pycache__/
 gmon.out
-smurfpipetest
-smurftestserver
-mask.txt
-frame_jump_log.txt
+.DS_Store
