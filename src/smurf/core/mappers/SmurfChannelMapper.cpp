@@ -107,6 +107,9 @@ void scm::SmurfChannelMapper::setMask(boost::python::list m)
         temp.push_back(val);
     }
 
+    // Take the mutex before changing the mask vector
+    std::lock_guard<std::mutex> lock(mut);
+
     // At this point, all element in the mask list are valid.
     // Update the mask vector
     mask.swap(temp);
@@ -160,17 +163,22 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     //std::fill(outFrame->beginWrite() + SmurfHeader::SmurfHeaderSize + numCh * sizeof(output_data_t),
     //    outFrame->endWrite(), 0);
 
-    // Now map the data from the input frame to the output frame according to the map vector
-    for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
     {
-        outFrameIt = std::copy(inFrameIt + *maskIt * dataSize,
-            inFrameIt + *maskIt * dataSize + dataSize,
-            outFrameIt);
-    }
+        // Take the mutex while using the mask vector
+        std::lock_guard<std::mutex> lock(mut);
 
-    // Update the number of channel in the header of the output smurf frame
-    SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(outFrame));
-    smurfHeaderOut->setNumberChannels(numCh);
+        // Now map the data from the input frame to the output frame according to the map vector
+        for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
+        {
+            outFrameIt = std::copy(inFrameIt + *maskIt * dataSize,
+                inFrameIt + *maskIt * dataSize + dataSize,
+                outFrameIt);
+        }
+
+        // Update the number of channel in the header of the output smurf frame
+        SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(outFrame));
+        smurfHeaderOut->setNumberChannels(numCh);
+    }
 
     // Send the frame to the next slave.
     sendFrame(outFrame);

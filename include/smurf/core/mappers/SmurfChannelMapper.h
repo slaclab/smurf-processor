@@ -87,6 +87,7 @@ namespace smurf
                 bool                     disable; // Disable flag
                 std::size_t              numCh;   // Number of mapped channels
                 std::vector<std::size_t> mask;    // Channel mask file
+                std::mutex               mut;     // Mutex
             };
         }
     }
