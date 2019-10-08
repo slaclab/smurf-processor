@@ -39,7 +39,7 @@ class SmurfChannelMapper(pyrogue.Device):
 
         # Add the number of enabled channels  variable
         self.add(pyrogue.LocalVariable(
-            name='NumEnabledChannels',
+            name='NumChannels',
             description='Number enabled channels',
             mode='RO',
             value=0,
