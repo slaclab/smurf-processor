@@ -38,19 +38,17 @@ def usage(name):
     num_spaces=len(name) + 8
 
     print("Usage: {} [-a|--addr IP_address] [-d|--defaults config_file]".format(name))
-    print("{s: <{c}}[-s|--server] [-p|--pyro group_name] [-e|--epics prefix]".format(s='', c=num_spaces))
-    print("{s: <{c}}[-n|--nopoll] [-b|--stream-size byte_size] [-f|--stream-type data_type]".format(s='', c=num_spaces))
-    print("{s: <{c}}[-c|--commType comm_type] [-l|--pcie-rssi-link index] [-b|--stream-size data_size]".format(s='', c=num_spaces))
-    print("{s: <{c}}[-f|--stream-type data_type] [-u|--dump-pvs file_name] [--disable-bay0]".format(s='', c=num_spaces))
-    print("{s: <{c}}[--disable-bay1] [--disable-gc] [-w|--windows-title title] [--pcie-dev pice_device]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-s|--server] [-e|--epics prefix] [-n|--nopoll] [-b|--stream-size byte_size]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-f|--stream-type data_type] [-c|--commType comm_type] [-l|--pcie-rssi-link index]".format(s='', c=num_spaces))
+    print("{s: <{c}}[-b|--stream-size data_size] [-f|--stream-type data_type] [-u|--dump-pvs file_name]".format(s='', c=num_spaces))
+    print("{s: <{c}}[--disable-bay0] [--disable-bay1] [--disable-gc] [-w|--windows-title title]".format(s='', c=num_spaces))
+    print("{s: <{c}}[--pcie-dev pice_device]".format(s='', c=num_spaces))
     print("{s: <{c}}[-h|--help]".format(s='', c=num_spaces))
     print("")
     print("    -h|--help                  : Show this message")
     print("    -a|--addr IP_address       : FPGA IP address. Required when"\
         "the communication type is based on Ethernet.")
     print("    -d|--defaults config_file  : Default configuration file")
-    print("    -p|--pyro group_name       : Start a Pyro4 server with",\
-        "group name \"group_name\"")
     print("    -e|--epics prefix          : Start an EPICS server with",\
         "PV name prefix \"prefix\"")
     print("    -s|--server                : Server mode, without staring",\
@@ -81,11 +79,11 @@ def usage(name):
     print("")
     print("Examples:")
     print("    {} -a IP_address                            :".format(name),\
-        " Start a local rogue server, with GUI, without Pyro nor EPICS servers")
+        " Start a local rogue server, with GUI, without EPICS servers")
     print("    {} -a IP_address -e prefix                  :".format(name),\
         " Start a local rogue server, with GUI, with EPICS server")
-    print("    {} -a IP_address -e prefix -p group_name -s :".format(name),\
-        " Start a local rogure server, without GUI, with Pyro and EPICS servers")
+    print("    {} -a IP_address -e prefix -s :".format(name),\
+        " Start a local rogue server, without GUI, with an EPICS servers")
     print("")
 
 # Create gui interface
@@ -110,15 +108,11 @@ def exit_message(message):
     print("")
     exit()
 
-# Get the hostname of this PC
-def get_host_name():
-    return subprocess.check_output("hostname").strip().decode("utf-8")
-
 class LocalServer(pyrogue.Root):
     """
     Local Server class. This class configure the whole rogue application.
     """
-    def __init__(self, ip_addr, config_file, server_mode, group_name, epics_prefix,\
+    def __init__(self, ip_addr, config_file, server_mode, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
         pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title, pcie_dev):
 
@@ -292,15 +286,8 @@ class LocalServer(pyrogue.Root):
             #    function=self.smurf_processor.clearFrameCnt))
 
             # Start the root
-            if group_name:
-                # Start with Pyro4 server
-                host_name = get_host_name()
-                print("Starting rogue server with Pyro using group name \"{}\"".format(group_name))
-                self.start(pollEn=polling_en, pyroGroup=group_name, pyroHost=host_name, pyroNs=None)
-            else:
-                # Start without Pyro4 server
-                print("Starting rogue server")
-                self.start(pollEn=polling_en)
+            print("Starting rogue server")
+            self.start(pollEn=polling_en)
 
             self.ReadAll()
 
@@ -441,7 +428,6 @@ class LocalServer(pyrogue.Root):
 # Main body
 if __name__ == "__main__":
     ip_addr = ""
-    group_name = ""
     epics_prefix = ""
     config_file = ""
     server_mode = False
@@ -473,8 +459,8 @@ if __name__ == "__main__":
     # Read Arguments
     try:
         opts, _ = getopt.getopt(sys.argv[1:],
-            "ha:sp:e:d:nb:f:c:l:u:w:",
-            ["help", "addr=", "server", "pyro=", "epics=", "defaults=", "nopoll",
+            "ha:se:d:nb:f:c:l:u:w:",
+            ["help", "addr=", "server", "epics=", "defaults=", "nopoll",
             "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
             "disable-bay0", "disable-bay1", "disable-gc", "windows-title=", "pcie-dev="])
     except getopt.GetoptError:
@@ -489,8 +475,6 @@ if __name__ == "__main__":
             ip_addr = arg
         elif opt in ("-s", "--server"):      # Server mode
             server_mode = True
-        elif opt in ("-p", "--pyro"):        # Pyro group name
-            group_name = arg
         elif opt in ("-e", "--epics"):       # EPICS prefix
             epics_prefix = arg
         elif opt in ("-n", "--nopoll"):      # Disable all polling
@@ -558,10 +542,10 @@ if __name__ == "__main__":
         except subprocess.CalledProcessError:
            exit_message("    ERROR: FPGA can't be reached!")
 
-    if server_mode and not (group_name or epics_prefix):
-        exit_message("    ERROR: Can not start in server mode without Pyro or EPICS server")
+    if server_mode and not (epics_prefix):
+        exit_message("    ERROR: Can not start in server mode without the EPICS server enabled")
 
-    # Try to import the FpgaTopLevel defintion
+    # Try to import the FpgaTopLevel definition
     try:
         from FpgaTopLevel import FpgaTopLevel
     except ImportError as ie:
@@ -584,7 +568,6 @@ if __name__ == "__main__":
             ip_addr=ip_addr,
             config_file=config_file,
             server_mode=server_mode,
-            group_name=group_name,
             epics_prefix=epics_prefix,
             polling_en=polling_en,
             comm_type=comm_type,
