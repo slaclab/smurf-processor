@@ -75,17 +75,6 @@ void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
-    // If the processing block is disabled, do not process the frame
-    if (disable)
-    {
-        // Send the frame to the next slave.
-        // This method will check if the Tx block is disabled, as well
-        // as updating the Tx counters
-        sendFrame(frame);
-
-        return;
-    }
-
     // Acquire lock on frame.
     ris::FrameLockPtr lock{frame->lock()};
 
@@ -129,31 +118,41 @@ void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
     // Copy the header from the input frame to the output frame.
     outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
 
-    // Unwrap the data
-    for(std::size_t i{0}; i < numCh; ++i)
+
+    if (disable)
     {
-        currentData.at(i) = static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, i));
-
-        if ((currentData.at(i) > upperUnwrap) && (previousData.at(i) < lowerUnwrap))
+        // If the processing block is disabled, we still need to cast the
+        // input data to the output data type, just without unwrapping
+        for(std::size_t i{0}; i < numCh; ++i)
+            helpers::setWord<output_data_t>(outFrameIt, i,
+                static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, i)));
+    }
+    else
+    {
+        // Unwrap the data
+        for(std::size_t i{0}; i < numCh; ++i)
         {
-            // Decrement wrap counter
-            wrapCounter.at(i) -= stepUnwrap;
-        }
-        else if ((currentData.at(i) < lowerUnwrap) && (previousData.at(i) > upperUnwrap))
-        {
-            // Increment wrap counter
-            wrapCounter.at(i) += stepUnwrap;
+            currentData.at(i) = static_cast<output_data_t>(helpers::getWord<input_data_t>(inFrameIt, i));
+
+            if ((currentData.at(i) > upperUnwrap) && (previousData.at(i) < lowerUnwrap))
+            {
+                // Decrement wrap counter
+                wrapCounter.at(i) -= stepUnwrap;
+            }
+            else if ((currentData.at(i) < lowerUnwrap) && (previousData.at(i) > upperUnwrap))
+            {
+                // Increment wrap counter
+                wrapCounter.at(i) += stepUnwrap;
+            }
+
+            // Write the final value to the output frame
+            helpers::setWord<output_data_t>(outFrameIt, i, currentData.at(i) + wrapCounter.at(i));
         }
 
-        // Write the final value to the output frame
-        helpers::setWord(outFrameIt, i, currentData.at(i) + wrapCounter.at(i));
+        // Now the current Data vector will be the previous data vector, so swap then
+        previousData.swap(currentData);
     }
 
-    // Now the current Data vector will be the previous data vector, so swap then
-    previousData.swap(currentData);
-
     // Send the frame to the next slave.
-    // This method will check if the Tx block is disabled, as well
-    // as updating the Tx counters
     sendFrame(outFrame);
 }
