@@ -149,25 +149,29 @@ class LocalServer(pyrogue.Root):
 
             # Create stream interfaces
             self.ddr_streams = []       # DDR streams
-            self.streaming_streams = [] # Streaming interface streams
 
             # If the packetizer is being used, the FpgaTopLevel class will defined a 'stream' interface exposing it.
             # Otherwise, we are using DMA engine without packetizer. Create the stream interface accordingly.
             if hasattr(fpga, 'stream'):
                 for i in range(8):
                     self.ddr_streams.append(fpga.stream.application(0x80 + i))
-                    self.streaming_streams.append(fpga.stream.application(0xC0 + i))
+
+                # Streaming interface stream
+                self.streaming_stream = fpga.stream.application(0xC1)
+
             else:
                 for i in range(8):
                     self.ddr_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0x80 + i), True))
-                    self.streaming_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0xC0 + i), True))
+
+                # Streaming interface stream
+                self.streaming_stream = rogue.hardware.axi.AxiStreamDma(pcie_dev_data,(pcie_rssi_lane*0x100 + 0xC1), True)
 
             # Our smurf_processor receiver
             # The data stream comes from TDEST 0xC1
             # We use a FIFO between the stream data and the receiver:
             # Stream -> FIFO -> smurf_processor receiver
             self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(100000,0,True)
-            pyrogue.streamConnect(self.streaming_streams[1], self.smurf_processor_fifo)
+            pyrogue.streamConnect(self.streaming_stream, self.smurf_processor_fifo)
             self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
                     name="SmurfProcessor",
                     description="Process the SMuRF Streaming Data Stream",
@@ -182,16 +186,9 @@ class LocalServer(pyrogue.Root):
                     stm_data_writer.getChannel(i))
 
                 ## Streaming interface streams
-
                 # We have already connected TDEST 0xC1 to the smurf_processor receiver,
                 # so we need to tapping it to the data writer.
-                if i == 1:
-                    pyrogue.streamTap(self.streaming_streams[i],
-                        stm_interface_writer.getChannel(i))
-                # The rest of channels are connected directly to the data writer.
-                else:
-                    pyrogue.streamConnect(self.streaming_streams[i],
-                        stm_interface_writer.getChannel(i))
+                pyrogue.streamTap(self.streaming_stream, stm_interface_writer.getChannel(0))
 
             # Look for the TesBias registers
             # TesBias register are located on
