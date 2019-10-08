@@ -196,6 +196,9 @@ void scf::GeneralAnalogFilter::reset()
     // If not, add expand it with zeros.
     if ( b.size() < (order + 1) )
         b.resize(order +  1, 0);
+
+    // Reset the index of the older point in the buffer
+    lastPointIndex = 0;
 }
 
 void scf::GeneralAnalogFilter::acceptFrame(ris::FramePtr frame)
