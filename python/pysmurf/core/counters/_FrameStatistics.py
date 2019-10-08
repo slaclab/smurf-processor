@@ -19,7 +19,6 @@
 
 import pyrogue
 import smurf
-import pysmurf.core.common
 
 class FrameStatistics(pyrogue.Device):
     """
@@ -27,7 +26,7 @@ class FrameStatistics(pyrogue.Device):
     """
     def __init__(self, name, **kwargs):
         self._FrameStatistics = smurf.core.counters.FrameStatistics()
-        pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._FrameStatistics, description='SMuRF Frame Statistics', **kwargs)
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Frame Statistics', **kwargs)
 
         # Add "Disable" variable
         self.add(pyrogue.LocalVariable(
@@ -79,3 +78,11 @@ class FrameStatistics(pyrogue.Device):
             name='clearCnt',
             description='Clear all counters',
             function=self._FrameStatistics.clearCnt))
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access slave
+    def _getStreamSlave(self):
+        return self._FrameStatistics
+
+    # Method called by streamConnect, streamTap and streamConnectBiDir to access master
+    def _getStreamMaster(self):
+        return self._FrameStatistics
