@@ -25,8 +25,11 @@ namespace scc = smurf::core::counters;
 
 scc::FrameStatistics::FrameStatistics()
 :
-    sccommon::BaseSlave(),
-    sccommon::BaseMaster(),
+    ris::Slave(),
+    ris::Master(),
+    disable(false),
+    frameCnt(0),
+    frameSize(0),
     firstFrame(true),
     frameLossCnt(0),
     frameOutOrderCnt(0),
@@ -43,19 +46,41 @@ scc::FrameStatisticsPtr scc::FrameStatistics::create()
 // Setup Class in python
 void scc::FrameStatistics::setup_python()
 {
-    bp::class_<scc::FrameStatistics, scc::FrameStatisticsPtr, bp::bases<sccommon::BaseSlave,sccommon::BaseMaster>, boost::noncopyable >("FrameStatistics", bp::init<>())
+    bp::class_< scc::FrameStatistics,
+                scc::FrameStatisticsPtr,
+                bp::bases<ris::Slave,ris::Master>,
+                boost::noncopyable >
+                ("FrameStatistics", bp::init<>())
+        .def("setDisable",          &FrameStatistics::setDisable)
+        .def("getDisable",          &FrameStatistics::getDisable)
+        .def("getFrameCnt",         &FrameStatistics::getFrameCnt)
+        .def("getFrameSize",        &FrameStatistics::getFrameSize)
+        .def("clearCnt",            &FrameStatistics::clearCnt)
         .def("getFrameLossCnt",     &FrameStatistics::getFrameLossCnt)
         .def("getFrameOutOrderCnt", &FrameStatistics::getFrameOutOrderCnt)
     ;
-    bp::implicitly_convertible< scc::FrameStatisticsPtr, sccommon::BaseSlavePtr  >();
-    bp::implicitly_convertible< scc::FrameStatisticsPtr, sccommon::BaseMasterPtr >();
+    bp::implicitly_convertible< scc::FrameStatisticsPtr, ris::SlavePtr  >();
+    bp::implicitly_convertible< scc::FrameStatisticsPtr, ris::MasterPtr >();
 }
 
-void scc::FrameStatistics::clearRxCnt()
+void scc::FrameStatistics::setDisable(bool d)
 {
-    sccommon::BaseSlave::clearRxCnt();
-    frameLossCnt     = 0;
-    frameOutOrderCnt = 0;
+    disable = d;
+}
+
+const bool scc::FrameStatistics::getDisable() const
+{
+    return disable;
+}
+
+const std::size_t scc::FrameStatistics::getFrameCnt() const
+{
+    return frameCnt;
+}
+
+const std::size_t scc::FrameStatistics::getFrameSize() const
+{
+    return frameSize;
 }
 
 const std::size_t scc::FrameStatistics::getFrameLossCnt() const
@@ -68,16 +93,28 @@ const std::size_t scc::FrameStatistics::getFrameOutOrderCnt() const
     return frameOutOrderCnt;
 }
 
+void scc::FrameStatistics::clearCnt()
+{
+    frameCnt         = 0;
+    frameLossCnt     = 0;
+    frameOutOrderCnt = 0;
+}
 
-void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
+void scc::FrameStatistics::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
     // Only process the frame is the block is enable.
-    if (!isRxDisabled())
+    if (!disable)
     {
+        // Update the frame counter
+        ++frameCnt;
+
         // Acquire lock on frame.
         ris::FrameLockPtr lock{frame->lock()};
+
+        //Update the last frame size
+        frameSize = frame->getPayload();
 
         // (smart) pointer to the smurf header in the input frame (Read-only)
         SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
@@ -112,8 +149,5 @@ void scc::FrameStatistics::rxFrame(ris::FramePtr frame)
     }
 
     // Send the frame to the next slave.
-    // This method will check if the Tx block is disabled, as well
-    // as updating the Tx counters
-    // It is outside the above scope of the lock, so that the lock is released at this point
-    txFrame(frame);
+    sendFrame(frame);
 }

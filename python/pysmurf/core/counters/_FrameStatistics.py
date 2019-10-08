@@ -21,13 +21,40 @@ import pyrogue
 import smurf
 import pysmurf.core.common
 
-class FrameStatistics(pysmurf.core.common.BaseMasterSlave):
+class FrameStatistics(pyrogue.Device):
     """
     SMuRF Frame Statistics Python Wrapper.
     """
     def __init__(self, name, **kwargs):
         self._FrameStatistics = smurf.core.counters.FrameStatistics()
         pysmurf.core.common.BaseMasterSlave.__init__(self, name=name, device=self._FrameStatistics, description='SMuRF Frame Statistics', **kwargs)
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self._slave.setDisable(value),
+            localGet=self._FrameStatistics.getDisable))
+
+        # Add the frame counter variable
+        self.add(pyrogue.LocalVariable(
+            name='FrameCnt',
+            description='Frame counter',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self._FrameStatistics.getFrameCnt))
+
+        # Add the last frame size variable
+        self.add(pyrogue.LocalVariable(
+            name='FrameSize',
+            description='Last frame size (bytes)',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self._FrameStatistics.getFrameSize))
 
         # Add the frame lost counter  variable
         self.add(pyrogue.LocalVariable(
@@ -46,3 +73,9 @@ class FrameStatistics(pysmurf.core.common.BaseMasterSlave):
             value=0,
             pollInterval=1,
             localGet=self._FrameStatistics.getFrameOutOrderCnt))
+
+        # Command to clear all the counters
+        self.add(pyrogue.LocalCommand(
+            name='clearCnt',
+            description='Clear all counters',
+            function=self._FrameStatistics.clearCnt))
