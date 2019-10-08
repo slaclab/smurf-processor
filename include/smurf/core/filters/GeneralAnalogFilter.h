@@ -64,17 +64,22 @@ namespace smurf
                 void       setDisable(bool d);
                 const bool getDisable() const;
 
-                // Set the filter order
-                void setOrder(std::size_t o);
+                // Set/Get the filter order
+                void              setOrder(std::size_t o);
+                const std::size_t getOrder() const;
 
-                // Set the filter a coefficients
-                void setA(boost::python::list l);
+                // Set/Get the filter a coefficients
+                void           setA(bp::list l);
+                const bp::list getA() const;
 
-                // Set the filter b coefficients
-                void setB(boost::python::list l);
 
-                // Set the filter gain
-                void setGain(double g);
+                // Set/Get the filter b coefficients
+                void           setB(bp::list l);
+                const bp::list getB() const;
+
+                // Set/Get the filter gain
+                void         setGain(double g);
+                const double getGain() const;
 
                 // Reset the filter. Resize and Zero-initialize the data buffer, and
                 // check if the coefficient vectors have the correct size, and expand

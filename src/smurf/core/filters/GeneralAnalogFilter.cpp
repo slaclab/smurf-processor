@@ -54,9 +54,13 @@ void scf::GeneralAnalogFilter::setup_python()
         .def("setDisable", &GeneralAnalogFilter::setDisable)
         .def("getDisable", &GeneralAnalogFilter::getDisable)
         .def("setOrder",   &GeneralAnalogFilter::setOrder)
+        .def("getOrder",   &GeneralAnalogFilter::getOrder)
         .def("setA",       &GeneralAnalogFilter::setA)
+        .def("getA",       &GeneralAnalogFilter::getA)
         .def("setB",       &GeneralAnalogFilter::setB)
+        .def("getB",       &GeneralAnalogFilter::getB)
         .def("setGain",    &GeneralAnalogFilter::setGain)
+        .def("getGain",    &GeneralAnalogFilter::getGain)
     ;
     bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::SlavePtr  >();
     bp::implicitly_convertible< scf::GeneralAnalogFilterPtr, ris::MasterPtr >();
@@ -87,6 +91,11 @@ void scf::GeneralAnalogFilter::setOrder(std::size_t o)
         // When the order it change, reset the filter
         reset();
     }
+}
+
+const std::size_t scf::GeneralAnalogFilter::getOrder() const
+{
+    return order;
 }
 
 void scf::GeneralAnalogFilter::setA(boost::python::list l)
@@ -138,6 +147,20 @@ void scf::GeneralAnalogFilter::setA(boost::python::list l)
         a.resize(order +  1, 0);
 }
 
+const bp::list scf::GeneralAnalogFilter::getA() const
+{
+    bp::list temp;
+
+    // Take the mutex before reading the  filter parameters
+    // in case it is resized while we are trying to read it
+    std::lock_guard<std::mutex> lock(mut);
+
+    for (auto const &v : a)
+        temp.append(v);
+
+    return temp;
+}
+
 void scf::GeneralAnalogFilter::setB(boost::python::list l)
 {
     std::vector<double> temp;
@@ -176,9 +199,28 @@ void scf::GeneralAnalogFilter::setB(boost::python::list l)
         b.resize(order +  1, 0);
 }
 
+const bp::list scf::GeneralAnalogFilter::getB() const
+{
+    bp::list temp;
+
+    // Take the mutex before reading the  filter parameters
+    // in case it is resized while we are trying to read it
+    std::lock_guard<std::mutex> lock(mut);
+
+    for (auto const &v : b)
+        temp.append(v);
+
+    return temp;
+}
+
 void scf::GeneralAnalogFilter::setGain(double g)
 {
     gain = g;
+}
+
+const double scf::GeneralAnalogFilter::getGain() const
+{
+    return gain;
 }
 
 void scf::GeneralAnalogFilter::reset()
