@@ -226,92 +226,6 @@ class LocalServer(pyrogue.Root):
                     10: '10 Hz',
                     30: '30 Hz'}))
 
-            # PVs for stream data, used on PCAS-based EPICS server
-            if epics_prefix and stream_pv_size:
-                if use_pcas:
-
-                    print("Enabling stream data on PVs (buffer size = {} points, data type = {})"\
-                        .format(stream_pv_size,stream_pv_type))
-
-                    # Add data streams (0-7) to local variables so they are expose as PVs
-                    # Also add PVs to select the data format
-                    self.stream_fifos = []
-                    self.data_buffers = []
-                    for i in range(4):
-
-                        # Calculate number of bytes needed on the fifo
-                        if '16' in stream_pv_type:
-                            fifo_size = stream_pv_size * 2
-                        else:
-                            fifo_size = stream_pv_size * 4
-
-                        # Setup a FIFO tapped to the steram data and a Slave data buffer
-                        # Local variables will talk to the data buffer directly.
-                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 0))
-                        stream_fifo = self.stream_fifos[i]
-
-                        self.data_buffers.append(DataBuffer(size=stream_pv_size, data_type=stream_pv_type))
-                        data_buffer = self.data_buffers[i]
-
-                        stream_fifo._setSlave(data_buffer)
-
-                        #pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
-
-                        # Variable to read the stream data
-                        stream_var = pyrogue.LocalVariable(
-                            name='Stream{}'.format(i),
-                            description='Stream {}'.format(i),
-                            mode='RO',
-                            value=0,
-                            localGet=data_buffer.read,
-                            update=False,
-                            hidden=True)
-
-                        # Set the buffer callback to update the variable
-                        data_buffer.set_callback(stream_var.updated)
-
-                        # Variable to set the data format
-                        data_format_var = pyrogue.LocalVariable(
-                            name='StreamDataFormat{}'.format(i),
-                            description='Type of data being unpacked',
-                            mode='RW',
-                            value=0,
-                            enum={i:j for i,j in enumerate(data_buffer.get_data_format_list())},
-                            localSet=data_buffer.set_data_format,
-                            localGet=data_buffer.get_data_format,
-                            hidden=True)
-
-                        # Variable to set the data byte order
-                        byte_order_var = pyrogue.LocalVariable(
-                            name='StreamDataByteOrder{}'.format(i),
-                            description='Byte order of data being unpacked',
-                            mode='RW',
-                            value=0,
-                            enum={i:j for i,j in enumerate(data_buffer.get_data_byte_order_list())},
-                            localSet=data_buffer.set_data_byte_order,
-                            localGet=data_buffer.get_data_byte_order,
-                            hidden=True)
-
-                        # Variable to read the data format string
-                        format_string_var = pyrogue.LocalVariable(
-                            name='StreamDataFormatString{}'.format(i),
-                            description='Format string used to unpack the data',
-                            mode='RO',
-                            value=0,
-                            localGet=data_buffer.get_data_format_string,
-                            hidden=True)
-
-                        # Add listener to update the format string readback variable
-                        # when the data format or data byte order is changed
-                        data_format_var.addListener(format_string_var)
-                        byte_order_var.addListener(format_string_var)
-
-                        # Add the local variable to self
-                        self.add(stream_var)
-                        self.add(data_format_var)
-                        self.add(byte_order_var)
-                        self.add(format_string_var)
-
             # lcaPut limits the maximun lenght of a string to 40 chars, as defined
             # in the EPICS R3.14 CA reference manual. This won't allowed to use the
             # command 'ReadConfig' with a long file path, which is usually the case.
@@ -419,36 +333,32 @@ class LocalServer(pyrogue.Root):
         if epics_prefix:
             print("Starting EPICS server using prefix \"{}\"".format(epics_prefix))
 
-            # Choose the appropiate epics module:
-            if use_pcas:
-                self.epics = pyrogue.epics.EpicsCaServer(base=epics_prefix, root=self)
-            else:
-                self.epics = pyrogue.protocols.epics.EpicsCaServer(base=epics_prefix, root=self)
+            self.epics = pyrogue.protocols.epics.EpicsCaServer(base=epics_prefix, root=self)
 
-                # PVs for stream data, used on GDD-based EPICS server
-                if stream_pv_size:
+            # PVs for stream data
+            if stream_pv_size:
 
-                    print("Enabling stream data on PVs (buffer size = {} points, data type = {})"\
-                        .format(stream_pv_size,stream_pv_type))
+                print("Enabling stream data on PVs (buffer size = {} points, data type = {})"\
+                    .format(stream_pv_size,stream_pv_type))
 
-                    self.stream_fifos  = []
-                    self.stream_slaves = []
-                    for i in range(8):
-                        self.stream_slaves.append(self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type))
+                self.stream_fifos  = []
+                self.stream_slaves = []
+                for i in range(8):
+                    self.stream_slaves.append(self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type))
 
-                        # Calculate number of bytes needed on the fifo
-                        if '16' in stream_pv_type:
-                            fifo_size = stream_pv_size * 2
-                        else:
-                            fifo_size = stream_pv_size * 4
+                    # Calculate number of bytes needed on the fifo
+                    if '16' in stream_pv_type:
+                        fifo_size = stream_pv_size * 2
+                    else:
+                        fifo_size = stream_pv_size * 4
 
-                        self.stream_fifos.append(rogue.interfaces.stream.Fifo(1000, fifo_size, True)) # changes
-                        self.stream_fifos[i]._setSlave(self.stream_slaves[i])
-                        pyrogue.streamTap(self.ddr_streams[i], self.stream_fifos[i])
+                    self.stream_fifos.append(rogue.interfaces.stream.Fifo(1000, fifo_size, True)) # changes
+                    self.stream_fifos[i]._setSlave(self.stream_slaves[i])
+                    pyrogue.streamTap(self.ddr_streams[i], self.stream_fifos[i])
 
             self.epics.start()
 
-            # Dump the PV list to the especified file
+            # Dump the PV list to the specified file
             if pv_dump_file:
                 try:
                     # Try to open the output file
@@ -548,6 +458,17 @@ if __name__ == "__main__":
     disable_bay1=False
     disable_gc=False
     windows_title=""
+
+    # Only Rogue version >= 2.6.0 are supported. Before this version the EPICS
+    # interface was based on PCAS which is not longer supported.
+    try:
+        ver = pyrogue.__version__
+        if (version.parse(ver) <= version.parse('2.6.0')):
+            raise ImportError('Rogue version <= 2.6.0 is unsupported')
+    except AttributeError:
+        print("Error when trying to get the version of Rogue")
+        pritn("Only version of Rogue > 2.6.0 are supported")
+        raise
 
     # Read Arguments
     try:
@@ -649,23 +570,7 @@ if __name__ == "__main__":
 
     # If EPICS server is enable, import the epics module
     if epics_prefix:
-        # Choose the appropiate epics module:
-        #  - until version 2.6.0 rogue uses PCASpy
-        #  - later versions use GDD
-        use_pcas = True
-        try:
-            ver = pyrogue.__version__
-            if (version.parse(ver) > version.parse('2.6.0')):
-                use_pcas = False
-        except AttributeError:
-            pass
-
-        if use_pcas:
-            print("Using PCAS-based EPICS server")
-            import pyrogue.epics
-        else:
-            print("Using GDD-based EPICS server")
-            import pyrogue.protocols.epics
+        import pyrogue.protocols.epics
 
     # Import the QT and gui modules if not in server mode
     if not server_mode:
