@@ -359,8 +359,12 @@ void scp::SmurfProcessor::resetDownsampler()
 void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 {
 
+    Timer t{"acceptFrame"};
+
     // Copy the frame into a STL container
     {
+        Timer t{"Frame2Buffer"};
+
         // Hold the frame lock
         ris::FrameLockPtr lockFrame{frame->lock()};
 

@@ -31,6 +31,7 @@
 #include <rogue/GilRelease.h>
 #include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/Helpers.h"
+#include "smurf/core/common/Timer.h"
 
 namespace bp  = boost::python;
 namespace ris = rogue::interfaces::stream;
