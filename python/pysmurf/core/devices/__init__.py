@@ -17,5 +17,6 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
+from pysmurf.core.devices._SmurfProcessorModular import *
 from pysmurf.core.devices._SmurfProcessor import *
 from pysmurf.core.devices._PcieCard import *

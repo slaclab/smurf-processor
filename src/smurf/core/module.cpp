@@ -28,6 +28,7 @@
 #include "smurf/core/unwrappers/module.h"
 #include "smurf/core/downsamplers/module.h"
 #include "smurf/core/conventers/module.h"
+#include "smurf/core/processors/module.h"
 
 namespace bp  = boost::python;
 namespace sc = smurf::core;
@@ -42,4 +43,5 @@ void sc::setup_module()
    	sc::unwrappers::setup_module();
     sc::downsamplers::setup_module();
     sc::conventers::setup_module();
+    sc::processors::setup_module();
 }

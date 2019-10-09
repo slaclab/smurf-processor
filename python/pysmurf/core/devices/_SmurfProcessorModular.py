@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #-----------------------------------------------------------------------------
-# Title      : PySMuRF Processor
+# Title      : PySMuRF Processor (Modular)
 #-----------------------------------------------------------------------------
 # File       : __init__.py
 # Created    : 2019-09-30
 #-----------------------------------------------------------------------------
 # Description:
-#    SMuRF Processor device.
+#    SMuRF Processor device, in its modular version.
 #-----------------------------------------------------------------------------
 # This file is part of the smurf software platform. It is subject to
 # the license terms in the LICENSE.txt file found in the top-level directory
@@ -27,7 +27,7 @@ import pysmurf.core.downsamplers
 import pysmurf.core.conventers
 import pysmurf.core.transmitters
 
-class SmurfProcessor(pyrogue.Device):
+class SmurfProcessorModular(pyrogue.Device):
     """
     SMuRF Processor device.
 
