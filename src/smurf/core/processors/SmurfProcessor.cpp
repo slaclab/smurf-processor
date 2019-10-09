@@ -40,7 +40,7 @@ scp::SmurfProcessor::SmurfProcessor()
     currentPointIndex(order),
     x( order + 1, std::vector<filter_t>(numCh) ),
     y( order + 1, std::vector<filter_t>(numCh) ),
-    factor(1),
+    factor(20),
     sampleCnt(0),
     frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0)
 {
@@ -458,4 +458,12 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
     } // filter parameter lock scope
 
     // Downsample data
+    if (++sampleCnt < factor)
+        return;
+
+    // Reset the downsampler
+    resetDownsampler();
+
+    // Send the frame to the next slave.
+    sendFrame(frame);
 }
