@@ -38,8 +38,8 @@ scp::SmurfProcessor::SmurfProcessor()
     a( order + 1 ,1 ),
     b( order + 1, 1 ),
     currentPointIndex(order),
-    x( order + 1, std::vector<filter_t>(numCh) ),
-    y( order + 1, std::vector<filter_t>(numCh) ),
+    x( numCh, std::vector<filter_t>(order + 1) ),
+    y( numCh, std::vector<filter_t>(order + 1) ),
     factor(1),
     sampleCnt(0),
     frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0)
@@ -312,8 +312,8 @@ const double scp::SmurfProcessor::getGain() const
 void scp::SmurfProcessor::resetFilter()
 {
     // Resize and re-initialize the data buffer
-    std::vector< std::vector<filter_t> >(order, std::vector<filter_t>(numCh)).swap(x);
-    std::vector< std::vector<filter_t> >(order, std::vector<filter_t>(numCh)).swap(y);
+    std::vector< std::vector<filter_t> >(numCh, std::vector<filter_t>(order + 1)).swap(x);
+    std::vector< std::vector<filter_t> >(numCh, std::vector<filter_t>(order + 1)).swap(y);
 
     // Check that a coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
@@ -425,20 +425,32 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         currentPointIndex = (currentPointIndex + 1) % (order + 1);
 
         // Iterate over the channel samples
-        for (std::size_t ch{0}; ch < currentData.size(); ++ch)
+        auto xChIt = x.begin();
+        auto yChIt = y.begin();
+
+        for(auto const& v : currentData)
         {
             // cast the input value to double
-            double in = static_cast<double>(currentData.at(ch));
+            double in = static_cast<double>(v);
 
             // Start computing the output value
             double out = b.at(0) * in;
 
             // Iterate over the pass samples
-            for (std::size_t t{1}; t < order + 1; ++t)
+            auto xOrderIt = (*xChIt).begin();
+            auto yOrderIt = (*yChIt).begin();
+            auto aIt = a.begin();
+            auto bIt = b.begin();
+            while(++aIt != a.end() && ++bIt != b.end())
             {
                 // Compute the correct index in the 'circular' buffer
-                std::size_t i{ ( order + currentPointIndex - t + 1 ) % (order + 1) };
-                out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+                out += (*bIt) * (*xOrderIt) - (*aIt) * (*yOrderIt);
+
+                if (++xOrderIt == (*xChIt).end())
+                    xOrderIt = (*xChIt).begin();
+
+                if (++yOrderIt == (*yChIt).end())
+                    yOrderIt = (*yChIt).begin();
             }
 
             // Divide the resulting value by the first a coefficient
@@ -448,11 +460,11 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             out *= gain;
 
             // Copy the new output value to the 'y' vector, casting it 'filter_t'
-            y.at(currentPointIndex).at(ch) = static_cast<filter_t>(out);
+            *yOrderIt = static_cast<filter_t>(out);
 
             // Copy the original input value (before casting it to double)
             // to the 'x' vector, casting it 'filter_t'
-            x.at(currentPointIndex).at(ch) = static_cast<filter_t>(currentData.at(ch));
+            *xOrderIt = static_cast<filter_t>(v);
         }
 
     } // filter parameter lock scope
