@@ -35,5 +35,5 @@ class SmurfProcessor(pyrogue.Device):
 
         self.master = master
         self.smurf_processor = smurf.core.processors.SmurfProcessor()
-        pyrogue.streamConnect(self.master, self.smurf_frame_stats)
+        pyrogue.streamConnect(self.master, self.smurf_processor)
 
