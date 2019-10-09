@@ -139,19 +139,25 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 {
     rogue::GilRelease noGil;
 
-    // If the processing block is disabled, do not process the frame
+    // Acquire lock on frame.
+    ris::FrameLockPtr lock{frame->lock()};
+
+    // Check if the processing block is disabled
     if (disable)
     {
-        // Send the frame to the next slave.
-        // This method will check if the Tx block is disabled, as well
-        // as updating the Tx counters
+        // If the processing block is disable, just send the first 'maxNumOutCh' channels in the output frame
+        // by shrinking the original frame and send it.
+        frame->setPayload(SmurfHeader::SmurfHeaderSize + dataSize * maxNumOutCh);
+
+        // Set the number of channel to 'maxNumOutCh' and update the frame header
+        numCh = maxNumOutCh;
+        SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(frame));
+        smurfHeaderOut->setNumberChannels(numCh);
+
         sendFrame(frame);
 
         return;
     }
-
-    // Acquire lock on frame.
-    ris::FrameLockPtr lock{frame->lock()};
 
     // Request a new frame, to hold the header + payload, and set its payload
     // Although the number of active channel can change, and will be indicated in the
@@ -177,20 +183,18 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
 
     {
         // Take the mutex while using the mask vector
-        std::lock_guard<std::mutex> lock(mut);
+        std::lock_guard<std::mutex> lockMask{mut};
 
         // Now map the data from the input frame to the output frame according to the map vector
-        for (std::vector<std::size_t>::iterator maskIt = mask.begin(); maskIt != mask.end(); ++maskIt)
-        {
-            outFrameIt = std::copy(inFrameIt + *maskIt * dataSize,
-                inFrameIt + *maskIt * dataSize + dataSize,
+        for(auto const &ch : mask)
+            outFrameIt = std::copy(inFrameIt + (ch * dataSize),
+                inFrameIt + (ch * dataSize) + dataSize,
                 outFrameIt);
-        }
-
-        // Update the number of channel in the header of the output smurf frame
-        SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(outFrame));
-        smurfHeaderOut->setNumberChannels(numCh);
     }
+
+    // Update the number of channel in the header of the output smurf frame
+    SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(outFrame));
+    smurfHeaderOut->setNumberChannels(numCh);
 
     // Send the frame to the next slave.
     sendFrame(outFrame);
