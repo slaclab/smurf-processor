@@ -376,6 +376,43 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
     }
 
     // Map and unwrap data at the same time
+    {
+        Timer t{"Map"};
+
+        // Move the current data to the previous data
+        previousData.swap(currentData);
+
+        // Begining of the data area in the frameBuffer
+        std::vector<uint8_t>::iterator inIt(frameBuffer.begin() + SmurfHeader::SmurfHeaderSize);
+
+        // Output channel index
+        std::size_t i{0};
+
+        // Map and unwrap data in a single loop
+        for(auto const& m : mask)
+        {
+            // Get the mapped value from the framweBuffer and cast it
+            currentData.at(i) = static_cast<unwrap_t>(*(inIt + m * sizeof(fw_t)));
+
+            // Check if the value wrapped
+            if ((currentData.at(i) > upperUnwrap) && (previousData.at(i) < lowerUnwrap))
+            {
+                // Decrement wrap counter
+                wrapCounter.at(i) -= stepUnwrap;
+            }
+            else if ((currentData.at(i) < lowerUnwrap) && (previousData.at(i) > upperUnwrap))
+            {
+                // Increment wrap counter
+                wrapCounter.at(i) += stepUnwrap;
+            }
+
+            // Add the wrap counter to the value
+            currentData.at(i) += wrapCounter.at(i);
+
+            // increase output channel index
+            ++i;
+        }
+    }
 
     // Filter data
 
