@@ -29,7 +29,7 @@ scp::SmurfProcessor::SmurfProcessor()
     ris::Master(),
     disable(false),
     numCh(0),
-    mask(0),
+    mask(maxNumOutCh,0),
     currentData(0),
     previousData(0),
     wrapCounter(0),
@@ -44,7 +44,6 @@ scp::SmurfProcessor::SmurfProcessor()
     sampleCnt(0),
     frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t))
 {
-
 }
 
 scp::SmurfProcessorPtr scp::SmurfProcessor::create()
