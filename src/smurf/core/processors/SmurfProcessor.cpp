@@ -33,13 +33,13 @@ scp::SmurfProcessor::SmurfProcessor()
     currentData(maxNumOutCh, 0),
     previousData(maxNumOutCh, 0),
     wrapCounter(maxNumOutCh, 0),
-    order(0),
+    order(4),
     gain(1),
-    a(1,1),
-    b(1,1),
-    lastPointIndex(0),
-    x( order, std::vector<filter_t>(numCh) ),
-    y( order, std::vector<filter_t>(numCh) ),
+    a( order + 1 ,1 ),
+    b( order + 1, 1 ),
+    currentPointIndex(order),
+    x( order + 1, std::vector<filter_t>(numCh) ),
+    y( order + 1, std::vector<filter_t>(numCh) ),
     factor(1),
     sampleCnt(0),
     frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0)
@@ -326,7 +326,7 @@ void scp::SmurfProcessor::resetFilter()
         b.resize(order +  1, 0);
 
     // Reset the index of the older point in the buffer
-    lastPointIndex = 0;
+    currentPointIndex = 0;
 }
 
 void scp::SmurfProcessor::setFactor(std::size_t f)
@@ -414,6 +414,48 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
     }
 
     // Filter data
+    { // filter parameter lock scope
+
+        Timer t{"Filter"};
+
+        // Acquire the lock while the filter parameters are used.
+        std::lock_guard<std::mutex> lock(mut);
+
+        // Update the 'current' pointer to the oldest slot in the buffer
+        currentPointIndex = (currentPointIndex + 1) % (order + 1);
+
+        // Iterate over the channel samples
+        for (std::size_t ch{0}; ch < currentData.size(); ++ch)
+        {
+            // cast the input value to double
+            double in = static_cast<double>(currentData.at(ch));
+
+            // Start computing the output value
+            double out = b.at(0) * in;
+
+            // Iterate over the pass samples
+            for (std::size_t t{1}; t < order + 1; ++t)
+            {
+                // Compute the correct index in the 'circular' buffer
+                std::size_t i{ ( order + currentPointIndex - t + 1 ) % (order + 1) };
+                out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+            }
+
+            // Divide the resulting value by the first a coefficient
+            out /= a.at(0);
+
+            // Multiply by the gain
+            out *= gain;
+
+            // Copy the new output value to the 'y' vector, casting it 'filter_t'
+            y.at(currentPointIndex).at(ch) = static_cast<filter_t>(out);
+
+            // Copy the original input value (before casting it to double)
+            // to the 'x' vector, casting it 'filter_t'
+            x.at(currentPointIndex).at(ch) = static_cast<filter_t>(currentData.at(ch));
+        }
+
+    } // filter parameter lock scope
 
     // Downsample data
 }

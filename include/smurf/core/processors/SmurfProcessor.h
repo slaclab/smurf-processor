@@ -123,7 +123,7 @@ namespace smurf
                 double                               gain;           // Filter gain
                 std::vector<double>                  a;              // Filter's a coefficients
                 std::vector<double>                  b;              // Filter's b coefficients
-                std::size_t                          lastPointIndex; // Index of older data point in the buffer
+                std::size_t                          currentPointIndex; // Index of current data point in the buffer
                 std::vector< std::vector<filter_t> > x;              // pass inputs
                 std::vector< std::vector<filter_t> > y;              // pass output
                 // Downsampler variables
