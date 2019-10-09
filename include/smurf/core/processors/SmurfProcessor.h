@@ -133,8 +133,6 @@ namespace smurf
 
                 // Buffer to copy the input frame into a STL container
                 std::vector<uint8_t> frameBuffer;
-                const std::size_t    frameBufferSize = SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t);
-
             };
         }
     }
