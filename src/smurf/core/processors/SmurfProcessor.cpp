@@ -42,7 +42,7 @@ scp::SmurfProcessor::SmurfProcessor()
     y( order, std::vector<filter_t>(numCh) ),
     factor(1),
     sampleCnt(0),
-    frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t))
+    frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0)
 {
 }
 
