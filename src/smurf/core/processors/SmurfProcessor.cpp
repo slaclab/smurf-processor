@@ -429,30 +429,24 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         for (std::size_t ch{0}; ch < currentData.size(); ++ch)
         {
             // cast the input value to double
-            double in = static_cast<double>(currentData.at(ch));
+            x.at(currentPointIndex).at(ch) = static_cast<double>(currentData.at(ch));
 
             // Start computing the output value
-            double out = b.at(0) * in;
+            y.at(currentPointIndex).at(ch) = b.at(0) * x.at(currentPointIndex).at(ch);
 
             // Iterate over the pass samples
             for (std::size_t t{1}; t < order + 1; ++t)
             {
                 // Compute the correct index in the 'circular' buffer
                 std::size_t i{ ( order + currentPointIndex - t + 1 ) % (order + 1) };
-                out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+                y.at(currentPointIndex).at(ch) += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
             }
 
             // Divide the resulting value by the first a coefficient
-            out /= a.at(0);
-
-            // Copy the new output value to the 'y' vector
-            y.at(currentPointIndex).at(ch) = out;
-
-            // Copy the original input value to the 'x' vector
-            x.at(currentPointIndex).at(ch) = in;
+            y.at(currentPointIndex).at(ch) /= a.at(0);
 
             // Copy the result the output vector (casted)
-            outData.at(ch) = static_cast<filter_t>(out * gain);
+            outData.at(ch) = static_cast<filter_t>(y.at(currentPointIndex).at(ch) * gain);
         }
 
     } // filter parameter lock scope
