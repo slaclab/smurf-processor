@@ -61,6 +61,107 @@ class SmurfChannelMapper(pyrogue.Device):
             localSet=lambda value: self.device.setMask(value),
             localGet=self.device.getMask))
 
+class Unwrapper(pyrogue.Device):
+    """
+    SMuRF Data Unwrapper Python Wrapper.
+    """
+    def __init__(self, name, devie, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data Unwrapper', **kwargs)
+        self.device = device
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self.device.setDisable(value),
+            localGet=self.device.getDisable))
+
+class Downsampler(pyrogue.Device):
+    """
+    SMuRF Data Downsampler Python Wrapper.
+    """
+    def __init__(self, name, device, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data Downsampler', **kwargs)
+        self.device = device
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self.device.setDisable(value),
+            localGet=self.device.getDisable))
+
+        # Add the filter order variable
+        self.add(pyrogue.LocalVariable(
+            name='Factor',
+            description='Downsampling factor',
+            mode='RW',
+            value=1,
+            localSet=lambda value : self.device.setFactor(value),
+            localGet=self.device.getFactor))
+
+class GeneralAnalogFilter(pyrogue.Device):
+    """
+    SMuRF Data GeneralAnalogFilter Python Wrapper.
+    """
+    def __init__(self, name, device, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Data GeneralAnalogFilter', **kwargs)
+        self.device = device
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self.device.setDisable(value),
+            localGet=self.device.getDisable))
+
+        # Add the filter order variable
+        self.add(pyrogue.LocalVariable(
+            name='Order',
+            description='Filter order',
+            mode='RW',
+            value=1,
+            localSet=lambda value : self.device.setOrder(value),
+            localGet=self.device.getOrder))
+
+        # Add the filter gain variable
+        self.add(pyrogue.LocalVariable(
+            name='Gain',
+            description='Filter gain',
+            mode='RW',
+            value=1.0,
+            localSet=lambda value : self.device.setGain(value),
+            localGet=self.device.getGain))
+
+        # Add the filter a coefficients variable
+        # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
+        # with the initial size of this list, and can not be changed later, so we are doing
+        # it big enough at this point (we are probably not going to use an order > 10)
+        self.add(pyrogue.LocalVariable(
+            name='A',
+            description='Filter a coefficients',
+            mode='RW',
+            value=[1.0]+[0]*9,
+            localSet=lambda value: self.device.setA(value),
+            localGet=self.device.getA))
+
+        # Add the filter b coefficients variable
+        # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
+        # with the initial size of this list, and can not be changed later, so we are doing
+        # it big enough at this point (we are probably not going to use an order > 10)
+        self.add(pyrogue.LocalVariable(
+            name='B',
+            description='Filter b coefficients',
+            mode='RW',
+            value=[0.0]*10,
+            localSet=lambda value: self.device.setB(value),
+            localGet=self.device.getB))
 
 class SmurfProcessor(pyrogue.Device):
     """
@@ -79,10 +180,22 @@ class SmurfProcessor(pyrogue.Device):
         self.smurf_frame_stats = pysmurf.core.counters.FrameStatistics(name="FrameRxStats")
         self.add(self.smurf_frame_stats)
 
+        # Add the SmurfProcessor C++ device. This module implements: channel mapping,
+        # data unwrapping, filter, and downsampling. Python wrapper for these functions
+        # are added here to give the same tree structure as the modular version.
         self.smurf_processor = smurf.core.processors.SmurfProcessor()
 
         self.smurf_mapper = SmurfChannelMapper(name="ChannelMapper", device=self.smurf_processor)
         self.add(self.smurf_mapper)
+
+        self.smurf_unwrapper = Unwrapper(name="Unwrapper", device=self.smurf_processor)
+        self.add(self.smurf_unwrapper)
+
+        self.smurf_filter = GeneralAnalogFilter(name="Filter", device=self.smurf_processor)
+        self.add(self.smurf_filter)
+
+        self.smurf_downsampler = Downsampler(name="Downsampler", device=self.smurf_processor)
+        self.add(self.smurf_downsampler)
 
         self.smurf_header2smurf = pysmurf.core.conventers.Header2Smurf(name="Header2Smurf")
         self.add(self.smurf_header2smurf)
