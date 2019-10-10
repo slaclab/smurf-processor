@@ -19,7 +19,9 @@
 
 import pyrogue
 import smurf
+import pysmurf.core.counters
 import smurf.core.processors
+import pysmurf.core.conventers
 
 class SmurfProcessor(pyrogue.Device):
     """
@@ -34,6 +36,19 @@ class SmurfProcessor(pyrogue.Device):
         pyrogue.Device.__init__(self, name=name, description=description, **kwargs)
 
         self.master = master
-        self.smurf_processor = smurf.core.processors.SmurfProcessor()
-        pyrogue.streamConnect(self.master, self.smurf_processor)
 
+        self.smurf_frame_stats = pysmurf.core.counters.FrameStatistics(name="FrameRxStats")
+        self.add(self.smurf_frame_stats)
+
+        self.smurf_processor = smurf.core.processors.SmurfProcessor()
+
+        self.smurf_header2smurf = pysmurf.core.conventers.Header2Smurf(name="Header2Smurf")
+        self.add(self.smurf_header2smurf)
+
+        self.file_writer = pyrogue.utilities.fileio.StreamWriter(name='FileWriter')
+        self.add(self.file_writer)
+
+        pyrogue.streamConnect(self.master,             self.smurf_frame_stats)
+        pyrogue.streamConnect(self.smurf_frame_stats,  self.smurf_processor)
+        pyrogue.streamConnect(self.smurf_processor,    self.smurf_header2smurf)
+        pyrogue.streamConnect(self.smurf_header2smurf, self.file_writer.getChannel(0))
