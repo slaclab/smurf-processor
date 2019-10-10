@@ -37,9 +37,9 @@ scp::SmurfProcessor::SmurfProcessor()
     gain(1),
     a( order + 1 ,1 ),
     b( order + 1, 1 ),
-    currentPointIndex(order),
-    x( order + 1, std::vector<double>(numCh) ),
-    y( order + 1, std::vector<double>(numCh) ),
+    currentBlockIndex(order),
+    x( order * numCh ),
+    y( order * numCh ),
     outData(numCh,0),
     factor(20),
     sampleCnt(0),
@@ -313,8 +313,8 @@ const double scp::SmurfProcessor::getGain() const
 void scp::SmurfProcessor::resetFilter()
 {
     // Resize and re-initialize the data buffer
-    std::vector< std::vector<double> >(order, std::vector<double>(numCh)).swap(x);
-    std::vector< std::vector<double> >(order, std::vector<double>(numCh)).swap(y);
+    std::vector<double>(order * numCh).swap(x);
+    std::vector<double>(order * numCh).swap(y);
 
     // Check that a coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
@@ -327,7 +327,7 @@ void scp::SmurfProcessor::resetFilter()
         b.resize(order +  1, 0);
 
     // Reset the index of the older point in the buffer
-    currentPointIndex = 0;
+    currentBlockIndex = 0;
 }
 
 void scp::SmurfProcessor::setFactor(std::size_t f)
@@ -422,34 +422,37 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         // Acquire the lock while the filter parameters are used.
         std::lock_guard<std::mutex> lock(mut);
 
-        // Update the 'current' pointer to the oldest slot in the buffer
-        currentPointIndex = (currentPointIndex + 1) % (order + 1);
+        // Update the 'current' index to the oldest slot in the buffer
+        currentBlockIndex = (currentBlockIndex + 1) % order;
+
+        // Get index to the current data block
+        std::size_t currentBlockPointer{currentBlockIndex * numCh};
 
         // Iterate over the channel samples
-        for (std::size_t ch{0}; ch < currentData.size(); ++ch)
+        for (std::size_t ch{0}; ch < numCh; ++ch)
         {
-            // cast the input value to double
-            double in = static_cast<double>(currentData.at(ch));
+            // Cast the input value to double into the output buffer
+            x.at(currentBlockPointer + ch) = static_cast<double>(currentData.at(ch));
+
+            // Get a const reference to the input value
+            const double& in(x.at(currentBlockPointer + ch));
+
+            // Get a reference to the output value (to be updated)
+            double& out = y.at(currentBlockPointer + ch);
 
             // Start computing the output value
-            double out = b.at(0) * in;
+            out = b.at(0) * in;
 
             // Iterate over the pass samples
             for (std::size_t t{1}; t < order + 1; ++t)
             {
                 // Compute the correct index in the 'circular' buffer
-                std::size_t i{ ( order + currentPointIndex - t + 1 ) % (order + 1) };
-                out += b.at(t) * x.at(i).at(ch) - a.at(t) * y.at(i).at(ch);
+                std::size_t passBlockIndex{ ((currentBlockIndex - t) % order) * numCh };
+                out += b.at(t) * x.at(passBlockIndex + ch) - a.at(t) * y.at(passBlockIndex + ch);
             }
 
             // Divide the resulting value by the first a coefficient
             out /= a.at(0);
-
-            // Copy the new output value to the 'y' vector
-            y.at(currentPointIndex).at(ch) = out;
-
-            // Copy the original input value to the 'x' vector
-            x.at(currentPointIndex).at(ch) = in;
 
             // Copy the result the output vector (casted)
             outData.at(ch) = static_cast<filter_t>(out * gain);

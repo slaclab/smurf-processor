@@ -109,27 +109,27 @@ namespace smurf
                 const unwrap_t   stepUnwrap = 0x10000;   // Wrap counter steps
 
                 //** VARIABLES **//
-                bool                                 disable;        // Disable flag
-                std::mutex                           mut;            // Mutex
+                bool                     disable;        // Disable flag
+                std::mutex               mut;            // Mutex
                 // Channel mapping variables
-                std::size_t                          numCh;          // Number of channels being processed
-                std::vector<std::size_t>             mask;           // Channel mask file
+                std::size_t              numCh;          // Number of channels being processed
+                std::vector<std::size_t> mask;           // Channel mask file
                 // Unwrap variables
-                std::vector<unwrap_t>                currentData;    // Current data buffer
-                std::vector<unwrap_t>                previousData;   // Previous data buffer
-                std::vector<unwrap_t>                wrapCounter;    // Wrap counters
+                std::vector<unwrap_t>    currentData;    // Current data buffer
+                std::vector<unwrap_t>    previousData;   // Previous data buffer
+                std::vector<unwrap_t>    wrapCounter;    // Wrap counters
                 // Filter variables
-                std::size_t                          order;          // Filter order
-                double                               gain;           // Filter gain
-                std::vector<double>                  a;              // Filter's a coefficients
-                std::vector<double>                  b;              // Filter's b coefficients
-                std::size_t                          currentPointIndex; // Index of current data point in the buffer
-                std::vector< std::vector<double> >   x;              // pass inputs
-                std::vector< std::vector<double> >   y;              // pass output
-                std::vector<filter_t>                outData;        // Result
+                std::size_t              order;          // Filter order
+                double                   gain;           // Filter gain
+                std::vector<double>      a;              // Filter's a coefficients
+                std::vector<double>      b;              // Filter's b coefficients
+                std::size_t              currentBlockIndex; // Index of current data point in the buffer
+                std::vector<double>      x;              // pass inputs
+                std::vector<double>      y;              // pass output
+                std::vector<filter_t>    outData;        // Result
                 // Downsampler variables
-                std::size_t                          factor;         // Downsample factor
-                std::size_t                          sampleCnt;      // Sample counter
+                std::size_t              factor;         // Downsample factor
+                std::size_t              sampleCnt;      // Sample counter
 
                 //** PROCESSING VARS AND BUFFER **/
 
