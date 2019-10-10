@@ -358,13 +358,8 @@ void scp::SmurfProcessor::resetDownsampler()
 
 void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 {
-
-    Timer t{"acceptFrame"};
-
     // Copy the frame into a STL container
     {
-        Timer t{"Frame2Buffer"};
-
         // Hold the frame lock
         ris::FrameLockPtr lockFrame{frame->lock()};
 
@@ -377,8 +372,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     // Map and unwrap data at the same time
     {
-        Timer t{"Map"};
-
         // Move the current data to the previous data
         previousData.swap(currentData);
 
@@ -416,9 +409,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     // Filter data
     { // filter parameter lock scope
-
-        Timer t{"Filter"};
-
         // Acquire the lock while the filter parameters are used.
         std::lock_guard<std::mutex> lock(mut);
 
