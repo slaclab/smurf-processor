@@ -445,9 +445,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             // Divide the resulting value by the first a coefficient
             out /= a.at(0);
 
-            // Multiply by the gain
-            out *= gain;
-
             // Copy the new output value to the 'y' vector
             y.at(currentPointIndex).at(ch) = out;
 
@@ -455,7 +452,7 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             x.at(currentPointIndex).at(ch) = in;
 
             // Copy the result the output vector (casted)
-            outData.at(ch) = static_cast<filter_t>(out);
+            outData.at(ch) = static_cast<filter_t>(out * gain);
         }
 
     } // filter parameter lock scope
