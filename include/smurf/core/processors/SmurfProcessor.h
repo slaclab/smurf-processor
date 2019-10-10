@@ -124,8 +124,9 @@ namespace smurf
                 std::vector<double>                  a;              // Filter's a coefficients
                 std::vector<double>                  b;              // Filter's b coefficients
                 std::size_t                          currentPointIndex; // Index of current data point in the buffer
-                std::vector< std::vector<filter_t> > x;              // pass inputs
-                std::vector< std::vector<filter_t> > y;              // pass output
+                std::vector< std::vector<double> >   x;              // pass inputs
+                std::vector< std::vector<double> >   y;              // pass output
+                std::vector<filter_t>                outData;        // Result
                 // Downsampler variables
                 std::size_t                          factor;         // Downsample factor
                 std::size_t                          sampleCnt;      // Sample counter

@@ -38,8 +38,9 @@ scp::SmurfProcessor::SmurfProcessor()
     a( order + 1 ,1 ),
     b( order + 1, 1 ),
     currentPointIndex(order),
-    x( order + 1, std::vector<filter_t>(numCh) ),
-    y( order + 1, std::vector<filter_t>(numCh) ),
+    x( order + 1, std::vector<double>(numCh) ),
+    y( order + 1, std::vector<double>(numCh) ),
+    outData(numCh,0),
     factor(20),
     sampleCnt(0),
     frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0)
@@ -312,8 +313,8 @@ const double scp::SmurfProcessor::getGain() const
 void scp::SmurfProcessor::resetFilter()
 {
     // Resize and re-initialize the data buffer
-    std::vector< std::vector<filter_t> >(order, std::vector<filter_t>(numCh)).swap(x);
-    std::vector< std::vector<filter_t> >(order, std::vector<filter_t>(numCh)).swap(y);
+    std::vector< std::vector<double> >(order, std::vector<double>(numCh)).swap(x);
+    std::vector< std::vector<double> >(order, std::vector<double>(numCh)).swap(y);
 
     // Check that a coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
@@ -447,12 +448,14 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             // Multiply by the gain
             out *= gain;
 
-            // Copy the new output value to the 'y' vector, casting it 'filter_t'
-            y.at(currentPointIndex).at(ch) = static_cast<filter_t>(out);
+            // Copy the new output value to the 'y' vector
+            y.at(currentPointIndex).at(ch) = out;
 
-            // Copy the original input value (before casting it to double)
-            // to the 'x' vector, casting it 'filter_t'
-            x.at(currentPointIndex).at(ch) = static_cast<filter_t>(currentData.at(ch));
+            // Copy the original input value to the 'x' vector
+            x.at(currentPointIndex).at(ch) = in;
+
+            // Copy the result the output vector (casted)
+            outData.at(ch) = static_cast<filter_t>(out);
         }
 
     } // filter parameter lock scope
