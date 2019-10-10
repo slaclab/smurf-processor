@@ -27,8 +27,8 @@ class SmurfChannelMapper(pyrogue.Device):
     """
     SMuRF Channel Mapper Python Wrapper.
     """
-    def __init__(self, name, **kwargs):
-        pyrogue.Device.__init__(self, name=name, device=device, description='SMuRF Channel Mapper', **kwargs)
+    def __init__(self, name, device, **kwargs):
+        pyrogue.Device.__init__(self, name=name, description='SMuRF Channel Mapper', **kwargs)
         self.device = device
 
         # Add "Disable" variable
