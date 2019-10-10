@@ -23,6 +23,45 @@ import pysmurf.core.counters
 import smurf.core.processors
 import pysmurf.core.conventers
 
+class SmurfChannelMapper(pyrogue.Device):
+    """
+    SMuRF Channel Mapper Python Wrapper.
+    """
+    def __init__(self, name, **kwargs):
+        pyrogue.Device.__init__(self, name=name, device=device, description='SMuRF Channel Mapper', **kwargs)
+        self.device = device
+
+        # Add "Disable" variable
+        self.add(pyrogue.LocalVariable(
+            name='Disable',
+            description='Disable the processing block. Data will just pass thorough to the next slave.',
+            mode='RW',
+            value=False,
+            localSet=lambda value: self.device.setDisable(value),
+            localGet=self.device.getDisable))
+
+        # Add the number of enabled channels  variable
+        self.add(pyrogue.LocalVariable(
+            name='NumChannels',
+            description='Number enabled channels',
+            mode='RO',
+            value=0,
+            pollInterval=1,
+            localGet=self.device.getNumCh))
+
+        # Add variable to set the mapping mask
+        # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
+        # with the initial size of this list, and can not be changed later, so we are doing
+        # it big enough at this point using the maximum number of channels
+        self.add(pyrogue.LocalVariable(
+            name='Mask',
+            description='Set the mapping mask',
+            mode='RW',
+            value=[0]*528,
+            localSet=lambda value: self.device.setMask(value),
+            localGet=self.device.getMask))
+
+
 class SmurfProcessor(pyrogue.Device):
     """
     SMuRF Processor device.
@@ -41,6 +80,9 @@ class SmurfProcessor(pyrogue.Device):
         self.add(self.smurf_frame_stats)
 
         self.smurf_processor = smurf.core.processors.SmurfProcessor()
+
+        self.smurf_mapper = SmurfChannelMapper(name="ChannelMapper", device=self.smurf_processor)
+        self.add(self.smurf_mapper)
 
         self.smurf_header2smurf = pysmurf.core.conventers.Header2Smurf(name="Header2Smurf")
         self.add(self.smurf_header2smurf)

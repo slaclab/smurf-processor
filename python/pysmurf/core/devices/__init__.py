@@ -18,5 +18,5 @@
 #-----------------------------------------------------------------------------
 
 from pysmurf.core.devices._SmurfProcessorModular import *
-from pysmurf.core.devices._SmurfProcessor import *
+from pysmurf.core.devices._SmurfProcessor import SmurfProcessor
 from pysmurf.core.devices._PcieCard import *
