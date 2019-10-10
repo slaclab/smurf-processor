@@ -65,7 +65,7 @@ class Unwrapper(pyrogue.Device):
     """
     SMuRF Data Unwrapper Python Wrapper.
     """
-    def __init__(self, name, devie, **kwargs):
+    def __init__(self, name, device, **kwargs):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Data Unwrapper', **kwargs)
         self.device = device
 
@@ -162,6 +162,7 @@ class GeneralAnalogFilter(pyrogue.Device):
             value=[0.0]*10,
             localSet=lambda value: self.device.setB(value),
             localGet=self.device.getB))
+
 
 class SmurfProcessor(pyrogue.Device):
     """
