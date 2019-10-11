@@ -20,6 +20,7 @@
 
 #include <boost/python.hpp>
 #include "smurf/core/processors/SmurfProcessor.h"
+#include "smurf/core/common/Timer.h"
 
 namespace scp = smurf::core::processors;
 
@@ -27,6 +28,7 @@ scp::SmurfProcessor::SmurfProcessor()
 :
     ris::Slave(),
     ris::Master(),
+    frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0),
     disable(false),
     numCh(maxNumOutCh),
     mask(numCh,0),
@@ -43,7 +45,11 @@ scp::SmurfProcessor::SmurfProcessor()
     outData(numCh,0),
     factor(20),
     sampleCnt(0),
-    frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0)
+    headerCopy(SmurfHeader::SmurfHeaderSize, 0),
+    dataCopy(maxNumInCh * sizeof(filter_t), 0),
+    runTxThread(true),
+    txDataReady(false),
+    pktTransmitterThread(std::thread( &SmurfProcessor::pktTansmitter, this ))
 {
 }
 
@@ -469,20 +475,64 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
     resetDownsampler();
 
     {
-        // Request a new frame, to hold the same payload as the input frame
-        // For now we want to keep packet of the same size
-        std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + maxNumOutCh * sizeof(filter_t);
-        ris::FramePtr outFrame = reqFrame(outFrameSize, true);
-        outFrame->setPayload(outFrameSize);
-        ris::FrameIterator outFrameIt = outFrame->beginWrite();
+        Timer t{"Tx prep"};
 
-        // Copy the header from the input frame to the output frame
-        outFrameIt = std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader::SmurfHeaderSize, outFrameIt);
+        // Copy the header
+        std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader::SmurfHeaderSize, headerCopy.begin());
 
         // Copy the data
-        outFrameIt = std::copy(outData.begin(), outData.end(), outFrameIt);
+        std::copy(outData.begin(), outData.end(), dataCopy.begin());
 
-        // Send the frame to the next slave.
-        sendFrame(outFrame);
+        // Notify the Tx thread that new data is ready
+        txDataReady = true;
+        std::unique_lock<std::mutex> lock(txMutex);
+        txCV.notify_all();
+    }
+}
+
+void scp::SmurfProcessor::pktTansmitter()
+{
+    std::cout << "Transmitter thread started..." << std::endl;
+
+    // Infinite loop
+    for(;;)
+    {
+        // Check if new data is ready
+        if ( !txDataReady )
+        {
+            // Wait until data is ready, with a 10s timeout
+            std::unique_lock<std::mutex> lock(txMutex);
+            txCV.wait_for( lock, std::chrono::seconds(10) );
+        }
+        else
+        {
+            Timer t{"TX"};
+
+            // Request a new frame, to hold the same payload as the input frame
+            // For now we want to keep packet of the same size
+            std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + maxNumOutCh * sizeof(filter_t);
+            ris::FramePtr outFrame = reqFrame(outFrameSize, true);
+            outFrame->setPayload(outFrameSize);
+            ris::FrameIterator outFrameIt = outFrame->beginWrite();
+
+            // Copy the header from the input frame to the output frame
+            outFrameIt = std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader::SmurfHeaderSize, outFrameIt);
+
+            // Copy the data
+            outFrameIt = std::copy(outData.begin(), outData.end(), outFrameIt);
+
+            // Send the frame to the next slave.
+            sendFrame(outFrame);
+
+            // Clear the flag
+            txDataReady = false;
+        }
+
+        // Check if we should stop the loop
+        if (!runTxThread)
+        {
+            std::cout << "pktTansmitter interrupted." << std::endl;
+            return;
+        }
     }
 }

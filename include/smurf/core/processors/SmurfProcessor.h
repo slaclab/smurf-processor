@@ -22,6 +22,9 @@
 **/
 
 #include <iostream>
+#include <thread>
+#include <atomic>
+#include <condition_variable>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
@@ -103,37 +106,46 @@ namespace smurf
                 static const std::size_t maxNumOutCh = 528;
 
                 // Unwrap related constants
-                const fw_t      upperUnwrap =  0x6000;   // If we are above this and jump, assume a wrap
-                const fw_t      lowerUnwrap = -0x6000;   // If we are below this and jump, assume a wrap
-                const unwrap_t   stepUnwrap = 0x10000;   // Wrap counter steps
+                const fw_t      upperUnwrap =  0x6000;          // If we are above this and jump, assume a wrap
+                const fw_t      lowerUnwrap = -0x6000;          // If we are below this and jump, assume a wrap
+                const unwrap_t   stepUnwrap = 0x10000;          // Wrap counter steps
 
                 //** VARIABLES **//
-                bool                     disable;        // Disable flag
-                std::mutex               mut;            // Mutex
+                std::vector<uint8_t> frameBuffer;               // Buffer to copy the input frame into a STL container
+                bool                     disable;               // Disable flag
+                std::mutex               mut;                   // Mutex
                 // Channel mapping variables
-                std::size_t              numCh;          // Number of channels being processed
-                std::vector<std::size_t> mask;           // Channel mask file
+                std::size_t              numCh;                 // Number of channels being processed
+                std::vector<std::size_t> mask;                  // Channel mask file
                 // Unwrap variables
-                std::vector<unwrap_t>    currentData;    // Current data buffer
-                std::vector<unwrap_t>    previousData;   // Previous data buffer
-                std::vector<unwrap_t>    wrapCounter;    // Wrap counters
+                std::vector<unwrap_t>    currentData;           // Current data buffer
+                std::vector<unwrap_t>    previousData;          // Previous data buffer
+                std::vector<unwrap_t>    wrapCounter;           // Wrap counters
                 // Filter variables
-                std::size_t              order;          // Filter order
-                double                   gain;           // Filter gain
-                std::vector<double>      a;              // Filter's a coefficients
-                std::vector<double>      b;              // Filter's b coefficients
-                std::size_t              currentBlockIndex; // Index of current data point in the buffer
-                std::vector<double>      x;              // pass inputs
-                std::vector<double>      y;              // pass output
-                std::vector<filter_t>    outData;        // Result
+                std::size_t              order;                 // Filter order
+                double                   gain;                  // Filter gain
+                std::vector<double>      a;                     // Filter's a coefficients
+                std::vector<double>      b;                     // Filter's b coefficients
+                std::size_t              currentBlockIndex;     // Index of current data point in the buffer
+                std::vector<double>      x;                     // pass inputs
+                std::vector<double>      y;                     // pass output
+                std::vector<filter_t>    outData;               // Result
                 // Downsampler variables
-                std::size_t              factor;         // Downsample factor
-                std::size_t              sampleCnt;      // Sample counter
+                std::size_t              factor;                // Downsample factor
+                std::size_t              sampleCnt;             // Sample counter
+                // Transmit thread
+                std::vector<uint8_t>    headerCopy;             // A copy of header to be send
+                std::vector<filter_t>   dataCopy;               // A copy of the data to be send
+                bool                    txDataReady;            // Flag to indicate new data is ready t be sent
+                std::atomic<bool>       runTxThread;            // Flag used to stop the thread
+                std::thread             pktTransmitterThread;   // Thread to send the data to the next slave
+                std::condition_variable txCV;                   // Variable to notify the thread new data is ready
+                std::mutex              txMutex;                // Mutex used for accessing the conditional variable
 
-                //** PROCESSING VARS AND BUFFER **/
+                //** METHOD **//
+                void                    pktTansmitter();        // Send frame to the next slave
 
-                // Buffer to copy the input frame into a STL container
-                std::vector<uint8_t> frameBuffer;
+
             };
         }
     }
