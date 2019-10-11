@@ -419,22 +419,22 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         // Get index to the current data block
         std::size_t currentBlockPointer{currentBlockIndex * numCh};
 
-        // Create pointers
-        double  *pX   = x.data();
-        double  *pY   = y.data();
-        double  *pA   = a.data();
-        double  *pB   = b.data();
-        int32_t *pOut = outData.data();
-        int32_t *pIn  = currentData.data();
+        // Create iterators
+        auto xIt(x.begin());
+        auto yIt(y.begin());
+        auto aIt(a.begin());
+        auto bIt(b.begin());
+        auto outIt(outData.begin());
+        auto dataIt(currentData.begin());
 
         // Iterate over the channel samples
         for (std::size_t ch{0}; ch < numCh; ++ch)
         {
             // Cast the input value to double into the output buffer
-            *(pX + currentBlockPointer + ch) = static_cast<double>( *(pIn + ch) );
+            *(xIt + currentBlockPointer) = static_cast<double>( *dataIt );
 
             // Start computing the output value
-            *(pY + currentBlockPointer + ch) = *pB * *(pX + currentBlockPointer + ch);
+            *(yIt + currentBlockPointer) = *bIt * *(xIt + currentBlockPointer);
 
             // Iterate over the pass samples
             for (std::size_t t{1}; t < order + 1; ++t)
@@ -442,15 +442,21 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
                 // Compute the correct index in the 'circular' buffer
                 std::size_t passBlockIndex{ ( ( order + currentBlockIndex - t + 1 ) % (order + 1) ) * numCh };
 
-                *(pY + currentBlockPointer + ch) += *(pB + t) * *(pX + passBlockIndex + ch)
-                    - *(pA+ t) * *(pY + passBlockIndex + ch);
+                *(yIt + currentBlockPointer) += *(bIt + t) * *(xIt + passBlockIndex)
+                    - *(aIt + t) * *(yIt + passBlockIndex);
             }
 
             // Divide the resulting value by the first a coefficient
-            *(pY + currentBlockPointer + ch) /= *pA;
+            *(yIt + currentBlockPointer) /= *(aIt);
 
-            // CopY the result the output vector (casted)
-            *(pOut + ch) = static_cast<filter_t>( *(pY + currentBlockPointer + ch) * gain );
+            // Copy the result the output vector (casted)
+            *(outIt) = static_cast<filter_t>( *(yIt + currentBlockPointer) * gain );
+
+            //Move to the next channel sample
+            ++xIt;
+            ++yIt;
+            ++outIt;
+            ++dataIt;
         }
 
     } // filter parameter lock scope
