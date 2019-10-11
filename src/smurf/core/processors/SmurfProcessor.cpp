@@ -468,6 +468,21 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
     // Reset the downsampler
     resetDownsampler();
 
-    // Send the frame to the next slave.
-    sendFrame(frame);
+    {
+        // Request a new frame, to hold the same payload as the input frame
+        // For now we want to keep packet of the same size
+        std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + maxNumOutCh * sizeof(filter_t);
+        ris::FramePtr outFrame = reqFrame(outFrameSize, true);
+        outFrame->setPayload(outFrameSize);
+        ris::FrameIterator outFrameIt = outFrame->beginWrite();
+
+        // Copy the header from the input frame to the output frame
+        outFrameIt = std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader::SmurfHeaderSize, outFrameIt);
+
+        // Copy the data
+        outFrameIt = std::copy(outData.begin(), outData.end(), outFrameIt);
+
+        // Send the frame to the next slave.
+        sendFrame(outFrame);
+    }
 }
