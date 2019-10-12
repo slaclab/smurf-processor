@@ -416,8 +416,10 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     // Filter data
     { // filter parameter lock scope
+        Timer t{"Filter"};
+
         // Acquire the lock while the filter parameters are used.
-        std::lock_guard<std::mutex> lock(mut);
+        std::lock_guard<std::mutex> lockParam(mut);
 
         // Update the 'current' index to the oldest slot in the buffer
         currentBlockIndex = (currentBlockIndex + 1) % (order + 1);
@@ -455,9 +457,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             // Divide the resulting value by the first a coefficient
             *(yIt + currentBlockPointer) /= *(aIt);
 
-            // Copy the result the output vector (casted)
-            *(outIt) = static_cast<filter_t>( *(yIt + currentBlockPointer) * gain );
-
             //Move to the next channel sample
             ++xIt;
             ++yIt;
@@ -467,13 +466,16 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     } // filter parameter lock scope
 
-    // Downsample data
+    // Downsampler. If we haven't reached the factor counter, we don't do anything
+    // When we reach the factor counter, we send the resulting frame.
     if (++sampleCnt < factor)
         return;
+
 
     // Reset the downsampler
     resetDownsampler();
 
+    // Give the data to the Tx thread to be sent to the next slave.
     {
         Timer t{"Tx prep"};
 
@@ -481,7 +483,20 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader::SmurfHeaderSize, headerCopy.begin());
 
         // Copy the data
-        std::copy(outData.begin(), outData.end(), dataCopy.begin());
+        {
+            // Iterator to the current output buffer
+            auto yIt(y.begin() + currentBlockIndex * numCh);
+
+            // Hold the mutex while we copy the data
+            std::lock_guard<std::mutex> lock(outDataMutex);
+
+            // Multiply the values by the gain, and cast the result
+            // to 'filter_t' into he outData buffer
+            std::transform( y.begin() + currentBlockIndex * numCh,
+                y.begin() + currentBlockIndex * numCh + numCh,
+                outData.begin(),
+                [this](const double& v) -> filter_t { return static_cast<filter_t>(v * gain); });
+        }
 
         // Notify the Tx thread that new data is ready
         txDataReady = true;
@@ -506,7 +521,7 @@ void scp::SmurfProcessor::pktTansmitter()
         }
         else
         {
-            Timer t{"TX"};
+            Timer t{"  TX"};
 
             // Request a new frame, to hold the same payload as the input frame
             // For now we want to keep packet of the same size
@@ -516,11 +531,15 @@ void scp::SmurfProcessor::pktTansmitter()
             ris::FrameIterator outFrameIt = outFrame->beginWrite();
 
             // Copy the header from the input frame to the output frame
-            outFrameIt = std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader::SmurfHeaderSize, outFrameIt);
+            outFrameIt = std::copy(headerCopy.begin(), headerCopy.end(), outFrameIt);
 
-            // Copy the data
-            outFrameIt = std::copy(outData.begin(), outData.end(), outFrameIt);
-
+            // Copy the data to the output frame
+            {
+                std::lock_guard<std::mutex> lock(outDataMutex);
+                std::size_t i{0};
+                for(auto it = outData.begin(); it != outData.end(); ++it)
+                    helpers::setWord<filter_t>(outFrameIt, i++, *it);
+            }
             // Send the frame to the next slave.
             sendFrame(outFrame);
 

@@ -141,6 +141,7 @@ namespace smurf
                 std::thread             pktTransmitterThread;   // Thread to send the data to the next slave
                 std::condition_variable txCV;                   // Variable to notify the thread new data is ready
                 std::mutex              txMutex;                // Mutex used for accessing the conditional variable
+                std::mutex              outDataMutex;           // Mutex used to access the data in the transition method
 
                 //** METHOD **//
                 void                    pktTansmitter();        // Send frame to the next slave
