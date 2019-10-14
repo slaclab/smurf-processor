@@ -1,11 +1,11 @@
-#ifndef _SMURF_CORE_COMMON_SMURFHEADER_H_
-#define _SMURF_CORE_COMMON_SMURFHEADER_H_
+#ifndef _SMURF_CORE_COMMON_SMURFHEADERVECTOR_H_
+#define _SMURF_CORE_COMMON_SMURFHEADERVECTOR_H_
 
 /**
  *-----------------------------------------------------------------------------
- * Title         : SMuRF Header (on a frame)
+ * Title         : SMuRF Header (on a std::vector)
  * ----------------------------------------------------------------------------
- * File          : SmurfHeader.h
+ * File          : SmurfHeaderVector.h
  * Created       : 2019-10-01
  *-----------------------------------------------------------------------------
  * Description :
@@ -23,26 +23,24 @@
 
 #include <memory>
 #include <stdexcept>
-#include <rogue/interfaces/stream/Frame.h>
-#include <rogue/interfaces/stream/FrameLock.h>
-#include <rogue/interfaces/stream/FrameIterator.h>
+#include <vector>
 #include "smurf/core/common/TesBiasArray.h"
 
 namespace ris = rogue::interfaces::stream;
 
-class SmurfHeaderRO;
-class SmurfHeader;
-typedef std::shared_ptr<SmurfHeaderRO> SmurfHeaderROPtr;
-typedef std::shared_ptr<SmurfHeader>   SmurfHeaderPtr;
+class SmurfHeaderVectorRO;
+class SmurfHeaderVector;
+typedef std::shared_ptr<SmurfHeaderVectorRO> SmurfHeaderVectorROPtr;
+typedef std::shared_ptr<SmurfHeaderVector>   SmurfHeaderVectorPtr;
 
 // SMuRF header class. This class give a read-only access
-class SmurfHeaderRO
+class SmurfHeaderVectorRO
 {
 public:
-    SmurfHeaderRO(ris::FramePtr frame);
-    virtual ~SmurfHeaderRO() {};
+    SmurfHeaderVectorRO(std::vector<uint8_t>& buffer);
+    virtual ~SmurfHeaderVectorRO() {};
 
-    static SmurfHeaderROPtr create(ris::FramePtr frame);
+    static SmurfHeaderVectorROPtr create(std::vector<uint8_t>& buffer);
 
     const uint8_t  getVersion()                   const;  // Get protocol version
     const uint8_t  getCrateID()                   const;  // Get ATCA crate ID
@@ -50,7 +48,7 @@ public:
     const uint8_t  getTimingConfiguration()       const;  // Get timing configuration
     const uint32_t getNumberChannels()            const;  // Get number of channel in this packet
     const int32_t  getTESBias(std::size_t index)  const;  // Get TES DAC values 16X 20 bit
-    void           copyTESBiasArrayTo(ris::FrameIterator it) const;   // Copy the TES DAC full array to a destination iterator
+    void           copyTESBiasArrayTo(std::vector<uint8_t>::iterator it) const;   // Copy the TES DAC full array to a destination iterator
     const uint64_t getUnixTime()                  const;  // Get 64 bit unix time nanoseconds
     const uint32_t getFluxRampIncrement()         const;  // Get signed 32 bit integer for increment
     const uint32_t getFluxRampOffset()            const;  // Get signed 32 it integer for offset
@@ -110,10 +108,10 @@ protected:
 
 private:
     // Prevent construction using the default or copy constructor.
-    // Prevent an SmurfHeaderRO object to be assigned as well.
-    SmurfHeaderRO();
-    SmurfHeaderRO(const SmurfHeaderRO&);
-    SmurfHeaderRO& operator=(const SmurfHeaderRO&);
+    // Prevent an SmurfHeaderVectorRO object to be assigned as well.
+    SmurfHeaderVectorRO();
+    SmurfHeaderVectorRO(const SmurfHeaderVectorRO&);
+    SmurfHeaderVectorRO& operator=(const SmurfHeaderVectorRO&);
 
     // helper functions
     const uint8_t  getU8Word(  std::size_t offset                    ) const; // Returns uint8_t word from the header, at offset 'offset'
@@ -123,20 +121,20 @@ private:
     const bool     getWordBit( std::size_t offset, std::size_t index ) const; // Returns bit 'index' from a header byte at offset 'offset'
 
     // Private variables
-    ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+    std::vector<uint8_t>::iterator headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    TesBiasArrayPtr tba;
+    // TesBiasArrayPtr tba;
 };
 
 // SMuRF header class. This class give a read-write access
-class SmurfHeader : public SmurfHeaderRO
+class SmurfHeaderVector : public SmurfHeaderVectorRO
 {
 public:
-    SmurfHeader(ris::FramePtr frame);
-    ~SmurfHeader() {};
+    SmurfHeaderVector(std::vector<uint8_t>& buffer);
+    ~SmurfHeaderVector() {};
 
-    static SmurfHeaderPtr create(ris::FramePtr frame);
+    static SmurfHeaderVectorPtr create(std::vector<uint8_t>& buffer);
 
     void setVersion(uint8_t value) const;                     // Set protocol version
     void setCrateID(uint8_t value) const;                     // Set ATCA crate ID
@@ -169,10 +167,10 @@ public:
 
 private:
     // Prevent construction using the default or copy constructor.
-    // Prevent an SmurfHeaderRO object to be assigned as well.
-    SmurfHeader();
-    SmurfHeader(const SmurfHeader&);
-    SmurfHeader& operator=(const SmurfHeader&);
+    // Prevent an SmurfHeaderVectorRO object to be assigned as well.
+    SmurfHeaderVector();
+    SmurfHeaderVector(const SmurfHeaderVector&);
+    SmurfHeaderVector& operator=(const SmurfHeaderVector&);
 
     // helper functions
     void setU8Word(  std::size_t offset, uint8_t value                 ) const; // Write a uint8_t word into the header, at offset 'offset'
@@ -182,10 +180,9 @@ private:
     void setWordBit( std::size_t offset, std::size_t index, bool value ) const; // write a bit at 'index' position into the header byte at offset 'offset'
 
     // Private variables
-    ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+    std::vector<uint8_t>::iterator headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    TesBiasArrayPtr tba;
+    // TesBiasArrayPtr tba;
 };
-
 #endif
