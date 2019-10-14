@@ -28,11 +28,11 @@ scc::Header2Smurf::Header2Smurf()
     ris::Slave(),
     ris::Master(),
     disable(false),
-    tesBias(reqFrame(TesBiasArray::TesBiasBufferSize, true)),
-    tba(TesBiasArray::create(tesBias->beginWrite()))
+    tesBias(reqFrame(TesBiasArray<ris::FrameIterator>::TesBiasBufferSize, true)),
+    tba(TesBiasArray<ris::FrameIterator>::create(tesBias->beginWrite()))
 {
     // Update the payload of the TES bias frame buffer
-    tesBias->setPayload(TesBiasArray::TesBiasBufferSize);
+    tesBias->setPayload(TesBiasArray<ris::FrameIterator>::TesBiasBufferSize);
 
     // Update the iterator, just in case the method setPayload invalidated it
     tba->setDataIt(tesBias->beginWrite());

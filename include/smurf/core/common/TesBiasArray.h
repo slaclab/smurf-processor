@@ -23,21 +23,27 @@
 
 #include <stdexcept>
 #include <mutex>
+#include <vector>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
 
 namespace ris = rogue::interfaces::stream;
 
+template <typename T>
 class TesBiasArray;
-typedef boost::shared_ptr<TesBiasArray> TesBiasArrayPtr;
+
+template <typename T>
+using TesBiasArrayPtr = boost::shared_ptr<TesBiasArray<T>>;
+// typedef boost::shared_ptr<TesBiasArray<T>> TesBiasArrayPtr;
 
 // Class to handle TES bias array of values.
+template <typename T>
 class TesBiasArray
 {
 private:
     // Iterator to the start of the TES Bias area in the SMuRF Header
-    ris::FrameIterator dataIt;
+    T dataIt;
 
     // Mutex, to safety access the data from different threads
     std::mutex mut;
@@ -79,8 +85,8 @@ private:
     } S;
 
 public:
-    TesBiasArray(ris::FrameIterator it);
-    ~TesBiasArray();
+    TesBiasArray(T it);
+    ~TesBiasArray() {};
 
     // Number of TES Bias values.
     static const std::size_t TesBiasCount = 16;
@@ -91,10 +97,10 @@ public:
     // Size of the buffer needed to store the TES Bias (in bytes)
     static const std::size_t TesBiasBufferSize = TesBiasCount * TesBiasBitSize / 8;
 
-    static TesBiasArrayPtr create(ris::FrameIterator it);
+    static TesBiasArrayPtr<T> create(T it);
 
     // Change the data pointer
-    void setDataIt(ris::FrameIterator it);
+    void setDataIt(T it);
 
     // Write a TES bias value
     void setWord(const WordIndex& index, int32_t value) const;

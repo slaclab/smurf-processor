@@ -69,7 +69,7 @@ const int32_t SmurfHeaderVectorRO::getTESBias(std::size_t index) const
 void SmurfHeaderVectorRO::copyTESBiasArrayTo(std::vector<uint8_t>::iterator it) const
 {
     std::copy(it + headerTESDACOffset,
-        it + headerTESDACOffset + TesBiasArray::TesBiasBufferSize,
+        it + headerTESDACOffset + TesBiasArray<std::vector<uint8_t>::iterator>::TesBiasBufferSize,
         headerIt);
 }
 
@@ -290,7 +290,7 @@ void SmurfHeaderVector::setTESBias(std::size_t index, int32_t value) const
 void SmurfHeaderVector::copyTESBiasArrayFrom(ris::FrameIterator it) const
 {
     std::copy(headerIt + headerTESDACOffset,
-        headerIt + headerTESDACOffset + TesBiasArray::TesBiasBufferSize,
+        headerIt + headerTESDACOffset + TesBiasArray<std::vector<uint8_t>::iterator>::TesBiasBufferSize,
         it);
 }
 

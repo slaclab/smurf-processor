@@ -69,7 +69,7 @@ namespace smurf
             private:
                 bool            disable; // Disable flag
                 ris::FramePtr   tesBias;
-                TesBiasArrayPtr tba;
+                TesBiasArrayPtr<ris::FrameIterator> tba;
             };
         }
     }

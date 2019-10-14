@@ -20,27 +20,27 @@
 
 #include "smurf/core/common/TesBiasArray.h"
 
-TesBiasArray::TesBiasArray(ris::FrameIterator it)
+template <typename T>
+TesBiasArray<T>::TesBiasArray(T it)
 :
     dataIt(it)
 {
 }
 
-TesBiasArray::~TesBiasArray()
-{
-}
-
-TesBiasArrayPtr TesBiasArray::create(ris::FrameIterator it)
+template <typename T>
+TesBiasArrayPtr<T> TesBiasArray<T>::create(T it)
 {
     return boost::make_shared<TesBiasArray>(it);
 }
 
-void TesBiasArray::setDataIt(ris::FrameIterator it)
+template <typename T>
+void TesBiasArray<T>::setDataIt(T it)
 {
     dataIt = it;
 }
 
-void TesBiasArray::setWord(const WordIndex& index, int32_t value) const
+template <typename T>
+void TesBiasArray<T>::setWord(const WordIndex& index, int32_t value) const
 {
     if (index >= TesBiasCount)
         throw std::runtime_error("Trying to write a TES bias value in an address of out the buffer range.");
@@ -75,7 +75,8 @@ void TesBiasArray::setWord(const WordIndex& index, int32_t value) const
     }
 };
 
-const int32_t TesBiasArray::getWord(const WordIndex& index) const
+template <typename T>
+const int32_t TesBiasArray<T>::getWord(const WordIndex& index) const
 {
     if (index >= TesBiasCount)
         throw std::runtime_error("Trying to read a TES bias value in an address of out the buffer range.");
@@ -96,7 +97,8 @@ const int32_t TesBiasArray::getWord(const WordIndex& index) const
     return ( ( static_cast<int32_t>(v.w) >> shift) & 0xfffff );
 }
 
-std::mutex* TesBiasArray::getMutex()
+template <typename T>
+std::mutex* TesBiasArray<T>::getMutex()
 {
   return &mut;
 };

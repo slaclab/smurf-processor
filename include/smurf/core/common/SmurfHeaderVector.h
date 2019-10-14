@@ -124,7 +124,7 @@ private:
     std::vector<uint8_t>::iterator headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    // TesBiasArrayPtr tba;
+    TesBiasArrayPtr<std::vector<uint8_t>::iterator> tba;
 };
 
 // SMuRF header class. This class give a read-write access
@@ -183,6 +183,6 @@ private:
     std::vector<uint8_t>::iterator headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    // TesBiasArrayPtr tba;
+    TesBiasArrayPtr<std::vector<uint8_t>::iterator> tba;
 };
 #endif

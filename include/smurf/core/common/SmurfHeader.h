@@ -126,7 +126,7 @@ private:
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    TesBiasArrayPtr tba;
+    TesBiasArrayPtr<ris::FrameIterator> tba;
 };
 
 // SMuRF header class. This class give a read-write access
@@ -185,7 +185,7 @@ private:
     ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    TesBiasArrayPtr tba;
+    TesBiasArrayPtr<ris::FrameIterator> tba;
 };
 
 #endif
