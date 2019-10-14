@@ -21,6 +21,8 @@
  *-----------------------------------------------------------------------------
 **/
 
+#include "smurf/core/common/Helpers.h"
+
 // Class use to measure the time a scope is active
 class Timer
 {
@@ -28,16 +30,14 @@ public:
     Timer(std::string n)
     :
         name(n),
-        t((std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now())).time_since_epoch().count())
+        t(helpers::getTimeNS())
     {
     };
 
     ~Timer()
     {
         std::cout << name << ", start = " << t << std::endl;
-        std::cout << name << ", end   = " <<
-            (std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now())).time_since_epoch().count() - t
-            << std::endl;
+        std::cout << name << ", end   = " << helpers::getTimeNS() - t << std::endl;
     };
 
 private:

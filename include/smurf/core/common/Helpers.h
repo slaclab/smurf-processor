@@ -21,6 +21,7 @@
  *-----------------------------------------------------------------------------
 **/
 
+#include <chrono>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/interfaces/stream/FrameIterator.h>
@@ -63,6 +64,14 @@ namespace helpers
 
         for (std::size_t i{0}; i < sizeof(T); ++i)
             *(it + offset * sizeof(T) + i) = temp.b[i];
+    };
+
+    // Get the current time in nanoseconds.
+    // Use the steady clock which guarantees to be monotonically increasing.
+    inline uint64_t getTimeNS()
+    {
+        return std::chrono::time_point_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now()).time_since_epoch().count();
     };
 }
 
