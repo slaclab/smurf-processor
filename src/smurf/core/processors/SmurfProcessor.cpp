@@ -164,6 +164,9 @@ void scp::SmurfProcessor::setMask(bp::list m)
 
     // Update the number of mapped channels
     numCh = listSize;
+
+    // Reset the Unwrapper when the number of channels change
+    resetUnwrapper();
 }
 
 const bp::list scp::SmurfProcessor::getMask() const
