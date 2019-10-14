@@ -156,7 +156,7 @@ void scp::SmurfProcessor::setMask(bp::list m)
     }
 
     // Take the mutex before changing the mask vector
-    std::lock_guard<std::mutex> lock(mutChMapper);
+    std::lock_guard<std::mutex> lockMap(mutChMapper);
 
     // At this point, all element in the mask list are valid.
     // Update the mask vector
@@ -167,6 +167,13 @@ void scp::SmurfProcessor::setMask(bp::list m)
 
     // Reset the Unwrapper when the number of channels change
     resetUnwrapper();
+
+    // Reset the filter
+    // Take the mutex before changing the filter parameters
+    // This make sure that the new order value is not used before
+    // the a and b array are resized.
+    std::lock_guard<std::mutex> lockFilter(mutFilter);
+    resetFilter();
 }
 
 const bp::list scp::SmurfProcessor::getMask() const
