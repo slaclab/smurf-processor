@@ -70,7 +70,7 @@ void scp::SmurfProcessor::setup_python()
                 ("SmurfProcessor",bp::init<>())
         // Channel mapping variables
         .def("setChMapperDisable",      &SmurfProcessor::setChMapperDisable)
-        .def("geChMappertDisable",      &SmurfProcessor::getChMapperDisable)
+        .def("getChMapperDisable",      &SmurfProcessor::getChMapperDisable)
         .def("setUnwrapperDisable",     &SmurfProcessor::setUnwrapperDisable)
         .def("getUnwrapperDisable",     &SmurfProcessor::getUnwrapperDisable)
         .def("getNumCh",                &SmurfProcessor::getNumCh)
