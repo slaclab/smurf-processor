@@ -57,34 +57,37 @@ namespace smurf
 
                 static void setup_python();
 
-                // Disable the processing block. The data
-                // will just pass through to the next slave
-                void       setDisable(bool d);
-                const bool getDisable() const;
-
                 //** CHANNEL MAPPING METHODS **//
-                const std::size_t   getNumCh() const;           // Get the number of mapper channels
-                void                setMask(bp::list m);        // Set the Channel mask vector
-                const bp::list      getMask() const;            // Get the Channel mask vector
+                void                setChMapperDisable(bool d);     // Disable the processing block. The data
+                const bool          getChMapperDisable() const;     // will just pass through to the next slave
+                const std::size_t   getNumCh() const;               // Get the number of mapper channels
+                void                setMask(bp::list m);            // Set the Channel mask vector
+                const bp::list      getMask() const;                // Get the Channel mask vector
 
                 //** UNWRAPPER METHODS **//
-                void                resetUnwrapper();           // Resize and clear buffer
+                void                setUnwrapperDisable(bool d);
+                const bool          getUnwrapperDisable() const;
+                void                resetUnwrapper();               // Resize and clear buffer
 
                 //** FILTER METHODS **//
-                void                setOrder(std::size_t o);    // Set the filter order
-                const std::size_t   getOrder() const;           // Get the filter order
-                void                setA(bp::list l);           // Set the filter a coefficients
-                const bp::list      getA() const;               // Get the filter a coefficients
-                void                setB(bp::list l);           // Set the filter b coefficients
-                const bp::list      getB() const;               // Get the filter b coefficients
-                void                setGain(double g);          // Set the filter gain
-                const double        getGain() const;            // Get the filter gain
-                void                resetFilter();              // Reset the filter
+                void                setFilterDisable(bool d);       // Disable the processing block. The data
+                const bool          getFilterDisable() const;       // will just pass through to the next slave
+                void                setOrder(std::size_t o);        // Set the filter order
+                const std::size_t   getOrder() const;               // Get the filter order
+                void                setA(bp::list l);               // Set the filter a coefficients
+                const bp::list      getA() const;                   // Get the filter a coefficients
+                void                setB(bp::list l);               // Set the filter b coefficients
+                const bp::list      getB() const;                   // Get the filter b coefficients
+                void                setGain(double g);              // Set the filter gain
+                const double        getGain() const;                // Get the filter gain
+                void                resetFilter();                  // Reset the filter
 
                 //** DOWNSAMLER METHODS **//
-                void                setFactor(std::size_t f);   // Set the downsampling factor
-                const std::size_t   getFactor() const;          // Get the downsampling factor
-                void                resetDownsampler();         // Reset the downsampler.
+                void                setDownsamplerDisable(bool d);  // Disable the processing block. The data
+                const bool          getDownsamplerDisable() const;  // will just pass through to the next slave
+                void                setFactor(std::size_t f);       // Set the downsampling factor
+                const std::size_t   getFactor() const;              // Get the downsampling factor
+                void                resetDownsampler();             // Reset the downsampler.
 
 
                 // Accept new frames
@@ -111,17 +114,19 @@ namespace smurf
                 const unwrap_t   stepUnwrap = 0x10000;          // Wrap counter steps
 
                 //** VARIABLES **//
-                std::vector<uint8_t> frameBuffer;               // Buffer to copy the input frame into a STL container
-                bool                     disable;               // Disable flag
-                std::mutex               mut;                   // Mutex
+                std::vector<uint8_t>     frameBuffer;           // Buffer to copy the input frame into a STL container
                 // Channel mapping variables
+                bool                     disableChMapper;       // Disable flag for the channel mapper
                 std::size_t              numCh;                 // Number of channels being processed
                 std::vector<std::size_t> mask;                  // Channel mask file
+                std::mutex               mutChMapper;           // Mutex
                 // Unwrap variables
+                bool                     disableUnwrapper;      // Disable flag for the Unwrapper
                 std::vector<unwrap_t>    currentData;           // Current data buffer
                 std::vector<unwrap_t>    previousData;          // Previous data buffer
                 std::vector<unwrap_t>    wrapCounter;           // Wrap counters
                 // Filter variables
+                bool                     disableFilter;         // Disable flag for the filter
                 std::size_t              order;                 // Filter order
                 double                   gain;                  // Filter gain
                 std::vector<double>      a;                     // Filter's a coefficients
@@ -130,18 +135,20 @@ namespace smurf
                 std::vector<double>      x;                     // pass inputs
                 std::vector<double>      y;                     // pass output
                 std::vector<filter_t>    outData;               // Result
+                std::mutex               mutFilter;             // Mutex
                 // Downsampler variables
+                bool                     disableDownsampler;    // Disable flag for the downsampler
                 std::size_t              factor;                // Downsample factor
                 std::size_t              sampleCnt;             // Sample counter
                 // Transmit thread
-                std::vector<uint8_t>    headerCopy;             // A copy of header to be send
-                std::vector<filter_t>   dataCopy;               // A copy of the data to be send
-                bool                    txDataReady;            // Flag to indicate new data is ready t be sent
-                std::atomic<bool>       runTxThread;            // Flag used to stop the thread
-                std::thread             pktTransmitterThread;   // Thread to send the data to the next slave
-                std::condition_variable txCV;                   // Variable to notify the thread new data is ready
-                std::mutex              txMutex;                // Mutex used for accessing the conditional variable
-                std::mutex              outDataMutex;           // Mutex used to access the data in the transition method
+                std::vector<uint8_t>     headerCopy;            // A copy of header to be send
+                std::vector<filter_t>    dataCopy;              // A copy of the data to be send
+                bool                     txDataReady;           // Flag to indicate new data is ready t be sent
+                std::atomic<bool>        runTxThread;           // Flag used to stop the thread
+                std::thread              pktTransmitterThread;  // Thread to send the data to the next slave
+                std::condition_variable  txCV;                  // Variable to notify the thread new data is ready
+                std::mutex               txMutex;               // Mutex used for accessing the conditional variable
+                std::mutex               outDataMutex;          // Mutex used to access the data in the transition method
 
                 //** METHOD **//
                 void                    pktTansmitter();        // Send frame to the next slave

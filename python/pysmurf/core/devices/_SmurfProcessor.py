@@ -37,8 +37,8 @@ class SmurfChannelMapper(pyrogue.Device):
             description='Disable the processing block. Data will just pass thorough to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self.device.setDisable(value),
-            localGet=self.device.getDisable))
+            localSet=lambda value: self.device.setChMapperDisable(value),
+            localGet=self.device.getChMapperDisable))
 
         # Add the number of enabled channels  variable
         self.add(pyrogue.LocalVariable(
@@ -75,8 +75,8 @@ class Unwrapper(pyrogue.Device):
             description='Disable the processing block. Data will just pass thorough to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self.device.setDisable(value),
-            localGet=self.device.getDisable))
+            localSet=lambda value: self.device.setUnwrapperDisable(value),
+            localGet=self.device.getUnwrapperDisable))
 
 class Downsampler(pyrogue.Device):
     """
@@ -92,8 +92,8 @@ class Downsampler(pyrogue.Device):
             description='Disable the processing block. Data will just pass thorough to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self.device.setDisable(value),
-            localGet=self.device.getDisable))
+            localSet=lambda value: self.device.setDownsamplerDisable(value),
+            localGet=self.device.getDownsamplerDisable))
 
         # Add the filter order variable
         self.add(pyrogue.LocalVariable(
@@ -118,8 +118,8 @@ class GeneralAnalogFilter(pyrogue.Device):
             description='Disable the processing block. Data will just pass thorough to the next slave.',
             mode='RW',
             value=False,
-            localSet=lambda value: self.device.setDisable(value),
-            localGet=self.device.getDisable))
+            localSet=lambda value: self.device.setFilterDisable(value),
+            localGet=self.device.getFilterDisable))
 
         # Add the filter order variable
         self.add(pyrogue.LocalVariable(

@@ -29,12 +29,14 @@ scp::SmurfProcessor::SmurfProcessor()
     ris::Slave(),
     ris::Master(),
     frameBuffer(SmurfHeader::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0),
-    disable(false),
     numCh(maxNumOutCh),
+    disableChMapper(false),
     mask(numCh,0),
+    disableUnwrapper(false),
     currentData(numCh, 0),
     previousData(numCh, 0),
     wrapCounter(numCh, 0),
+    disableFilter(false),
     order(4),
     gain(1),
     a( order + 1 ,1 ),
@@ -43,6 +45,7 @@ scp::SmurfProcessor::SmurfProcessor()
     x( (order +1) * numCh ),
     y( (order +1) * numCh ),
     outData(numCh,0),
+    disableDownsampler(false),
     factor(20),
     sampleCnt(0),
     headerCopy(SmurfHeader::SmurfHeaderSize, 0),
@@ -65,37 +68,43 @@ void scp::SmurfProcessor::setup_python()
                 bp::bases<ris::Slave,ris::Master>,
                 boost::noncopyable >
                 ("SmurfProcessor",bp::init<>())
-        .def("setDisable", &SmurfProcessor::setDisable)
-        .def("getDisable", &SmurfProcessor::getDisable)
         // Channel mapping variables
-        .def("getNumCh",   &SmurfProcessor::getNumCh)
-        .def("setMask",    &SmurfProcessor::setMask)
-        .def("getMask",    &SmurfProcessor::getMask)
+        .def("setChMapperDisable",      &SmurfProcessor::setChMapperDisable)
+        .def("geChMappertDisable",      &SmurfProcessor::getChMapperDisable)
+        .def("setUnwrapperDisable",     &SmurfProcessor::setUnwrapperDisable)
+        .def("getUnwrapperDisable",     &SmurfProcessor::getUnwrapperDisable)
+        .def("getNumCh",                &SmurfProcessor::getNumCh)
+        .def("setMask",                 &SmurfProcessor::setMask)
+        .def("getMask",                 &SmurfProcessor::getMask)
         // Filter variables
-        .def("setOrder",   &SmurfProcessor::setOrder)
-        .def("getOrder",   &SmurfProcessor::getOrder)
-        .def("setA",       &SmurfProcessor::setA)
-        .def("getA",       &SmurfProcessor::getA)
-        .def("setB",       &SmurfProcessor::setB)
-        .def("getB",       &SmurfProcessor::getB)
-        .def("setGain",    &SmurfProcessor::setGain)
-        .def("getGain",    &SmurfProcessor::getGain)
+        .def("setFilterDisable",        &SmurfProcessor::setFilterDisable)
+        .def("getFilterDisable",        &SmurfProcessor::getFilterDisable)
+        .def("setOrder",                &SmurfProcessor::setOrder)
+        .def("getOrder",                &SmurfProcessor::getOrder)
+        .def("setA",                    &SmurfProcessor::setA)
+        .def("getA",                    &SmurfProcessor::getA)
+        .def("setB",                    &SmurfProcessor::setB)
+        .def("getB",                    &SmurfProcessor::getB)
+        .def("setGain",                 &SmurfProcessor::setGain)
+        .def("getGain",                 &SmurfProcessor::getGain)
         // Downsampler variables
-        .def("setFactor",  &SmurfProcessor::setFactor)
-        .def("getFactor",  &SmurfProcessor::getFactor)
+        .def("setDownsamplerDisable",   &SmurfProcessor::setDownsamplerDisable)
+        .def("getDownsamplerDisable",   &SmurfProcessor::getDownsamplerDisable)
+        .def("setFactor",               &SmurfProcessor::setFactor)
+        .def("getFactor",               &SmurfProcessor::getFactor)
     ;
     bp::implicitly_convertible< scp::SmurfProcessorPtr, ris::SlavePtr  >();
     bp::implicitly_convertible< scp::SmurfProcessorPtr, ris::MasterPtr >();
 }
 
-void scp::SmurfProcessor::setDisable(bool d)
+void scp::SmurfProcessor::setChMapperDisable(bool d)
 {
-    disable = d;
+    disableChMapper = d;
 }
 
-const bool scp::SmurfProcessor::getDisable() const
+const bool scp::SmurfProcessor::getChMapperDisable() const
 {
-    return disable;
+    return disableChMapper;
 }
 
 const std::size_t scp::SmurfProcessor::getNumCh() const
@@ -147,7 +156,7 @@ void scp::SmurfProcessor::setMask(bp::list m)
     }
 
     // Take the mutex before changing the mask vector
-    std::lock_guard<std::mutex> lock(mut);
+    std::lock_guard<std::mutex> lock(mutChMapper);
 
     // At this point, all element in the mask list are valid.
     // Update the mask vector
@@ -167,11 +176,31 @@ const bp::list scp::SmurfProcessor::getMask() const
     return temp;
 }
 
+void scp::SmurfProcessor::setUnwrapperDisable(bool d)
+{
+    disableUnwrapper = d;
+}
+
+const bool scp::SmurfProcessor::getUnwrapperDisable() const
+{
+    return disableUnwrapper;
+}
+
 void scp::SmurfProcessor::resetUnwrapper()
 {
     std::vector<unwrap_t>(numCh).swap(currentData);
     std::vector<unwrap_t>(numCh).swap(previousData);
     std::vector<unwrap_t>(numCh).swap(wrapCounter);
+}
+
+void scp::SmurfProcessor::setFilterDisable(bool d)
+{
+    disableFilter = d;
+}
+
+const bool scp::SmurfProcessor::getFilterDisable() const
+{
+    return disableFilter;
 }
 
 void scp::SmurfProcessor::setOrder(std::size_t o)
@@ -182,7 +211,7 @@ void scp::SmurfProcessor::setOrder(std::size_t o)
         // Take the mutex before changing the filter parameters
         // This make sure that the new order value is not used before
         // the a and b array are resized.
-        std::lock_guard<std::mutex> lock(mut);
+        std::lock_guard<std::mutex> lock(mutFilter);
 
         order = o;
 
@@ -203,7 +232,7 @@ void scp::SmurfProcessor::setA(bp::list l)
     // Take the mutex before changing the filter parameters
     // This make sure that the 'a' array is not used before it has
     // beem resized, if necessary.
-    std::lock_guard<std::mutex> lock(mut);
+    std::lock_guard<std::mutex> lock(mutFilter);
 
     std::size_t listSize = len(l);
 
@@ -262,7 +291,7 @@ void scp::SmurfProcessor::setB(bp::list l)
     // Take the mutex before changing the filter parameters
     // This make sure that the 'b' array is not used before it has
     // beem resized, if necessary.
-    std::lock_guard<std::mutex> lock(mut);
+    std::lock_guard<std::mutex> lock(mutFilter);
 
     std::size_t listSize = len(l);
 
@@ -337,6 +366,16 @@ void scp::SmurfProcessor::resetFilter()
     currentBlockIndex = 0;
 }
 
+void scp::SmurfProcessor::setDownsamplerDisable(bool d)
+{
+    disableDownsampler = d;
+}
+
+const bool scp::SmurfProcessor::getDownsamplerDisable() const
+{
+    return disableDownsampler;
+}
+
 void scp::SmurfProcessor::setFactor(std::size_t f)
 {
     // Check if the factor is 0
@@ -379,6 +418,9 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     // Map and unwrap data at the same time
     {
+        // Acquire the lock while the channel map parameters are used.
+        std::lock_guard<std::mutex> lockParam(mutChMapper);
+
         // Move the current data to the previous data
         previousData.swap(currentData);
 
@@ -419,7 +461,7 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         Timer t{"Filter"};
 
         // Acquire the lock while the filter parameters are used.
-        std::lock_guard<std::mutex> lockParam(mut);
+        std::lock_guard<std::mutex> lockParam(mutFilter);
 
         // Update the 'current' index to the oldest slot in the buffer
         currentBlockIndex = (currentBlockIndex + 1) % (order + 1);
