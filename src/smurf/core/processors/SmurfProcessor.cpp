@@ -507,7 +507,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             auto yIt(y.begin());
             auto aIt(a.begin());
             auto bIt(b.begin());
-            auto outIt(outData.begin());
             auto dataIt(currentData.begin());
 
             // Iterate over the channel samples
@@ -535,7 +534,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
                 //Move to the next channel sample
                 ++xIt;
                 ++yIt;
-                ++outIt;
                 ++dataIt;
             }
         }
