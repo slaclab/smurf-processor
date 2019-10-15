@@ -113,7 +113,8 @@ class LocalServer(pyrogue.Root):
     """
     def __init__(self, ip_addr, config_file, server_mode, epics_prefix,\
         polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
-        pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title, pcie_dev):
+        pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title,\
+        pcie_dev_rssi, pcie_dev_data):
 
         try:
             pyrogue.Root.__init__(self, name='AMCc', description='AMC Carrier')
@@ -143,33 +144,50 @@ class LocalServer(pyrogue.Root):
             # Create stream interfaces
             self.ddr_streams = []       # DDR streams
 
-            # If the packetizer is being used, the FpgaTopLevel class will defined a 'stream' interface exposing it.
-            # Otherwise, we are using DMA engine without packetizer. Create the stream interface accordingly.
-            # We are only using the first 2 channel of each AMC daughter card, i.e. channels 0, 1, 4, 5.
-            if hasattr(fpga, 'stream'):
+            # Check if we are using PCIe or Ethernet communication.
+            if 'pcie-' in comm_type:
+                # If we are suing PCIe communication, used AxiStreamDmas to get the DDR and streaming streams.
+
+                # DDR streams. We are only using the first 2 channel of each AMC daughter card, i.e.
+                # channels 0, 1, 4, 5.
+                for i in [0, 1, 4, 5]:
+                    self.ddr_streams.append(
+                        rogue.hardware.axi.AxiStreamDma(pcie_dev_rssi,(pcie_rssi_lane*0x100 + 0x80 + i), True))
+
+                # Streaming interface stream
+                self.streaming_stream = \
+                    rogue.hardware.axi.AxiStreamDma(pcie_dev_data,(pcie_rssi_lane*0x100 + 0xC1), True)
+
+                # When PCIe communication is used, we connect the stream data directly to the receiver:
+                # Stream -> smurf2mce receiver
+                self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
+                    name="SmurfProcessor",
+                    description="Process the SMuRF Streaming Data Stream",
+                    master=self.streaming_stream)
+
+            else:
+                # If we are using Ethernet: DDR streams comes over the RSSI+packetizer channel, and
+                # the streaming streams comes over a pure UDP channel.
+
+                # DDR streams. The FpgaTopLevel class will defined a 'stream' interface exposing them.
+                # We are only using the first 2 channel of each AMC daughter card, i.e. channels 0, 1, 4, 5.
                 for i in [0, 1, 4, 5]:
                     self.ddr_streams.append(fpga.stream.application(0x80 + i))
 
-                # Streaming interface stream
-                self.streaming_stream = fpga.stream.application(0xC1)
+                # Streaming interface stream. It comes over UDP, port 8195, without RSSI,
+                # so we an UdpReceiver.
+                self._udp_receiver = pysmurf.core.devices.UdpReceiver(ip_addr=ip_addr, port=8195)
 
-            else:
-                for i in [0, 1, 4, 5]:
-                    self.ddr_streams.append(rogue.hardware.axi.AxiStreamDma(pcie_dev,(pcie_rssi_link*0x100 + 0x80 + i), True))
+                # When Ethernet communication is used, We use a FIFO between the stream data and the receiver:
+                # Stream -> FIFO -> smurf_processor receiver
+                self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(100000,0,True)
+                pyrogue.streamConnect(self._udp_receiver, self.smurf_processor_fifo)
 
-                # Streaming interface stream
-                self.streaming_stream = rogue.hardware.axi.AxiStreamDma(pcie_dev_data,(pcie_rssi_lane*0x100 + 0xC1), True)
-
-            # Our smurf_processor receiver
-            # The data stream comes from TDEST 0xC1
-            # We use a FIFO between the stream data and the receiver:
-            # Stream -> FIFO -> smurf_processor receiver
-            self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(100000,0,True)
-            pyrogue.streamConnect(self.streaming_stream, self.smurf_processor_fifo)
-            self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
+                self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
                     name="SmurfProcessor",
                     description="Process the SMuRF Streaming Data Stream",
                     master=self.smurf_processor_fifo)
+
             self.add(self.smurf_processor)
 
             # Add data streams (0-3) to file channels (0-3)
