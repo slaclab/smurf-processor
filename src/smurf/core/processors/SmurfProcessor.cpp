@@ -136,7 +136,7 @@ void scp::SmurfProcessor::setMask(bp::list m)
     // We will use a temporal vector to hold the new data.
     // New data will be check as it is pushed to this vector. If there
     // are not error, this vector will be swap with 'mask'.
-    std::vector<std::size_t> temp(listSize, 0);
+    std::vector<std::size_t> temp;
 
     for (std::size_t i{0}; i < listSize; ++i)
     {
