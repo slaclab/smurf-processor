@@ -41,7 +41,7 @@ namespace smurf
         namespace filters
         {
             class GeneralAnalogFilter;
-            typedef boost::shared_ptr<GeneralAnalogFilter> GeneralAnalogFilterPtr;
+            typedef std::shared_ptr<GeneralAnalogFilter> GeneralAnalogFilterPtr;
 
             // This class implements a general analog filter, in the same way it
             // was done in the original smurf2mce code. That is:

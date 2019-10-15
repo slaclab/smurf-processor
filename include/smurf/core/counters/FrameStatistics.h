@@ -40,7 +40,7 @@ namespace smurf
         namespace counters
         {
             class FrameStatistics;
-            typedef boost::shared_ptr<FrameStatistics> FrameStatisticsPtr;
+            typedef std::shared_ptr<FrameStatistics> FrameStatisticsPtr;
 
             class FrameStatistics : public ris::Slave, public ris::Master
             {

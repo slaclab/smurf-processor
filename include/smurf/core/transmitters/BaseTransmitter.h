@@ -38,7 +38,7 @@ namespace smurf
         namespace transmitters
         {
             class BaseTransmitter;
-            typedef boost::shared_ptr<BaseTransmitter> BaseTransmitterPtr;
+            typedef std::shared_ptr<BaseTransmitter> BaseTransmitterPtr;
 
             class BaseTransmitter : public ris::Slave
             {

@@ -41,7 +41,7 @@ namespace smurf
         namespace downsamplers
         {
             class Downsampler;
-            typedef boost::shared_ptr<Downsampler> DownsamplerPtr;
+            typedef std::shared_ptr<Downsampler> DownsamplerPtr;
 
             // This class implements a general data downsampler by the specific factor.
             class Downsampler : public ris::Slave, public ris::Master

@@ -42,7 +42,7 @@ namespace smurf
         namespace conventers
         {
             class Header2Smurf;
-            typedef boost::shared_ptr<Header2Smurf> Header2SmurfPtr;
+            typedef std::shared_ptr<Header2Smurf> Header2SmurfPtr;
 
             // This class converts the header in the frame to the Smurf Header
             class Header2Smurf : public ris::Slave, public ris::Master

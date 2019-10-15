@@ -41,7 +41,7 @@ namespace smurf
         namespace unwrappers
         {
             class Unwrapper;
-            typedef boost::shared_ptr<Unwrapper> UnwrapperPtr;
+            typedef std::shared_ptr<Unwrapper> UnwrapperPtr;
 
             class Unwrapper : public ris::Slave, public ris::Master
             {

@@ -35,7 +35,7 @@ scd::Downsampler::Downsampler()
 
 scd::DownsamplerPtr scd::Downsampler::create()
 {
-    return boost::make_shared<Downsampler>();
+    return std::make_shared<Downsampler>();
 }
 
 void scd::Downsampler::setup_python()

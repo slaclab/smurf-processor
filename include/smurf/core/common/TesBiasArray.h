@@ -34,8 +34,7 @@ template <typename T>
 class TesBiasArray;
 
 template <typename T>
-using TesBiasArrayPtr = boost::shared_ptr<TesBiasArray<T>>;
-// typedef boost::shared_ptr<TesBiasArray<T>> TesBiasArrayPtr;
+using TesBiasArrayPtr = std::shared_ptr<TesBiasArray<T>>;
 
 // Class to handle TES bias array of values.
 template <typename T>

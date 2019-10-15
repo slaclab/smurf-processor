@@ -40,7 +40,7 @@ scc::FrameStatistics::FrameStatistics()
 
 scc::FrameStatisticsPtr scc::FrameStatistics::create()
 {
-    return boost::make_shared<FrameStatistics>();
+    return std::make_shared<FrameStatistics>();
 }
 
 // Setup Class in python

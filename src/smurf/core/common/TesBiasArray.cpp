@@ -30,7 +30,7 @@ TesBiasArray<T>::TesBiasArray(T it)
 template <typename T>
 TesBiasArrayPtr<T> TesBiasArray<T>::create(T it)
 {
-    return boost::make_shared<TesBiasArray<T>>(it);
+    return std::make_shared<TesBiasArray<T>>(it);
 }
 
 template <typename T>

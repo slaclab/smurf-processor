@@ -41,7 +41,7 @@ scf::GeneralAnalogFilter::GeneralAnalogFilter()
 
 scf::GeneralAnalogFilterPtr scf::GeneralAnalogFilter::create()
 {
-    return boost::make_shared<GeneralAnalogFilter>();
+    return std::make_shared<GeneralAnalogFilter>();
 }
 
 void scf::GeneralAnalogFilter::setup_python()

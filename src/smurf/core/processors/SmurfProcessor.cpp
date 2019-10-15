@@ -59,7 +59,7 @@ scp::SmurfProcessor::SmurfProcessor()
 
 scp::SmurfProcessorPtr scp::SmurfProcessor::create()
 {
-    return boost::make_shared<SmurfProcessor>();
+    return std::make_shared<SmurfProcessor>();
 }
 
 void scp::SmurfProcessor::setup_python()

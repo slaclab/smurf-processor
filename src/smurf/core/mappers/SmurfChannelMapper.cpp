@@ -35,7 +35,7 @@ scm::SmurfChannelMapper::SmurfChannelMapper()
 
 scm::SmurfChannelMapperPtr scm::SmurfChannelMapper::create()
 {
-    return boost::make_shared<SmurfChannelMapper>();
+    return std::make_shared<SmurfChannelMapper>();
 }
 
 // Setup Class in python

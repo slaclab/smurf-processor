@@ -33,7 +33,7 @@ sct::BaseTransmitter::BaseTransmitter()
 
 sct::BaseTransmitterPtr sct::BaseTransmitter::create()
 {
-    return boost::make_shared<BaseTransmitter>();
+    return std::make_shared<BaseTransmitter>();
 }
 
 // Setup Class in python

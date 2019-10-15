@@ -45,7 +45,7 @@ namespace smurf
         namespace processors
         {
             class SmurfProcessor;
-            typedef boost::shared_ptr<SmurfProcessor> SmurfProcessorPtr;
+            typedef std::shared_ptr<SmurfProcessor> SmurfProcessorPtr;
 
             class SmurfProcessor : public ris::Slave, public ris::Master
             {

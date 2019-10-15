@@ -43,7 +43,7 @@ scc::Header2Smurf::Header2Smurf()
 
 scc::Header2SmurfPtr scc::Header2Smurf::create()
 {
-    return boost::make_shared<Header2Smurf>();
+    return std::make_shared<Header2Smurf>();
 }
 
 void scc::Header2Smurf::setup_python()

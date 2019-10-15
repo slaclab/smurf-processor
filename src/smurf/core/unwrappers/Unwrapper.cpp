@@ -37,7 +37,7 @@ scu::Unwrapper::Unwrapper()
 
 scu::UnwrapperPtr scu::Unwrapper::create()
 {
-    return boost::make_shared<Unwrapper>();
+    return std::make_shared<Unwrapper>();
 }
 
 // Setup Class in python

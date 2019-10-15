@@ -41,7 +41,7 @@ namespace smurf
         namespace mappers
         {
             class SmurfChannelMapper;
-            typedef boost::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
+            typedef std::shared_ptr<SmurfChannelMapper> SmurfChannelMapperPtr;
 
             class SmurfChannelMapper : public ris::Slave, public ris::Master
             {
