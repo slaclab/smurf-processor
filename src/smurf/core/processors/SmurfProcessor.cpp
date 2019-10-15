@@ -53,6 +53,8 @@ scp::SmurfProcessor::SmurfProcessor()
     txDataReady(false),
     pktTransmitterThread(std::thread( &SmurfProcessor::pktTansmitter, this ))
 {
+    if( pthread_setname_np( pktTransmitterThread.native_handle(), "pktTransmitter" ) )
+        perror( "pthread_setname_np failed for pktTransmitterThread thread" );
 }
 
 scp::SmurfProcessorPtr scp::SmurfProcessor::create()
