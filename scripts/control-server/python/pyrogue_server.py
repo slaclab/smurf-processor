@@ -112,7 +112,7 @@ class LocalServer(pyrogue.Root):
     Local Server class. This class configure the whole rogue application.
     """
     def __init__(self, ip_addr, config_file, server_mode, epics_prefix,\
-        polling_en, comm_type, pcie_rssi_link, stream_pv_size, stream_pv_type,\
+        polling_en, comm_type, pcie_rssi_lane, stream_pv_size, stream_pv_type,\
         pv_dump_file, disable_bay0, disable_bay1, disable_gc, windows_title,\
         pcie_dev_rssi, pcie_dev_data):
 
@@ -128,13 +128,13 @@ class LocalServer(pyrogue.Root):
             self.add(stm_interface_writer)
 
             # Workaround to FpgaTopLelevel not supporting rssi = None
-            if pcie_rssi_link == None:
-                pcie_rssi_link = 0
+            if pcie_rssi_lane == None:
+                pcie_rssi_lane = 0
 
             # Instantiate Fpga top level
             fpga = FpgaTopLevel(ipAddr=ip_addr,
                 commType=comm_type,
-                pcieRssiLink=pcie_rssi_link,
+                pcieRssiLink=pcie_rssi_lane,
                 disableBay0=disable_bay0,
                 disableBay1=disable_bay1)
 
@@ -176,12 +176,12 @@ class LocalServer(pyrogue.Root):
 
                 # Streaming interface stream. It comes over UDP, port 8195, without RSSI,
                 # so we an UdpReceiver.
-                self._udp_receiver = pysmurf.core.devices.UdpReceiver(ip_addr=ip_addr, port=8195)
+                self.streaming_stream = pysmurf.core.devices.UdpReceiver(ip_addr=ip_addr, port=8195)
 
                 # When Ethernet communication is used, We use a FIFO between the stream data and the receiver:
                 # Stream -> FIFO -> smurf_processor receiver
                 self.smurf_processor_fifo = rogue.interfaces.stream.Fifo(100000,0,True)
-                pyrogue.streamConnect(self._udp_receiver, self.smurf_processor_fifo)
+                pyrogue.streamConnect(self.streaming_stream, self.smurf_processor_fifo)
 
                 self.smurf_processor = pysmurf.core.devices.SmurfProcessor(
                     name="SmurfProcessor",
@@ -454,7 +454,7 @@ if __name__ == "__main__":
     stream_pv_valid_types = ["UInt16", "Int16", "UInt32", "Int32"]
     comm_type = "eth-rssi-non-interleaved";
     comm_type_valid_types = ["eth-rssi-non-interleaved", "eth-rssi-interleaved", "pcie-rssi-interleaved"]
-    pcie_rssi_link=None
+    pcie_rssi_lane=None
     pv_dump_file= ""
     pcie_dev_rssi="/dev/datadev_0"
     pcie_dev_data="/dev/datadev_1"
@@ -519,7 +519,7 @@ if __name__ == "__main__":
                     print("  - \"{}\"".format(c))
                 exit_message("ERROR: Invalid communication type")
         elif opt in ("-l", "--pcie-rssi-link"):       # PCIe RSSI Link
-            pcie_rssi_link = int(arg)
+            pcie_rssi_lane = int(arg)
         elif opt in ("-u", "--dump-pvs"):   # Dump PV file
             pv_dump_file = arg
         elif opt in ("--disable-bay0"):
@@ -582,8 +582,8 @@ if __name__ == "__main__":
         import pyrogue.gui
 
     # The PCIeCard object will take care of setting up the PCIe card (if present)
-    with PcieCard(lane=pcie_rssi_lane, comm_type=comm_type, ip_addr=ip_addr, dev_rssi=pcie_dev_rssi,
-        dev_data=pcie_dev_data):
+    with pysmurf.core.devices.PcieCard(lane=pcie_rssi_lane, comm_type=comm_type, ip_addr=ip_addr,
+        dev_rssi=pcie_dev_rssi, dev_data=pcie_dev_data):
 
         # Start pyRogue server
         server = LocalServer(
@@ -593,7 +593,7 @@ if __name__ == "__main__":
             epics_prefix=epics_prefix,
             polling_en=polling_en,
             comm_type=comm_type,
-            pcie_rssi_link=pcie_rssi_link,
+            pcie_rssi_lane=pcie_rssi_lane,
             stream_pv_size=stream_pv_size,
             stream_pv_type=stream_pv_type,
             pv_dump_file=pv_dump_file,
