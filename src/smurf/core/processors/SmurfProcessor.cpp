@@ -20,7 +20,6 @@
 
 #include <boost/python.hpp>
 #include "smurf/core/processors/SmurfProcessor.h"
-#include "smurf/core/common/Timer.h"
 
 namespace scp = smurf::core::processors;
 
@@ -489,8 +488,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     // Filter data
     { // filter parameter lock scope
-        Timer t{"Filter"};
-
         // Filter the data, if the filter is not disabled.
         if (!disableFilter)
         {
@@ -558,8 +555,6 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
 
     // Give the data to the Tx thread to be sent to the next slave.
     {
-        Timer t{"Tx prep"};
-
         // Copy the header
         std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize, headerCopy.begin());
 
@@ -613,8 +608,6 @@ void scp::SmurfProcessor::pktTansmitter()
         }
         else
         {
-            Timer t{"  TX"};
-
             // Request a new frame, to hold the same payload as the input frame
             std::size_t outFrameSize = SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize;
 
