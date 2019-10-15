@@ -17,7 +17,7 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
-import timne
+import time
 import threading
 import rogue
 import pyrogue
