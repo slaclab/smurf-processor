@@ -456,7 +456,8 @@ if __name__ == "__main__":
     comm_type_valid_types = ["eth-rssi-non-interleaved", "eth-rssi-interleaved", "pcie-rssi-interleaved"]
     pcie_rssi_link=None
     pv_dump_file= ""
-    pcie_dev="/dev/datadev_0"
+    pcie_dev_rssi="/dev/datadev_0"
+    pcie_dev_data="/dev/datadev_1"
     disable_bay0=False
     disable_bay1=False
     disable_gc=False
@@ -479,7 +480,8 @@ if __name__ == "__main__":
             "ha:se:d:nb:f:c:l:u:w:",
             ["help", "addr=", "server", "epics=", "defaults=", "nopoll",
             "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
-            "disable-bay0", "disable-bay1", "disable-gc", "windows-title=", "pcie-dev="])
+            "disable-bay0", "disable-bay1", "disable-gc", "windows-title=", "pcie-dev-rssi=",
+            "pcie-dev-data="])
     except getopt.GetoptError:
         usage(sys.argv[0])
         sys.exit()
@@ -528,8 +530,10 @@ if __name__ == "__main__":
             disable_gc = True
         elif opt in ("-w", "--windows-title"):
             windows_title = arg
-        elif opt in ("--pcie-dev"):
-            pcie_dev = arg
+        elif opt in ("--pcie-dev-rssi"):
+            pcie_dev_rssi = arg
+        elif opt in ("--pcie-dev-data"):
+            pcie_dev_data = arg
 
     # Disable garbage collection if requested
     if disable_gc:
@@ -578,7 +582,8 @@ if __name__ == "__main__":
         import pyrogue.gui
 
     # The PCIeCard object will take care of setting up the PCIe card (if present)
-    with pysmurf.core.devices.PcieCard(link=pcie_rssi_link, comm_type=comm_type, ip_addr=ip_addr, dev=pcie_dev):
+    with PcieCard(lane=pcie_rssi_lane, comm_type=comm_type, ip_addr=ip_addr, dev_rssi=pcie_dev_rssi,
+        dev_data=pcie_dev_data):
 
         # Start pyRogue server
         server = LocalServer(
@@ -596,7 +601,8 @@ if __name__ == "__main__":
             disable_bay1=disable_bay1,
             disable_gc=disable_gc,
             windows_title=windows_title,
-            pcie_dev=pcie_dev)
+            pcie_dev_rssi=pcie_dev_rssi,
+            pcie_dev_data=pcie_dev_data)
 
     # Stop server
     server.stop()
