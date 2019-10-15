@@ -31,15 +31,6 @@ class SmurfChannelMapper(pyrogue.Device):
         pyrogue.Device.__init__(self, name=name, description='SMuRF Channel Mapper', **kwargs)
         self.device = device
 
-        # Add "Disable" variable
-        self.add(pyrogue.LocalVariable(
-            name='Disable',
-            description='Disable the processing block. Data will just pass thorough to the next slave.',
-            mode='RW',
-            value=False,
-            localSet=lambda value: self.device.setChMapperDisable(value),
-            localGet=self.device.getChMapperDisable))
-
         # Add the number of enabled channels  variable
         self.add(pyrogue.LocalVariable(
             name='NumChannels',

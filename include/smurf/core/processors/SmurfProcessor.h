@@ -58,8 +58,6 @@ namespace smurf
                 static void setup_python();
 
                 //** CHANNEL MAPPING METHODS **//
-                void                setChMapperDisable(bool d);     // Disable the processing block. The data
-                const bool          getChMapperDisable() const;     // will just pass through to the next slave
                 const std::size_t   getNumCh() const;               // Get the number of mapper channels
                 void                setMask(bp::list m);            // Set the Channel mask vector
                 const bp::list      getMask() const;                // Get the Channel mask vector
@@ -116,7 +114,6 @@ namespace smurf
                 //** VARIABLES **//
                 std::vector<uint8_t>     frameBuffer;           // Buffer to copy the input frame into a STL container
                 // Channel mapping variables
-                bool                     disableChMapper;       // Disable flag for the channel mapper
                 std::size_t              numCh;                 // Number of channels being processed
                 std::vector<std::size_t> mask;                  // Channel mask file
                 std::mutex               mutChMapper;           // Mutex

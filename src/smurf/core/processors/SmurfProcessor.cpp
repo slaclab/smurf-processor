@@ -30,7 +30,6 @@ scp::SmurfProcessor::SmurfProcessor()
     ris::Master(),
     frameBuffer(SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0),
     numCh(maxNumOutCh),
-    disableChMapper(false),
     mask(numCh,0),
     disableUnwrapper(false),
     currentData(numCh, 0),
@@ -69,8 +68,6 @@ void scp::SmurfProcessor::setup_python()
                 boost::noncopyable >
                 ("SmurfProcessor",bp::init<>())
         // Channel mapping variables
-        .def("setChMapperDisable",      &SmurfProcessor::setChMapperDisable)
-        .def("getChMapperDisable",      &SmurfProcessor::getChMapperDisable)
         .def("setUnwrapperDisable",     &SmurfProcessor::setUnwrapperDisable)
         .def("getUnwrapperDisable",     &SmurfProcessor::getUnwrapperDisable)
         .def("getNumCh",                &SmurfProcessor::getNumCh)
@@ -95,16 +92,6 @@ void scp::SmurfProcessor::setup_python()
     ;
     bp::implicitly_convertible< scp::SmurfProcessorPtr, ris::SlavePtr  >();
     bp::implicitly_convertible< scp::SmurfProcessorPtr, ris::MasterPtr >();
-}
-
-void scp::SmurfProcessor::setChMapperDisable(bool d)
-{
-    disableChMapper = d;
-}
-
-const bool scp::SmurfProcessor::getChMapperDisable() const
-{
-    return disableChMapper;
 }
 
 const std::size_t scp::SmurfProcessor::getNumCh() const
