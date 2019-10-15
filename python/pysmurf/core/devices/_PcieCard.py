@@ -20,6 +20,12 @@
 from pathlib import Path
 import pyrogue
 
+# Exit with a error message
+def exit_message(message):
+    print(message)
+    print("")
+    exit()
+
 class PcieDev():
     """
     Class to setup each PCIe device
