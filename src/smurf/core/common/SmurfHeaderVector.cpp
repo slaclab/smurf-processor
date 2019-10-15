@@ -26,7 +26,8 @@
 
 SmurfHeaderVectorRO::SmurfHeaderVectorRO(std::vector<uint8_t>& buffer)
 :
-    headerIt(buffer.begin())
+    headerIt(buffer.begin()),
+    tba(TesBiasArray<std::vector<uint8_t>::iterator>::create(headerIt + headerTESDACOffset))
 {
 }
 
@@ -63,7 +64,7 @@ const uint32_t SmurfHeaderVectorRO::getNumberChannels() const
 
 const int32_t SmurfHeaderVectorRO::getTESBias(std::size_t index) const
 {
-    // return tba->getWord(index);
+    return tba->getWord(index);
 }
 
 void SmurfHeaderVectorRO::copyTESBiasArrayTo(std::vector<uint8_t>::iterator it) const
@@ -247,7 +248,8 @@ const bool SmurfHeaderVectorRO::getWordBit(std::size_t offset, std::size_t index
 SmurfHeaderVector::SmurfHeaderVector(std::vector<uint8_t>& buffer)
 :
     SmurfHeaderVectorRO(buffer),
-    headerIt(buffer.begin())
+    headerIt(buffer.begin()),
+    tba(TesBiasArray<std::vector<uint8_t>::iterator>::create(headerIt + headerTESDACOffset))
 {
 }
 
@@ -284,7 +286,7 @@ void SmurfHeaderVector::setNumberChannels(uint32_t value) const
 
 void SmurfHeaderVector::setTESBias(std::size_t index, int32_t value) const
 {
-    // tba->setWord(index, value);
+    tba->setWord(index, value);
 }
 
 void SmurfHeaderVector::copyTESBiasArrayFrom(ris::FrameIterator it) const
