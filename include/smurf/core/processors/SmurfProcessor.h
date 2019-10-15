@@ -59,6 +59,8 @@ namespace smurf
 
                 //** CHANNEL MAPPING METHODS **//
                 const std::size_t   getNumCh() const;               // Get the number of mapper channels
+                const std::size_t   getPayloadSize() const;         // Get the payload size
+                void                setPayloadSize(std::size_t s);  // Set the payload size
                 void                setMask(bp::list m);            // Set the Channel mask vector
                 const bp::list      getMask() const;                // Get the Channel mask vector
 
@@ -98,13 +100,9 @@ namespace smurf
                 typedef int32_t filter_t;  // Data type after filter
 
                 // ** CONSTANTS **//
-                // This is the maximum number of channel we expect from an input frame.
-                static const std::size_t maxNumInCh = 4096;
-
-                // This is the maximum number of channel the output packet can hold.
-                // The output frame size will be fixed to this size, even if not all
-                // channel are mapped.
-                static const std::size_t maxNumOutCh = 528;
+                // This is the maximum number of channel we expect from the FW application,
+                // and, therefore, the maximum number of channels allowed in a SMuRF packet.
+                static const std::size_t maxNumCh = 4096;
 
                 // Unwrap related constants
                 const fw_t      upperUnwrap =  0x6000;          // If we are above this and jump, assume a wrap
@@ -115,6 +113,7 @@ namespace smurf
                 std::vector<uint8_t>     frameBuffer;           // Buffer to copy the input frame into a STL container
                 // Channel mapping variables
                 std::size_t              numCh;                 // Number of channels being processed
+                std::size_t              payloadSize;           // Size of the payload (if 0, payload = numCh)
                 std::vector<std::size_t> mask;                  // Channel mask file
                 std::mutex               mutChMapper;           // Mutex
                 // Unwrap variables

@@ -40,6 +40,15 @@ class SmurfChannelMapper(pyrogue.Device):
             pollInterval=1,
             localGet=self.device.getNumCh))
 
+        # Add "payloadSize" variable
+        self.add(pyrogue.LocalVariable(
+            name='PayloadSize',
+            description='Define a fixed payload size. If 0, the payload will hold the number of mapped channels',
+            mode='RW',
+            value=528,
+            localSet=lambda value: self.device.setPayloadSize(value),
+            localGet=self.device.getPayloadSize))
+
         # Add variable to set the mapping mask
         # Rogue doesn't allow to have an empty list here. Also, the EPICS PV is created
         # with the initial size of this list, and can not be changed later, so we are doing

@@ -28,8 +28,9 @@ scp::SmurfProcessor::SmurfProcessor()
 :
     ris::Slave(),
     ris::Master(),
-    frameBuffer(SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0),
-    numCh(maxNumOutCh),
+    frameBuffer(SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize + maxNumCh * sizeof(fw_t),0),
+    numCh(528),
+    payloadSize(numCh),
     mask(numCh,0),
     disableUnwrapper(false),
     currentData(numCh, 0),
@@ -48,7 +49,7 @@ scp::SmurfProcessor::SmurfProcessor()
     factor(20),
     sampleCnt(0),
     headerCopy(SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize, 0),
-    dataCopy(maxNumInCh * sizeof(filter_t), 0),
+    dataCopy(numCh * sizeof(filter_t), 0),
     runTxThread(true),
     txDataReady(false),
     pktTransmitterThread(std::thread( &SmurfProcessor::pktTansmitter, this ))
@@ -71,6 +72,8 @@ void scp::SmurfProcessor::setup_python()
         .def("setUnwrapperDisable",     &SmurfProcessor::setUnwrapperDisable)
         .def("getUnwrapperDisable",     &SmurfProcessor::getUnwrapperDisable)
         .def("getNumCh",                &SmurfProcessor::getNumCh)
+        .def("setPayloadSize",          &SmurfProcessor::setPayloadSize)
+        .def("getPayloadSize",          &SmurfProcessor::getPayloadSize)
         .def("setMask",                 &SmurfProcessor::setMask)
         .def("getMask",                 &SmurfProcessor::getMask)
         // Filter variables
@@ -99,27 +102,41 @@ const std::size_t scp::SmurfProcessor::getNumCh() const
     return numCh;
 }
 
+const std::size_t scp::SmurfProcessor::getPayloadSize() const
+{
+    return payloadSize;
+}
+
+void scp::SmurfProcessor::setPayloadSize(std::size_t s)
+{
+    payloadSize = s;
+}
+
 void scp::SmurfProcessor::setMask(bp::list m)
 {
     std::size_t listSize = len(m);
 
     // Check if the size of the list, is not greater than
     // the number of channels we can have in the output packet.
-    if ( listSize > maxNumOutCh )
+    if ( listSize > maxNumCh )
     {
         // This should go to a logger instead
         std::cerr << "ERROR: Trying to set a mask list of length = " << listSize \
                   << ", which is larger that the number of channel in a SMuRF packet = " \
-                  <<  maxNumOutCh << std::endl;
+                  <<  maxNumCh << std::endl;
 
         // Do not update the mask vector.
         return;
     }
 
+    // If the payload size if defined, only process up to that number of channels
+    if (payloadSize && payloadSize < listSize)
+        listSize = payloadSize;
+
     // We will use a temporal vector to hold the new data.
     // New data will be check as it is pushed to this vector. If there
     // are not error, this vector will be swap with 'mask'.
-    std::vector<std::size_t> temp;
+    std::vector<std::size_t> temp(listSize, 0);
 
     for (std::size_t i{0}; i < listSize; ++i)
     {
@@ -127,12 +144,12 @@ void scp::SmurfProcessor::setMask(bp::list m)
 
         // Check if the mask value is not greater than
         // the number of channel we received in the incoming frame
-        if (val > maxNumInCh)
+        if (val > maxNumCh)
         {
             // This should go to a logger instead
             std::cerr << "ERROR: mask value at index " << i << " is " << val \
                       << ", which is greater the maximum number of channel we expect from an input frame = " \
-                      << maxNumInCh << std::endl;
+                      << maxNumCh << std::endl;
 
             // Do not update the mask vector.
             return;
@@ -599,8 +616,15 @@ void scp::SmurfProcessor::pktTansmitter()
             Timer t{"  TX"};
 
             // Request a new frame, to hold the same payload as the input frame
-            // For now we want to keep packet of the same size
-            std::size_t outFrameSize = SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize + maxNumOutCh * sizeof(filter_t);
+            std::size_t outFrameSize = SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize;
+
+            if (payloadSize)
+                // If the payload size was defined, used that number as the number of channel in the output frame.
+                outFrameSize += payloadSize * sizeof(filter_t);
+            else
+                // Otherwise, the size of the frame will only hold the number of channels
+                outFrameSize += numCh * sizeof(filter_t);
+
             ris::FramePtr outFrame = reqFrame(outFrameSize, true);
             outFrame->setPayload(outFrameSize);
             ris::FrameIterator outFrameIt = outFrame->beginWrite();
