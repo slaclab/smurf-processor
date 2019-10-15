@@ -373,7 +373,12 @@ void scp::SmurfProcessor::resetFilter()
     // Resize and re-initialize the data buffer
     std::vector<double>( (order + 1) * numCh ).swap(x);
     std::vector<double>( (order + 1) * numCh ).swap(y);
-    std::vector<filter_t>( numCh ).swap(outData);
+
+    // Use the mutex to update the outData buffer
+    {
+        std::lock_guard<std::mutex> lock(outDataMutex);
+        std::vector<filter_t>( numCh ).swap(outData);
+    }
 
     // Check that a coefficient vector size is at least 'order + 1'.
     // If not, add expand it with zeros.
