@@ -14,6 +14,5 @@
 # ----------------------------------------------------------------------------
 
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/SmurfHeader.cpp")
-target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/SmurfHeaderVector.cpp")
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/TesBiasArray.cpp")
 target_sources(smurf PRIVATE "${CMAKE_CURRENT_LIST_DIR}/module.cpp")
