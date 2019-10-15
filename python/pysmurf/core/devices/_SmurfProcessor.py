@@ -100,7 +100,7 @@ class Downsampler(pyrogue.Device):
             name='Factor',
             description='Downsampling factor',
             mode='RW',
-            value=1,
+            value=20,
             localSet=lambda value : self.device.setFactor(value),
             localGet=self.device.getFactor))
 
@@ -126,7 +126,7 @@ class GeneralAnalogFilter(pyrogue.Device):
             name='Order',
             description='Filter order',
             mode='RW',
-            value=1,
+            value=4,
             localSet=lambda value : self.device.setOrder(value),
             localGet=self.device.getOrder))
 
@@ -147,7 +147,11 @@ class GeneralAnalogFilter(pyrogue.Device):
             name='A',
             description='Filter a coefficients',
             mode='RW',
-            value=[1.0]+[0]*9,
+            value= [ 1.0,
+                     -3.9999966334205683,
+                      5.9999899002673720,
+                     -3.9999899002730395,
+                      0.9999966334262355 ] + [0] * 11,
             localSet=lambda value: self.device.setA(value),
             localGet=self.device.getA))
 
@@ -159,7 +163,11 @@ class GeneralAnalogFilter(pyrogue.Device):
             name='B',
             description='Filter b coefficients',
             mode='RW',
-            value=[0.0]*10,
+            value= [ 1.7218423734035440e-25,
+                     6.8873694936141760e-25,
+                     1.0331054240421264e-24,
+                     6.8873694936141760e-25,
+                     1.7218423734035440e-25 ] + [0] * 11,
             localSet=lambda value: self.device.setB(value),
             localGet=self.device.getB))
 
