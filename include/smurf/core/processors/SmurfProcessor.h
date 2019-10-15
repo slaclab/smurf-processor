@@ -32,7 +32,7 @@
 #include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Master.h>
 #include <rogue/GilRelease.h>
-#include "smurf/core/common/SmurfHeaderVector.h"
+#include "smurf/core/common/SmurfHeader.h"
 #include "smurf/core/common/Helpers.h"
 
 namespace bp  = boost::python;

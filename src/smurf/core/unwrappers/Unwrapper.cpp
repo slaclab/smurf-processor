@@ -82,7 +82,7 @@ void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
     ris::FrameLockPtr lock{frame->lock()};
 
     // (smart) pointer to the smurf header in the input frame (Read-only)
-    SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
+    SmurfHeaderROPtr<ris::FrameIterator> smurfHeaderIn(SmurfHeaderRO<ris::FrameIterator>::create(frame));
 
     // Get the number of channels in the input frame. The number of output channel will be the same
     std::size_t newNumCh = smurfHeaderIn->getNumberChannels();
@@ -101,8 +101,8 @@ void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
     // Request a new frame, to hold the same payload as the input frame
     //std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + sizeof(output_data_t) * numCh;
     // For now we want to keep packet of the same size, so let's do this instead:
-    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize +
-        ( ( frame->getPayload() - SmurfHeader::SmurfHeaderSize )/sizeof(input_data_t) ) * sizeof(output_data_t);
+    std::size_t outFrameSize = SmurfHeader<ris::FrameIterator>::SmurfHeaderSize +
+        ( ( frame->getPayload() - SmurfHeader<ris::FrameIterator>::SmurfHeaderSize )/sizeof(input_data_t) ) * sizeof(output_data_t);
     ris::FramePtr outFrame = reqFrame(outFrameSize, true);
     outFrame->setPayload(outFrameSize);
 
@@ -119,7 +119,7 @@ void scu::Unwrapper::acceptFrame(ris::FramePtr frame)
     ris::FrameIterator outFrameIt = outFrame->beginWrite();
 
     // Copy the header from the input frame to the output frame.
-    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
+    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader<ris::FrameIterator>::SmurfHeaderSize, outFrameIt);
 
 
     if (disable)

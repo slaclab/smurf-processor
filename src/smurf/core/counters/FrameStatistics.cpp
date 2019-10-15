@@ -117,7 +117,7 @@ void scc::FrameStatistics::acceptFrame(ris::FramePtr frame)
         frameSize = frame->getPayload();
 
         // (smart) pointer to the smurf header in the input frame (Read-only)
-        SmurfHeaderROPtr smurfHeaderIn(SmurfHeaderRO::create(frame));
+        SmurfHeaderROPtr<ris::FrameIterator> smurfHeaderIn(SmurfHeaderRO<ris::FrameIterator>::create(frame));
 
         // Store the current and last frame numbers
         // - Previous frame number

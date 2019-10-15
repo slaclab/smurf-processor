@@ -147,11 +147,11 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     {
         // If the processing block is disable, just send the first 'maxNumOutCh' channels in the output frame
         // by shrinking the original frame and send it.
-        frame->setPayload(SmurfHeader::SmurfHeaderSize + dataSize * maxNumOutCh);
+        frame->setPayload(SmurfHeader<ris::FrameIterator>::SmurfHeaderSize + dataSize * maxNumOutCh);
 
         // Set the number of channel to 'maxNumOutCh' and update the frame header
         numCh = maxNumOutCh;
-        SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(frame));
+        SmurfHeaderPtr<ris::FrameIterator> smurfHeaderOut(SmurfHeader<ris::FrameIterator>::create(frame));
         smurfHeaderOut->setNumberChannels(numCh);
 
         sendFrame(frame);
@@ -162,7 +162,7 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     // Request a new frame, to hold the header + payload, and set its payload
     // Although the number of active channel can change, and will be indicated in the
     // header of the packet, we will send frames of fixed size.
-    std::size_t outFrameSize = SmurfHeader::SmurfHeaderSize + dataSize * maxNumOutCh;
+    std::size_t outFrameSize = SmurfHeader<ris::FrameIterator>::SmurfHeaderSize + dataSize * maxNumOutCh;
     ris::FramePtr outFrame = reqFrame(outFrameSize, true);
     outFrame->setPayload(outFrameSize);
 
@@ -173,7 +173,7 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     ris::FrameIterator outFrameIt = outFrame->beginWrite();
 
     // Copy the header from the input frame to the output frame.
-    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader::SmurfHeaderSize, outFrameIt);
+    outFrameIt = std::copy(inFrameIt, inFrameIt + SmurfHeader<ris::FrameIterator>::SmurfHeaderSize, outFrameIt);
 
     // Fill the output frame to zero.
     // This is only for convenience, as the header says the number of channel which have
@@ -193,7 +193,7 @@ void scm::SmurfChannelMapper::acceptFrame(ris::FramePtr frame)
     }
 
     // Update the number of channel in the header of the output smurf frame
-    SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(outFrame));
+    SmurfHeaderPtr<ris::FrameIterator> smurfHeaderOut(SmurfHeader<ris::FrameIterator>::create(outFrame));
     smurfHeaderOut->setNumberChannels(numCh);
 
     // Send the frame to the next slave.

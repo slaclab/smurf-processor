@@ -30,19 +30,28 @@
 
 namespace ris = rogue::interfaces::stream;
 
+template<typename T>
 class SmurfHeaderRO;
+template<typename T>
 class SmurfHeader;
-typedef std::shared_ptr<SmurfHeaderRO> SmurfHeaderROPtr;
-typedef std::shared_ptr<SmurfHeader>   SmurfHeaderPtr;
+
+template<typename T>
+using  SmurfHeaderROPtr = std::shared_ptr<SmurfHeaderRO<T>>;
+
+template<typename T>
+using SmurfHeaderPtr = std::shared_ptr<SmurfHeader<T>>;
 
 // SMuRF header class. This class give a read-only access
+template<typename T>
 class SmurfHeaderRO
 {
 public:
     SmurfHeaderRO(ris::FramePtr frame);
+    SmurfHeaderRO(std::vector<uint8_t>& buffer);
     virtual ~SmurfHeaderRO() {};
 
-    static SmurfHeaderROPtr create(ris::FramePtr frame);
+    static SmurfHeaderROPtr<T> create(ris::FramePtr frame);
+    static SmurfHeaderROPtr<T> create(std::vector<uint8_t>& buffer);
 
     const uint8_t  getVersion()                   const;  // Get protocol version
     const uint8_t  getCrateID()                   const;  // Get ATCA crate ID
@@ -50,7 +59,7 @@ public:
     const uint8_t  getTimingConfiguration()       const;  // Get timing configuration
     const uint32_t getNumberChannels()            const;  // Get number of channel in this packet
     const int32_t  getTESBias(std::size_t index)  const;  // Get TES DAC values 16X 20 bit
-    void           copyTESBiasArrayTo(ris::FrameIterator it) const;   // Copy the TES DAC full array to a destination iterator
+    void           copyTESBiasArrayTo(T it) const;   // Copy the TES DAC full array to a destination iterator
     const uint64_t getUnixTime()                  const;  // Get 64 bit unix time nanoseconds
     const uint32_t getFluxRampIncrement()         const;  // Get signed 32 bit integer for increment
     const uint32_t getFluxRampOffset()            const;  // Get signed 32 it integer for offset
@@ -123,20 +132,23 @@ private:
     const bool     getWordBit( std::size_t offset, std::size_t index ) const; // Returns bit 'index' from a header byte at offset 'offset'
 
     // Private variables
-    ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+    T headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    TesBiasArrayPtr<ris::FrameIterator> tba;
+    TesBiasArrayPtr<T> tba;
 };
 
 // SMuRF header class. This class give a read-write access
-class SmurfHeader : public SmurfHeaderRO
+template<typename T>
+class SmurfHeader : public SmurfHeaderRO<T>
 {
 public:
     SmurfHeader(ris::FramePtr frame);
+    SmurfHeader(std::vector<uint8_t>& buffer);
     ~SmurfHeader() {};
 
-    static SmurfHeaderPtr create(ris::FramePtr frame);
+    static SmurfHeaderPtr<T> create(ris::FramePtr frame);
+    static SmurfHeaderPtr<T> create(std::vector<uint8_t>& buffer);
 
     void setVersion(uint8_t value) const;                     // Set protocol version
     void setCrateID(uint8_t value) const;                     // Set ATCA crate ID
@@ -144,7 +156,7 @@ public:
     void setTimingConfiguration(uint8_t value) const;         // Set timing configuration
     void setNumberChannels(uint32_t value) const;             // Set number of channel in this packet
     void setTESBias(std::size_t index, int32_t value) const;  // Set TES DAC values 16X 20 bit
-    void copyTESBiasArrayFrom(ris::FrameIterator it) const;   // Copy the TES DAC full array from a source iterator
+    void copyTESBiasArrayFrom(T it) const;   // Copy the TES DAC full array from a source iterator
     void setUnixTime(uint64_t value) const;                   // Set 64 bit unix time nanoseconds
     void setFluxRampIncrement(uint32_t value) const;          // Set signed 32 bit integer for increment
     void setFluxRampOffset(uint32_t value) const;             // Set signed 32 it integer for offset
@@ -182,10 +194,10 @@ private:
     void setWordBit( std::size_t offset, std::size_t index, bool value ) const; // write a bit at 'index' position into the header byte at offset 'offset'
 
     // Private variables
-    ris::FrameIterator headerIt;  // Iterator to the start of the header in a Frame
+    T headerIt;  // Iterator to the start of the header in a Frame
 
     // TES Bias array object
-    TesBiasArrayPtr<ris::FrameIterator> tba;
+    TesBiasArrayPtr<T> tba;
 };
 
 #endif

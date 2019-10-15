@@ -28,7 +28,7 @@ scp::SmurfProcessor::SmurfProcessor()
 :
     ris::Slave(),
     ris::Master(),
-    frameBuffer(SmurfHeaderVector::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0),
+    frameBuffer(SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize + maxNumInCh * sizeof(fw_t),0),
     numCh(maxNumOutCh),
     disableChMapper(false),
     mask(numCh,0),
@@ -48,7 +48,7 @@ scp::SmurfProcessor::SmurfProcessor()
     disableDownsampler(false),
     factor(20),
     sampleCnt(0),
-    headerCopy(SmurfHeaderVector::SmurfHeaderSize, 0),
+    headerCopy(SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize, 0),
     dataCopy(maxNumInCh * sizeof(filter_t), 0),
     runTxThread(true),
     txDataReady(false),
@@ -435,7 +435,7 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         previousData.swap(currentData);
 
         // Begining of the data area in the frameBuffer
-        std::vector<uint8_t>::iterator inIt(frameBuffer.begin() + SmurfHeaderVector::SmurfHeaderSize);
+        std::vector<uint8_t>::iterator inIt(frameBuffer.begin() + SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize);
 
         // Output channel index
         std::size_t i{0};
@@ -466,7 +466,7 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         }
 
         // Update the number of channels in the header
-        SmurfHeaderVectorPtr header{ SmurfHeaderVector::create(frameBuffer) };
+        SmurfHeaderPtr<std::vector<uint8_t>::iterator> header{ SmurfHeader<std::vector<uint8_t>::iterator>::create(frameBuffer) };
         header->setNumberChannels(numCh);
     }
 
@@ -536,7 +536,7 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
         Timer t{"Tx prep"};
 
         // Copy the header
-        std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeaderVector::SmurfHeaderSize, headerCopy.begin());
+        std::copy(frameBuffer.begin(), frameBuffer.begin() + SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize, headerCopy.begin());
 
         // Copy the data
         {
@@ -581,7 +581,7 @@ void scp::SmurfProcessor::pktTansmitter()
 
             // Request a new frame, to hold the same payload as the input frame
             // For now we want to keep packet of the same size
-            std::size_t outFrameSize = SmurfHeaderVector::SmurfHeaderSize + maxNumOutCh * sizeof(filter_t);
+            std::size_t outFrameSize = SmurfHeader<std::vector<uint8_t>::iterator>::SmurfHeaderSize + maxNumOutCh * sizeof(filter_t);
             ris::FramePtr outFrame = reqFrame(outFrameSize, true);
             outFrame->setPayload(outFrameSize);
             ris::FrameIterator outFrameIt = outFrame->beginWrite();

@@ -87,7 +87,7 @@ void scc::Header2Smurf::acceptFrame(ris::FramePtr frame)
     if (!disable)
     {
         // Create a SmurfHeader object on the frame
-        SmurfHeaderPtr smurfHeaderOut(SmurfHeader::create(frame));
+        SmurfHeaderPtr<ris::FrameIterator> smurfHeaderOut(SmurfHeader<ris::FrameIterator>::create(frame));
 
         // Stet he protocol version
         smurfHeaderOut->setVersion(1);
