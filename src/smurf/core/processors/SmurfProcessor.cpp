@@ -205,7 +205,15 @@ void scp::SmurfProcessor::resetUnwrapper()
 
 void scp::SmurfProcessor::setFilterDisable(bool d)
 {
+    // Take the mutex before changing the filter parameters
+    // This make sure that the new order value is not used before
+    // the a and b array are resized.
+    std::lock_guard<std::mutex> lock(mutFilter);
+
     disableFilter = d;
+
+    // Reset the filter when is enable flag changes.
+    resetFilter();
 }
 
 const bool scp::SmurfProcessor::getFilterDisable() const
@@ -446,20 +454,25 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             // Get the mapped value from the framweBuffer and cast it
             currentData.at(i) = static_cast<unwrap_t>(*(inIt + m * sizeof(fw_t)));
 
-            // Check if the value wrapped
-            if ((currentData.at(i) > upperUnwrap) && (previousData.at(i) < lowerUnwrap))
+            // Unwrap the value is the unwrapper is not disabled.
+            // If it is disabled, don't do anything to the data
+            if (!disableUnwrapper)
             {
-                // Decrement wrap counter
-                wrapCounter.at(i) -= stepUnwrap;
-            }
-            else if ((currentData.at(i) < lowerUnwrap) && (previousData.at(i) > upperUnwrap))
-            {
-                // Increment wrap counter
-                wrapCounter.at(i) += stepUnwrap;
-            }
+                // Check if the value wrapped
+                if ((currentData.at(i) > upperUnwrap) && (previousData.at(i) < lowerUnwrap))
+                {
+                    // Decrement wrap counter
+                    wrapCounter.at(i) -= stepUnwrap;
+                }
+                else if ((currentData.at(i) < lowerUnwrap) && (previousData.at(i) > upperUnwrap))
+                {
+                    // Increment wrap counter
+                    wrapCounter.at(i) += stepUnwrap;
+                }
 
-            // Add the wrap counter to the value
-            currentData.at(i) += wrapCounter.at(i);
+                // Add the wrap counter to the value
+                currentData.at(i) += wrapCounter.at(i);
+            }
 
             // increase output channel index
             ++i;
@@ -474,62 +487,70 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
     { // filter parameter lock scope
         Timer t{"Filter"};
 
-        // Acquire the lock while the filter parameters are used.
-        std::lock_guard<std::mutex> lockParam(mutFilter);
-
-        // Update the 'current' index to the oldest slot in the buffer
-        currentBlockIndex = (currentBlockIndex + 1) % (order + 1);
-
-        // Get index to the current data block
-        std::size_t currentBlockPointer{currentBlockIndex * numCh};
-
-        // Create iterators
-        auto xIt(x.begin());
-        auto yIt(y.begin());
-        auto aIt(a.begin());
-        auto bIt(b.begin());
-        auto outIt(outData.begin());
-        auto dataIt(currentData.begin());
-
-        // Iterate over the channel samples
-        for (std::size_t ch{0}; ch < numCh; ++ch)
+        // Filter the data, if the filter is not disabled.
+        if (!disableFilter)
         {
-            // Cast the input value to double into the output buffer
-            *(xIt + currentBlockPointer) = static_cast<double>( *dataIt );
+            // Acquire the lock while the filter parameters are used.
+            std::lock_guard<std::mutex> lockParam(mutFilter);
 
-            // Start computing the output value
-            *(yIt + currentBlockPointer) = *bIt * *(xIt + currentBlockPointer);
+            // Update the 'current' index to the oldest slot in the buffer
+            currentBlockIndex = (currentBlockIndex + 1) % (order + 1);
 
-            // Iterate over the pass samples
-            for (std::size_t t{1}; t < order + 1; ++t)
+            // Get index to the current data block
+            std::size_t currentBlockPointer{currentBlockIndex * numCh};
+
+            // Create iterators
+            auto xIt(x.begin());
+            auto yIt(y.begin());
+            auto aIt(a.begin());
+            auto bIt(b.begin());
+            auto outIt(outData.begin());
+            auto dataIt(currentData.begin());
+
+            // Iterate over the channel samples
+            for (std::size_t ch{0}; ch < numCh; ++ch)
             {
-                // Compute the correct index in the 'circular' buffer
-                std::size_t passBlockIndex{ ( ( order + currentBlockIndex - t + 1 ) % (order + 1) ) * numCh };
+                // Cast the input value to double into the output buffer
+                *(xIt + currentBlockPointer) = static_cast<double>( *dataIt );
 
-                *(yIt + currentBlockPointer) += *(bIt + t) * *(xIt + passBlockIndex)
-                    - *(aIt + t) * *(yIt + passBlockIndex);
+                // Start computing the output value
+                *(yIt + currentBlockPointer) = *bIt * *(xIt + currentBlockPointer);
+
+                // Iterate over the pass samples
+                for (std::size_t t{1}; t < order + 1; ++t)
+                {
+                    // Compute the correct index in the 'circular' buffer
+                    std::size_t passBlockIndex{ ( ( order + currentBlockIndex - t + 1 ) % (order + 1) ) * numCh };
+
+                    *(yIt + currentBlockPointer) += *(bIt + t) * *(xIt + passBlockIndex)
+                        - *(aIt + t) * *(yIt + passBlockIndex);
+                }
+
+                // Divide the resulting value by the first a coefficient
+                *(yIt + currentBlockPointer) /= *(aIt);
+
+                //Move to the next channel sample
+                ++xIt;
+                ++yIt;
+                ++outIt;
+                ++dataIt;
             }
-
-            // Divide the resulting value by the first a coefficient
-            *(yIt + currentBlockPointer) /= *(aIt);
-
-            //Move to the next channel sample
-            ++xIt;
-            ++yIt;
-            ++outIt;
-            ++dataIt;
         }
 
     } // filter parameter lock scope
 
-    // Downsampler. If we haven't reached the factor counter, we don't do anything
-    // When we reach the factor counter, we send the resulting frame.
-    if (++sampleCnt < factor)
-        return;
+    // Downsample the data, if the downsampler is not disabled.
+    // Otherwise, the data will be send on each cycle.
+    if (!disableDownsampler)
+    {
+        // Downsampler. If we haven't reached the factor counter, we don't do anything
+        // When we reach the factor counter, we send the resulting frame.
+        if (++sampleCnt < factor)
+            return;
 
-
-    // Reset the downsampler
-    resetDownsampler();
+        // Reset the downsampler
+        resetDownsampler();
+    }
 
     // Give the data to the Tx thread to be sent to the next slave.
     {
@@ -546,12 +567,23 @@ void scp::SmurfProcessor::acceptFrame(ris::FramePtr frame)
             // Hold the mutex while we copy the data
             std::lock_guard<std::mutex> lock(outDataMutex);
 
-            // Multiply the values by the gain, and cast the result
-            // to 'filter_t' into he outData buffer
-            std::transform( y.begin() + currentBlockIndex * numCh,
-                y.begin() + currentBlockIndex * numCh + numCh,
-                outData.begin(),
-                [this](const double& v) -> filter_t { return static_cast<filter_t>(v * gain); });
+            // Check if the filter was disabled. If it was disabled, use the 'currentData' vector as source.
+            // Otherwise, use the 'y' vector, applying the gain and casting.
+            if (disableFilter)
+            {
+                // Just cast the data type
+                std::transform( currentData.begin(), currentData.end(), outData.begin(),
+                    [this](const unwrap_t& v) -> filter_t { return static_cast<filter_t>(v); });
+            }
+            else
+            {
+                // Multiply the values by the gain, and cast the result
+                // to 'filter_t' into he outData buffer
+                std::transform( y.begin() + currentBlockIndex * numCh,
+                    y.begin() + currentBlockIndex * numCh + numCh,
+                    outData.begin(),
+                    [this](const double& v) -> filter_t { return static_cast<filter_t>(v * gain); });
+            }
         }
 
         // Notify the Tx thread that new data is ready
