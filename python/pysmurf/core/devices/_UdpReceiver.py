@@ -17,9 +17,10 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
+import timne
+import threading
 import rogue
 import pyrogue
-import threading
 
 class KeepAlive(rogue.interfaces.stream.Master, threading.Thread):
     """
