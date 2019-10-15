@@ -64,7 +64,7 @@ class KeepAlive(rogue.interfaces.stream.Master, threading.Thread):
             self._sendFrame(self.frame)
             time.sleep(5)
 
-class UdpReceiver(rogue.interfaces.stream.Master):
+class UdpReceiver(pyrogue.Device):
     """
     Class used to receive SMuRF streaming data over UDP,
     without RSSI, and with a keep alive mechanism.
