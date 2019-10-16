@@ -44,11 +44,11 @@ class CmbPcie(AppTop.RootBase):
 
         pyrogue.Root.__init__(self, initRead=True, pollEn=polling_en, **kwargs)
 
+        self._pv_dump_file = pv_dump_file
+
         # Workaround to FpgaTopLelevel not supporting rssi = None
         if pcie_rssi_lane == None:
             pcie_rssi_lane = 0
-
-
 
         # TDEST 0 routed to streamr0 (SRPv3)
         self.dma = rogue.hardware.axi.AxiStreamDma(pcie_dev_rssi,(pcie_rssi_lane*0x100 + 0),True)
@@ -213,15 +213,15 @@ class CmbPcie(AppTop.RootBase):
 
             # Dump the PV list to the specified file
             # This should be made part of the Rogue dump!
-            if pv_dump_file:
+            if self._pv_dump_file:
                 try:
                     # Try to open the output file
-                    f = open(pv_dump_file, "w")
+                    f = open(self._pv_dump_file, "w")
                 except IOError:
-                    print("Could not open the PV dump file \"{}\"".format(pv_dump_file))
+                    print("Could not open the PV dump file \"{}\"".format(self._pv_dump_file))
                 else:
                     with f:
-                        print("Dumping PV list to \"{}\"...".format(pv_dump_file))
+                        print("Dumping PV list to \"{}\"...".format(self._pv_dump_file))
                         try:
                             try:
                                 # Redirect the stdout to the output file momentarily
