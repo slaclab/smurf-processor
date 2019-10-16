@@ -190,8 +190,8 @@ class CmbPcie(AppTop.RootBase):
                     pyrogue.streamTap(self._ddr_streams[i], self._stream_fifos[i])
 
 
-    def __enter__(self):
-        pyrogue.Root.start()
+    def start(self):
+        pyrogue.Root.start(self)
 
         # Show image build information
         try:
@@ -235,7 +235,7 @@ class CmbPcie(AppTop.RootBase):
                             # Capture error from epics.dump() if any
                             print("Errors were found during epics.dump()")
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def stop(self):
         print("Stopping servers...")
         if self._epics:
             self._epics.stop()
