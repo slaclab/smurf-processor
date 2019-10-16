@@ -18,6 +18,7 @@
 #-----------------------------------------------------------------------------
 
 import pyrogue
+import pysmurf
 import rogue.hardware.axi
 import rogue.protocols.srp
 
@@ -50,30 +51,17 @@ class CmbPcie(AppTop.RootBase):
 
 
         # TDEST 0 routed to streamr0 (SRPv3)
-        self.dma = rogue.hardware.axi.AxiStreamDma(pcieDev,(pcieRssiLink*0x100 + 0),True)
+        self.dma = rogue.hardware.axi.AxiStreamDma(pcie_dev_rssi,(pcie_rssi_lane*0x100 + 0),True)
         self.srp = rogue.protocols.srp.SrpV3()
-        pr.streamConnectBiDir( self.srp, self.dma )
-
-        # Create stream interfaces
-        self.ddr_streams = []
-
-        # DDR streams. We are only using the first 2 channel of each AMC daughter card, i.e.
-        # channels 0, 1, 4, 5.
-        for i in [0, 1, 4, 5]:
-            self.ddr_streams.append(
-                rogue.hardware.axi.AxiStreamDma(pcie_dev_rssi,(pcie_rssi_lane*0x100 + 0x80 + i), True))
-
-        # Streaming interface stream
-        self._streaming_stream = \
-            rogue.hardware.axi.AxiStreamDma(pcie_dev_data,(pcie_rssi_lane*0x100 + 0xC1), True)
+        pyrogue.streamConnectBiDir( self.srp, self.dma )
 
         # Instantiate Fpga top level
-        self._fpga = FpgaTopLevel( memBase     = self.srp,
-                            ipAddr       = ip_addr,
-                            commType     = "pcie-rssi-interleaved",
-                            pcieRssiLink = pcie_rssi_lane,
-                            disableBay0  = disable_bay0,
-                            disableBay1  = disable_bay1)
+        self._fpga = FpgaTopLevel( memBase      = self.srp,
+                                   ipAddr       = ip_addr,
+                                   commType     = "pcie-rssi-interleaved",
+                                   pcieRssiLink = pcie_rssi_lane,
+                                   disableBay0  = disable_bay0,
+                                   disableBay1  = disable_bay1)
 
         # Add devices
         self.add(self._fpga)
@@ -88,11 +76,17 @@ class CmbPcie(AppTop.RootBase):
         self.add(self._stm_interface_writer)
 
         # Create stream interfaces
-        # Dests = 0x1
-        self._ddr_streams = [rogue.hardware.axi.AxiStreamDma(pcieDev,(pcieRssiLink*0x100 + 0x80 + i), True) for i in [0, 1, 4, 5]]
+        self._ddr_streams = []
+
+        # DDR streams. We are only using the first 2 channel of each AMC daughter card, i.e.
+        # channels 0, 1, 4, 5.
+        for i in [0, 1, 4, 5]:
+            self._ddr_streams.append(
+                rogue.hardware.axi.AxiStreamDma(pcie_dev_rssi,(pcie_rssi_lane*0x100 + 0x80 + i), True))
 
         # Streaming interface stream
-        self._streaming_stream = rogue.hardware.axi.AxiStreamDma(pcieDataDev,(PcieRssiLink*0x100 + 0xC1), True)
+        self._streaming_stream = \
+            rogue.hardware.axi.AxiStreamDma(pcie_dev_data,(pcie_rssi_lane*0x100 + 0xC1), True)
 
         # When PCIe communication is used, we connect the stream data directly to the receiver:
         # Stream -> smurf2mce receiver
@@ -160,12 +154,12 @@ class CmbPcie(AppTop.RootBase):
             function=self._set_defaults_cmd))
 
         # If Garbage collection was disable, add this local variable to allow users
-            # to manually run the garbage collection.
-            if disable_gc:
-                self.add(pyrogue.LocalCommand(
-                    name='runGarbageCollection',
-                    description='runGarbageCollection',
-                    function=self._run_garbage_collection))
+        # to manually run the garbage collection.
+        if disable_gc:
+            self.add(pyrogue.LocalCommand(
+                name='runGarbageCollection',
+                description='runGarbageCollection',
+                function=self._run_garbage_collection))
 
         # Add epics interface
         self._epics = None
@@ -193,7 +187,7 @@ class CmbPcie(AppTop.RootBase):
 
                     self._stream_fifos.append(rogue.interfaces.stream.Fifo(1000, fifo_size, True)) # changes
                     self._stream_fifos[i]._setSlave(self._stream_slaves[i])
-                    pyrogue.streamTap(self._ddr_streams[i], _self.stream_fifos[i])
+                    pyrogue.streamTap(self._ddr_streams[i], self._stream_fifos[i])
 
 
     def __enter__(self):

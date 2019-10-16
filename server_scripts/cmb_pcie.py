@@ -33,6 +33,7 @@ import pyrogue.utilities.fileio
 import rogue.interfaces.stream
 
 import pysmurf.core.devices
+import pysmurf.core.roots
 
 # Print the usage message
 def usage(name):
@@ -119,9 +120,9 @@ if __name__ == "__main__":
     # Read Arguments
     try:
         opts, _ = getopt.getopt(sys.argv[1:],
-            "ha:se:d:nb:f:c:l:u:w:",
+            "ha:se:d:nb:f:l:u:w:",
             ["help", "addr=", "server", "epics=", "defaults=", "nopoll",
-            "stream-size=", "stream-type=", "commType=", "pcie-rssi-link=", "dump-pvs=",
+            "stream-size=", "stream-type=", "pcie-rssi-link=", "dump-pvs=",
             "disable-bay0", "disable-bay1", "disable-gc", "windows-title=", "pcie-dev-rssi=",
             "pcie-dev-data="])
     except getopt.GetoptError:
@@ -185,13 +186,6 @@ if __name__ == "__main__":
     if server_mode and not (epics_prefix):
         exit_message("    ERROR: Can not start in server mode without the EPICS server enabled")
 
-    # Try to import the FpgaTopLevel definition
-    try:
-        from FpgaTopLevel import FpgaTopLevel
-    except ImportError as ie:
-        print("Error importing FpgaTopLevel: {}".format(ie))
-        exit()
-
     # If EPICS server is enable, import the epics module
     if epics_prefix:
         import pyrogue.protocols.epics
@@ -211,7 +205,6 @@ if __name__ == "__main__":
                       config_file    = config_file,
                       epics_prefix   = epics_prefix,
                       polling_en     = polling_en,
-                      comm_type      = comm_type,
                       pcie_rssi_lane = pcie_rssi_lane,
                       stream_pv_size = stream_pv_size,
                       stream_pv_type = stream_pv_type,
@@ -220,22 +213,22 @@ if __name__ == "__main__":
                       disable_bay1   = disable_bay1,
                       disable_gc     = disable_gc,
                       pcie_dev_rssi  = pcie_dev_rssi,
-                      pcie_dev_data  = pcie_dev_data)
+                      pcie_dev_data  = pcie_dev_data):
 
-        if server_mode:
-            app_top = pyrogue.gui.application(sys.argv)
-            app_top.setApplicationName(windows_title)
-            gui_top = pyrogue.gui.GuiTop(group='GuiTop')
-            gui_top.addTree(CmbPcie)
-            print("Starting GUI...\n")
-        else:
-            # Stop the server when Crtl+C is pressed
-            print("")
-            print("Running in server mode now. Press Ctrl+C to stop...")
-            try:
-                # Wait for Ctrl+C
-                while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                pass
+            if server_mode:
+                app_top = pyrogue.gui.application(sys.argv)
+                app_top.setApplicationName(windows_title)
+                gui_top = pyrogue.gui.GuiTop(group='GuiTop')
+                gui_top.addTree(CmbPcie)
+                print("Starting GUI...\n")
+            else:
+                # Stop the server when Crtl+C is pressed
+                print("")
+                print("Running in server mode now. Press Ctrl+C to stop...")
+                try:
+                    # Wait for Ctrl+C
+                    while True:
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    pass
 
