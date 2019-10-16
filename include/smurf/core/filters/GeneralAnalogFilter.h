@@ -46,8 +46,8 @@ namespace smurf
             // This class implements a general analog filter, in the same way it
             // was done in the original smurf2mce code. That is:
             //
-            // y(n) = gain / a(0) * [ b(0) * x(n) + b(1) * x(n -1) + ... + b(order) * x(n - order + 1)
-            //                                    - a(1) * y(n -1) - ... - a(order) * y(n - order + 1) ]
+            // y(n) = gain / a(0) * [ b(0) * x(n) + b(1) * x(n -1) + ... + b(order) * x(n - order)
+            //                                    - a(1) * y(n -1) - ... - a(order) * y(n - order) ]
             //
             class GeneralAnalogFilter : public ris::Slave, public ris::Master
             {
