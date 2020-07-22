@@ -116,13 +116,13 @@ def exit_message(message):
 def get_host_name():
     return subprocess.check_output("hostname").strip().decode("utf-8")
 
-class DataBuffer(rogue.interfaces.stream.Slave):
+class DataBuffer(rogue.interfaces.stream.Subordinate):
     """
     Data buffer class use to capture data comming from the stream FIFO \
     and copy it into a local buffer using a especific data format.
     """
     def __init__(self, size, data_type):
-        rogue.interfaces.stream.Slave.__init__(self)
+        rogue.interfaces.stream.Subordinate.__init__(self)
         self._buf = [0] * size
 
         # Supported data format and byte order
@@ -364,7 +364,7 @@ class LocalServer(pyrogue.Root):
                         else:
                             fifo_size = stream_pv_size * 4
 
-                        # Setup a FIFO tapped to the steram data and a Slave data buffer
+                        # Setup a FIFO tapped to the steram data and a Subordinate data buffer
                         # Local variables will talk to the data buffer directly.
                         self.stream_fifos.append(rogue.interfaces.stream.Fifo(0, fifo_size, 0))
                         stream_fifo = self.stream_fifos[i]
@@ -372,7 +372,7 @@ class LocalServer(pyrogue.Root):
                         self.data_buffers.append(DataBuffer(size=stream_pv_size, data_type=stream_pv_type))
                         data_buffer = self.data_buffers[i]
 
-                        stream_fifo._setSlave(data_buffer)
+                        stream_fifo._setSubordinate(data_buffer)
 
                         #pyrogue.streamTap(fpga.stream.application(0x80 + i), stream_fifo)
 
@@ -551,9 +551,9 @@ class LocalServer(pyrogue.Root):
                         .format(stream_pv_size,stream_pv_type))
 
                     self.stream_fifos  = []
-                    self.stream_slaves = []
+                    self.stream_subordinates = []
                     for i in range(8):
-                        self.stream_slaves.append(self.epics.createSlave(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type))
+                        self.stream_subordinates.append(self.epics.createSubordinate(name="AMCc:Stream{}".format(i), maxSize=stream_pv_size, type=stream_pv_type))
 
                         # Calculate number of bytes needed on the fifo
                         if '16' in stream_pv_type:
@@ -562,7 +562,7 @@ class LocalServer(pyrogue.Root):
                             fifo_size = stream_pv_size * 4
 
                         self.stream_fifos.append(rogue.interfaces.stream.Fifo(1000, fifo_size, True)) # changes
-                        self.stream_fifos[i]._setSlave(self.stream_slaves[i])
+                        self.stream_fifos[i]._setSubordinate(self.stream_subordinates[i])
                         pyrogue.streamTap(self.ddr_streams[i], self.stream_fifos[i])
 
             self.epics.start()
